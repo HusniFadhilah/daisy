@@ -2,17 +2,31 @@
 
 namespace App\Http\Controllers\Keuangan;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Mail\PembayaranVerifiedMail;
 use App\Models\PengajuanAkreditasi;
 use App\Models\PengajuanPembayaran;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ValidasiPembayaranController extends Controller
 {
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery = $mailDelivery;
+    }
+
     // ============================================================
     // INDEX — sumber data: PengajuanPembayaran (semua jenis)
     // ============================================================
@@ -220,6 +234,20 @@ class ValidasiPembayaranController extends Controller
                 ]);
             });
 
+            $isVerified = $statusInput === 'terverifikasi';
+            $shouldSendMail = in_array($statusInput, ['terverifikasi', 'upload_ulang', 'ditolak'], true);
+
+            if ($shouldSendMail) {
+                $freshPembayaran = PengajuanPembayaran::with([
+                    'pengajuan.pengaju.activeEmails',
+                    'pengajuan.studyProgram.users.activeEmails',
+                    'pengajuan.studyProgram.university',
+                    'pengajuan.studyProgram.degreeLevel',
+                ])->findOrFail($id);
+
+                $this->sendPaymentStatusEmail($freshPembayaran, $isVerified);
+            }
+
             $pesan = [
                 'terverifikasi' => 'Pembayaran berhasil divalidasi.',
                 'upload_ulang'  => 'Berhasil meminta upload ulang ke PS/UPPS.',
@@ -264,5 +292,41 @@ class ValidasiPembayaranController extends Controller
             'upload_ulang'        => (int) ($row->upload_ulang        ?? 0),
             'ditolak'             => (int) ($row->ditolak             ?? 0),
         ];
+    }
+
+    private function sendPaymentStatusEmail(PengajuanPembayaran $pembayaran, bool $isVerified): void
+    {
+        $pembayaran->loadMissing([
+            'pengajuan.pengaju.activeEmails',
+            'pengajuan.studyProgram.users.activeEmails',
+            'pengajuan.studyProgram.university',
+            'pengajuan.studyProgram.degreeLevel',
+        ]);
+
+        $pengajuan = $pembayaran->pengajuan;
+        $emails = [];
+
+        if ($pengajuan->studyProgram && $pengajuan->studyProgram->users) {
+            $emails = $this->recipientResolver->emailsForUsers($pengajuan->studyProgram->users);
+        }
+
+        if (empty($emails) && $pengajuan->pengaju) {
+            $emails = $this->recipientResolver->emailsForUser($pengajuan->pengaju);
+        }
+
+        if (empty($emails)) {
+            Log::warning('Email status pembayaran tidak dikirim karena tidak ada recipient', [
+                'pembayaran_id' => $pembayaran->id,
+                'pengajuan_id' => $pengajuan->id ?? null,
+                'jenis_pembayaran' => $pembayaran->jenis_pembayaran,
+            ]);
+            return;
+        }
+
+        $result = $this->mailDelivery->sendToEmails(
+            to: $emails,
+            mailable: new PembayaranVerifiedMail($pembayaran, $isVerified),
+            useQueue: true
+        );
     }
 }

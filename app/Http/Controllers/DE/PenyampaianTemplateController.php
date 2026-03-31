@@ -3,21 +3,35 @@
 
 namespace App\Http\Controllers\DE;
 
-use App\Models\User;
-use App\Models\University;
+use App\Http\Controllers\Controller;
+use App\Mail\BorangTemplateSentMail;
 use App\Models\Notification;
-use Illuminate\Http\Request;
+use App\Models\PengajuanAkreditasi;
 use App\Models\PengajuanDokumen;
 use App\Models\PengajuanStatusLog;
-use Illuminate\Support\Facades\DB;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
+use App\Models\University;
+use App\Models\User;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class PenyampaianTemplateController extends Controller
 {
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery = $mailDelivery;
+    }
+
     /**
      * Display list of permohonan yang perlu dikirim templat
      */
@@ -150,7 +164,7 @@ class PenyampaianTemplateController extends Controller
             'template_led_link' => 'required|url|max:500',
             'template_pembayaran_link' => 'required|url|max:500',
             'keterangan' => 'nullable|string|max:1000',
-            'notification_id' => 'nullable|exists:notifications,id', // ✅ ADD: untuk mark notification as read
+            'notification_id' => 'nullable|exists:notifications,id',
         ], [
             'template_led_link.required' => 'Link Templat Dokumen wajib diisi',
             'template_led_link.url' => 'Format link Templat Dokumen tidak valid',
@@ -158,35 +172,23 @@ class PenyampaianTemplateController extends Controller
             'template_pembayaran_link.url' => 'Format link Templat Formulir Pembayaran tidak valid',
         ]);
 
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+        $pengajuan = PengajuanAkreditasi::with([
+            'pengaju.activeEmails',
+            'studyProgram.users.activeEmails',
+            'studyProgram.degreeLevel',
+            'studyProgram.university',
+        ])->findOrFail($id);
 
-        // ✅ CHECK: Apakah ini upload ulang atau pertama kali
-        $isReupload = $pengajuan->dokumen()
-            ->whereIn('jenis_dokumen', ['borang_template', 'template_formulir_pembayaran'])
-            ->where('is_latest', true)
-            ->exists();
+        $isReupload = $this->hasExistingTemplateDocuments($pengajuan);
 
         DB::beginTransaction();
+
         try {
             if ($isReupload) {
-                // ✅ Mark dokumen lama sebagai not latest
-                $pengajuan->dokumen()
-                    ->whereIn('jenis_dokumen', ['borang_template', 'template_formulir_pembayaran'])
-                    ->where('is_latest', true)
-                    ->update(['is_latest' => false]);
+                $this->markExistingTemplatesAsNotLatest($pengajuan);
             }
 
-            // ✅ Get versi baru
-            $versiLED = $pengajuan->dokumen()
-                ->where('jenis_dokumen', 'borang_template')
-                ->max('versi') ?? 0;
-
-            $versiPembayaran = $pengajuan->dokumen()
-                ->where('jenis_dokumen', 'template_formulir_pembayaran')
-                ->max('versi') ?? 0;
-
-            // Simpan Templat Dokumen (versi baru)
-            $pengajuan->dokumen()->create([
+            $templateLed = $pengajuan->dokumen()->create([
                 'original_filename' => 'Link Templat Dokumen',
                 'nama_file' => 'Link Templat Dokumen',
                 'jenis_dokumen' => 'borang_template',
@@ -194,10 +196,9 @@ class PenyampaianTemplateController extends Controller
                 'keterangan' => $request->keterangan ?? 'Templat Dokumen via link',
                 'uploaded_by' => auth()->id(),
                 'is_latest' => true,
-                'versi' => $versiLED + 1, // ✅ Increment versi
+                'versi' => $this->nextVersion($pengajuan, 'borang_template'),
             ]);
 
-            // Simpan Templat Formulir Pembayaran (versi baru)
             $pengajuan->dokumen()->create([
                 'original_filename' => 'Link Templat Formulir Pembayaran',
                 'nama_file' => 'Link Templat Formulir Pembayaran',
@@ -206,70 +207,34 @@ class PenyampaianTemplateController extends Controller
                 'keterangan' => $request->keterangan ?? 'Templat Formulir Pembayaran via link',
                 'uploaded_by' => auth()->id(),
                 'is_latest' => true,
-                'versi' => $versiPembayaran + 1, // ✅ Increment versi
+                'versi' => $this->nextVersion($pengajuan, 'template_formulir_pembayaran'),
             ]);
 
-            // ✅ Update status jika pertama kali
-            if (!$isReupload) {
-                $oldStatus = $pengajuan->status;
-                $pengajuan->update([
-                    'status' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-                    'tanggal_template_led_dikirim' => now(),
-                ]);
+            $this->updateStatusIfFirstSend($pengajuan, $isReupload);
 
-                // Log status change
-                $pengajuan->statusLog()->create([
-                    'status_from' => $oldStatus,
-                    'status_to' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-                    'changed_by' => auth()->id(),
-                    'changed_at' => now(),
-                    'keterangan' => 'Formulir Pembayaran dan Templat Dokumen telah dikirim oleh LAMDEPILAR',
-                ]);
-            }
+            $this->markNotificationAsReadAndReply($request->notification_id, $pengajuan);
 
-            // ✅ Mark notification as read jika ada
-            if ($request->filled('notification_id')) {
-                Notification::where('id', $request->notification_id)
-                    ->update(['read_at' => now()]);
-
-                // Kirim konfirmasi ke pemohon
-                $notification = Notification::find($request->notification_id);
-                if ($notification) {
-                    $data = json_decode($notification->data, true);
-
-                    // Get user yang request (biasanya admin_prodi)
-                    $requester = User::where('name', $data['requested_by'] ?? null)->first();
-
-                    if ($requester) {
-                        Notification::create([
-                            'notifiable_type' => 'App\Models\User',
-                            'notifiable_id' => $requester->id,
-                            'type' => 'template_upload_completed',
-                            'data' => json_encode([
-                                'id_pengajuan' => $pengajuan->id,
-                                'nomor_pengajuan' => $pengajuan->nomor_pengajuan,
-                                'message' => 'Permintaan pengiriman ulang templat telah diproses oleh LAMDEPILAR.',
-                                'processed_at' => now()->toISOString(),
-                            ]),
-                            'read_at' => null,
-                        ]);
-                    }
-                }
-            }
+            $this->sendTemplateEmail($pengajuan, $templateLed, 'link');
 
             DB::commit();
 
-            $message = $isReupload
-                ? 'Formulir Pembayaran dan Templat Dokumen berhasil dikirim ulang via link.'
-                : 'Formulir Pembayaran dan Templat Dokumen berhasil dikirim via link.';
-
             return redirect()
                 ->route('de.penyampaian-template')
-                ->with('success', $message);
-        } catch (\Exception $e) {
+                ->with(
+                    'success',
+                    $isReupload
+                        ? 'Formulir Pembayaran dan Templat Dokumen berhasil dikirim ulang via link.'
+                        : 'Formulir Pembayaran dan Templat Dokumen berhasil dikirim via link.'
+                );
+        } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Error kirim templat link: ' . $e->getMessage());
-            return back()->with('error', 'Gagal mengirim templat: ' . $e->getMessage());
+
+            Log::error('Error kirim templat link', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'Gagal mengirim templat: ' . $e->getMessage());
         }
     }
 
@@ -278,8 +243,12 @@ class PenyampaianTemplateController extends Controller
      */
     public function kirimTemplateUpload(Request $request, $id)
     {
-        // ✅ CHECK: Apakah ini upload ulang
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+        $pengajuan = PengajuanAkreditasi::with([
+            'pengaju.activeEmails',
+            'studyProgram.users.activeEmails',
+            'studyProgram.degreeLevel',
+            'studyProgram.university',
+        ])->findOrFail($id);
 
         $hasExistingTemplate = $pengajuan->dokumen()
             ->where('jenis_dokumen', 'borang_template')
@@ -293,23 +262,16 @@ class PenyampaianTemplateController extends Controller
 
         $isReupload = $hasExistingTemplate || $hasExistingFormulir;
 
-        // ✅ Dynamic validation - file optional jika re-upload
         $rules = [
             'keterangan' => 'nullable|string|max:1000',
             'notification_id' => 'nullable|exists:notifications,id',
+            'file_template_led' => $hasExistingTemplate
+                ? 'nullable|file|mimes:pdf,zip,rar,docx|max:51200'
+                : 'required|file|mimes:pdf,zip,rar,docx|max:51200',
+            'file_template_pembayaran' => $hasExistingFormulir
+                ? 'nullable|file|mimes:pdf,docx,xlsx,xls|max:10240'
+                : 'required|file|mimes:pdf,docx,xlsx,xls|max:10240',
         ];
-
-        if (!$hasExistingTemplate) {
-            $rules['file_template_led'] = 'required|file|mimes:pdf,zip,rar,docx|max:51200';
-        } else {
-            $rules['file_template_led'] = 'nullable|file|mimes:pdf,zip,rar,docx|max:51200';
-        }
-
-        if (!$hasExistingFormulir) {
-            $rules['file_template_pembayaran'] = 'required|file|mimes:pdf,docx,xlsx,xls|max:10240';
-        } else {
-            $rules['file_template_pembayaran'] = 'nullable|file|mimes:pdf,docx,xlsx,xls|max:10240';
-        }
 
         $messages = [
             'file_template_led.required' => 'File Templat Dokumen wajib diupload',
@@ -322,156 +284,94 @@ class PenyampaianTemplateController extends Controller
 
         $request->validate($rules, $messages);
 
+        $storedPaths = [];
         DB::beginTransaction();
+
         try {
-            // ✅ Upload Templat Dokumen (jika ada file baru)
+            $templateLed = null;
+
             if ($request->hasFile('file_template_led')) {
-                // Mark old as not latest
                 $pengajuan->dokumen()
                     ->where('jenis_dokumen', 'borang_template')
                     ->where('is_latest', true)
                     ->update(['is_latest' => false]);
 
-                // Get versi baru
-                $versiLED = $pengajuan->dokumen()
-                    ->where('jenis_dokumen', 'borang_template')
-                    ->max('versi') ?? 0;
+                $file = $request->file('file_template_led');
+                $filename = time() . '_LED_' . str_replace(' ', '_', $file->getClientOriginalName());
+                $path = $file->storeAs('dokumen/template-borang', $filename, 'public');
+                $storedPaths[] = $path;
 
-                $fileLED = $request->file('file_template_led');
-                $filenameLED = time() . '_LED_' . str_replace(' ', '_', $fileLED->getClientOriginalName());
-                $pathLED = $fileLED->storeAs('dokumen/template-borang', $filenameLED, 'public');
-
-                $pengajuan->dokumen()->create([
+                $templateLed = $pengajuan->dokumen()->create([
                     'jenis_dokumen' => 'borang_template',
-                    'nama_file' => $filenameLED,
-                    'path_file' => $pathLED,
-                    'original_filename' => $fileLED->getClientOriginalName(),
-                    'file_size' => $fileLED->getSize(),
-                    'mime_type' => $fileLED->getMimeType(),
+                    'nama_file' => $filename,
+                    'path_file' => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
                     'keterangan' => $request->keterangan ?? 'Templat Dokumen',
                     'uploaded_by' => auth()->id(),
                     'is_latest' => true,
-                    'versi' => $versiLED + 1,
+                    'versi' => $this->nextVersion($pengajuan, 'borang_template'),
                 ]);
             }
 
-            // ✅ Upload Templat Formulir Pembayaran (jika ada file baru)
             if ($request->hasFile('file_template_pembayaran')) {
-                // Mark old as not latest
                 $pengajuan->dokumen()
                     ->where('jenis_dokumen', 'template_formulir_pembayaran')
                     ->where('is_latest', true)
                     ->update(['is_latest' => false]);
 
-                // Get versi baru
-                $versiPembayaran = $pengajuan->dokumen()
-                    ->where('jenis_dokumen', 'template_formulir_pembayaran')
-                    ->max('versi') ?? 0;
-
-                $filePembayaran = $request->file('file_template_pembayaran');
-                $filenamePembayaran = time() . '_PEMBAYARAN_' . str_replace(' ', '_', $filePembayaran->getClientOriginalName());
-                $pathPembayaran = $filePembayaran->storeAs('dokumen/template-pembayaran', $filenamePembayaran, 'public');
+                $file = $request->file('file_template_pembayaran');
+                $filename = time() . '_PEMBAYARAN_' . str_replace(' ', '_', $file->getClientOriginalName());
+                $path = $file->storeAs('dokumen/template-pembayaran', $filename, 'public');
+                $storedPaths[] = $path;
 
                 $pengajuan->dokumen()->create([
                     'jenis_dokumen' => 'template_formulir_pembayaran',
-                    'nama_file' => $filenamePembayaran,
-                    'path_file' => $pathPembayaran,
-                    'original_filename' => $filePembayaran->getClientOriginalName(),
-                    'file_size' => $filePembayaran->getSize(),
-                    'mime_type' => $filePembayaran->getMimeType(),
+                    'nama_file' => $filename,
+                    'path_file' => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
                     'keterangan' => $request->keterangan ?? 'Templat Formulir Pembayaran',
                     'uploaded_by' => auth()->id(),
                     'is_latest' => true,
-                    'versi' => $versiPembayaran + 1,
+                    'versi' => $this->nextVersion($pengajuan, 'template_formulir_pembayaran'),
                 ]);
             }
 
-            // ✅ Update status jika pertama kali
-            if (!$isReupload) {
-                $oldStatus = $pengajuan->status;
-                $pengajuan->update([
-                    'status' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-                    'tanggal_template_led_dikirim' => now(),
-                ]);
+            $this->updateStatusIfFirstSend($pengajuan, $isReupload);
+            $this->markNotificationAsReadAndReply($request->notification_id, $pengajuan);
 
-                $pengajuan->statusLog()->create([
-                    'status_from' => $oldStatus,
-                    'status_to' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-                    'changed_by' => auth()->id(),
-                    'changed_at' => now(),
-                    'keterangan' => 'Formulir Pembayaran dan Templat Dokumen dikirim oleh LAMDEPILAR',
-                ]);
-            }
-
-            // ✅ Mark notification as read
-            if ($request->filled('notification_id')) {
-                $notification = Notification::find($request->notification_id);
-
-                if ($notification && $notification->notifiable_id === Auth::id()) {
-                    // Mark as read
-                    $notification->update(['read_at' => now()]);
-
-                    // Parse data
-                    $data = $notification->data;
-
-                    // ✅ Cari pemohon berdasarkan requested_by_id atau nama
-                    $requesterId = $data['requested_by_id'] ?? null;
-                    $requester = null;
-
-                    if ($requesterId) {
-                        $requester = User::find($requesterId);
-                    }
-
-                    // Fallback: cari by name jika ID tidak ada
-                    if (!$requester && isset($data['requested_by'])) {
-                        $requester = User::where('name', $data['requested_by'])->first();
-                    }
-
-                    // Fallback: cari by program studi (admin prodi dari prodi ini)
-                    if (!$requester) {
-                        $requester = $pengajuan->studyProgram->users()
-                            ->where('role_selected', 'admin_prodi')
-                            ->first();
-                    }
-
-                    // Kirim konfirmasi jika requester ditemukan
-                    if ($requester) {
-                        $jenisDokumenLabel = $data['jenis_dokumen_label'] ??
-                            $data['jenis_dokumen'] ??
-                            ['Formulir dan Templat'];
-
-                        Notification::create([
-                            'notifiable_type' => 'App\Models\User',
-                            'notifiable_id' => $requester->id,
-                            'type' => 'template_upload_request_completed',
-                            'data' => json_encode([
-                                'id_pengajuan' => $pengajuan->id,
-                                'nomor_pengajuan' => $pengajuan->nomor_pengajuan,
-                                'program_studi' => $pengajuan->studyProgram->name,
-                                'jenis_dokumen_label' => $jenisDokumenLabel,
-                                'message' => 'Permintaan pengiriman ulang templat telah diproses oleh LAMDEPILAR.',
-                                'processed_at' => now()->toISOString(),
-                                'processed_by' => auth()->user()->name,
-                            ]),
-                            'read_at' => null,
-                        ]);
-                    }
-                }
+            if ($templateLed) {
+                $this->sendTemplateEmail($pengajuan, $templateLed, 'upload');
             }
 
             DB::commit();
 
-            $message = $isReupload
-                ? 'Formulir Pembayaran dan Templat Dokumen berhasil dikirim ulang.'
-                : 'Formulir Pembayaran dan Templat Dokumen berhasil dikirim.';
-
             return redirect()
                 ->route('de.penyampaian-template')
-                ->with('success', $message);
-        } catch (\Exception $e) {
+                ->with(
+                    'success',
+                    $isReupload
+                        ? 'Formulir Pembayaran dan Templat Dokumen berhasil dikirim ulang.'
+                        : 'Formulir Pembayaran dan Templat Dokumen berhasil dikirim.'
+                );
+        } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Error kirim templat upload: ' . $e->getMessage());
-            return back()->with('error', 'Gagal mengirim templat: ' . $e->getMessage());
+
+            foreach ($storedPaths as $path) {
+                if (Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
+
+            Log::error('Error kirim templat upload', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'Gagal mengirim templat: ' . $e->getMessage());
         }
     }
 
@@ -534,5 +434,141 @@ class PenyampaianTemplateController extends Controller
             'belum_dikirim' => $belumDikirim,
             'sudah_dikirim' => $sudahDikirim,
         ];
+    }
+
+    private function hasExistingTemplateDocuments(PengajuanAkreditasi $pengajuan): bool
+    {
+        return $pengajuan->dokumen()
+            ->whereIn('jenis_dokumen', ['borang_template', 'template_formulir_pembayaran'])
+            ->where('is_latest', true)
+            ->exists();
+    }
+
+    private function markExistingTemplatesAsNotLatest(PengajuanAkreditasi $pengajuan): void
+    {
+        $pengajuan->dokumen()
+            ->whereIn('jenis_dokumen', ['borang_template', 'template_formulir_pembayaran'])
+            ->where('is_latest', true)
+            ->update(['is_latest' => false]);
+    }
+
+    private function nextVersion(PengajuanAkreditasi $pengajuan, string $jenisDokumen): int
+    {
+        return ((int) $pengajuan->dokumen()
+            ->where('jenis_dokumen', $jenisDokumen)
+            ->max('versi')) + 1;
+    }
+
+    private function updateStatusIfFirstSend(PengajuanAkreditasi $pengajuan, bool $isReupload): void
+    {
+        if ($isReupload) {
+            return;
+        }
+
+        $oldStatus = $pengajuan->status;
+
+        $pengajuan->update([
+            'status' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
+            'tanggal_template_led_dikirim' => now(),
+        ]);
+
+        $pengajuan->statusLog()->create([
+            'status_from' => $oldStatus,
+            'status_to' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
+            'changed_by' => auth()->id(),
+            'changed_at' => now(),
+            'keterangan' => 'Formulir Pembayaran dan Templat Dokumen dikirim oleh LAMDEPILAR',
+        ]);
+    }
+
+    private function markNotificationAsReadAndReply(?string $notificationId, PengajuanAkreditasi $pengajuan): void
+    {
+        if (empty($notificationId)) {
+            return;
+        }
+
+        $notification = Notification::find($notificationId);
+
+        if (!$notification || $notification->notifiable_id !== Auth::id()) {
+            return;
+        }
+
+        $notification->update(['read_at' => now()]);
+
+        $data = is_array($notification->data)
+            ? $notification->data
+            : json_decode($notification->data, true);
+
+        $requester = null;
+        $requesterId = $data['requested_by_id'] ?? null;
+
+        if ($requesterId) {
+            $requester = User::find($requesterId);
+        }
+
+        if (!$requester && !empty($data['requested_by'])) {
+            $requester = User::where('name', $data['requested_by'])->first();
+        }
+
+        if (!$requester) {
+            $requester = $pengajuan->studyProgram->users()
+                ->where('role_selected', 'admin_prodi')
+                ->first();
+        }
+
+        if (!$requester) {
+            return;
+        }
+
+        $jenisDokumenLabel = $data['jenis_dokumen_label']
+            ?? $data['jenis_dokumen']
+            ?? 'Formulir dan Templat';
+
+        Notification::create([
+            'notifiable_type' => 'App\Models\User',
+            'notifiable_id' => $requester->id,
+            'type' => 'template_upload_request_completed',
+            'data' => json_encode([
+                'id_pengajuan' => $pengajuan->id,
+                'nomor_pengajuan' => $pengajuan->nomor_pengajuan,
+                'program_studi' => $pengajuan->studyProgram->name,
+                'jenis_dokumen_label' => $jenisDokumenLabel,
+                'message' => 'Permintaan pengiriman ulang templat telah diproses oleh LAMDEPILAR.',
+                'processed_at' => now()->toISOString(),
+                'processed_by' => auth()->user()->name,
+            ]),
+            'read_at' => null,
+        ]);
+    }
+
+    private function sendTemplateEmail(
+        PengajuanAkreditasi $pengajuan,
+        PengajuanDokumen $dokumen,
+        string $metode
+    ): void {
+        $emails = [];
+
+        if ($pengajuan->studyProgram && $pengajuan->studyProgram->users) {
+            $emails = $this->recipientResolver->emailsForUsers($pengajuan->studyProgram->users);
+        }
+
+        if (empty($emails) && $pengajuan->pengaju) {
+            $emails = $this->recipientResolver->emailsForUser($pengajuan->pengaju);
+        }
+
+        if (empty($emails)) {
+            Log::warning('Email template tidak dikirim karena tidak ada email tujuan', [
+                'pengajuan_id' => $pengajuan->id,
+                'dokumen_id' => $dokumen->id,
+                'metode' => $metode,
+            ]);
+            return;
+        }
+
+        $result = $this->mailDelivery->sendToEmails(
+            to: $emails,
+            mailable: new BorangTemplateSentMail($pengajuan, $dokumen, $metode),
+            useQueue: true
+        );
     }
 }

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\DE;
 
 use App\Http\Controllers\Controller;
+use App\Mail\InvoicePembayaranMail;
+use App\Models\DegreeLevel;
 use App\Models\PengajuanAkreditasi;
 use App\Models\PengajuanDokumen;
 use App\Models\PengajuanPembayaran;
 use App\Models\University;
-use App\Models\DegreeLevel;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +25,16 @@ class ValidasiPembayaranBandingController extends Controller
         PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
         PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
     ];
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery = $mailDelivery;
+    }
 
     // ============================================================
     // INDEX
@@ -169,64 +182,73 @@ class ValidasiPembayaranBandingController extends Controller
     public function kirimInvoice(Request $request)
     {
         $request->validate([
-            'id_pengajuan'       => 'required|array|min:1',
-            'id_pengajuan.*'     => 'exists:pengajuan_akreditasi,id',
-            'jumlah_pembayaran'  => 'required|numeric|min:1000000',
+            'id_pengajuan' => 'required|array|min:1',
+            'id_pengajuan.*' => 'exists:pengajuan_akreditasi,id',
+            'jumlah_pembayaran' => 'required|numeric|min:1000000',
             'tanggal_jatuh_tempo' => 'required|date|after:today',
-            'keterangan'         => 'nullable|string|max:500',
+            'keterangan' => 'nullable|string|max:500',
         ], [
-            'id_pengajuan.required'       => 'Pilih minimal satu permohonan banding.',
-            'jumlah_pembayaran.required'  => 'Jumlah pembayaran wajib diisi.',
-            'jumlah_pembayaran.min'       => 'Jumlah pembayaran minimal Rp 1.000.000.',
-            'tanggal_jatuh_tempo.after'   => 'Tanggal jatuh tempo harus setelah hari ini.',
+            'id_pengajuan.required' => 'Pilih minimal satu permohonan banding.',
+            'jumlah_pembayaran.required' => 'Jumlah pembayaran wajib diisi.',
+            'jumlah_pembayaran.min' => 'Jumlah pembayaran minimal Rp 1.000.000.',
+            'tanggal_jatuh_tempo.after' => 'Tanggal jatuh tempo harus setelah hari ini.',
         ]);
 
         DB::beginTransaction();
+
         try {
-            $sent   = 0;
+            $sent = 0;
             $skipped = [];
 
             foreach ($request->id_pengajuan as $pengajuanId) {
-                $pengajuan = PengajuanAkreditasi::with('pembayaranBanding')
-                    ->findOrFail($pengajuanId);
+                $pengajuan = PengajuanAkreditasi::with([
+                    'pembayaranBanding',
+                    'pengaju.activeEmails',
+                    'studyProgram.users.activeEmails',
+                    'studyProgram.university',
+                    'studyProgram.degreeLevel',
+                ])->findOrFail($pengajuanId);
 
-                // ✅ Hanya pengajuan dengan status banding_diterima yang boleh dikirimi invoice
                 if ($pengajuan->status !== PengajuanAkreditasi::STATUS_BANDING_DITERIMA) {
                     $skipped[] = $pengajuan->nomor_pengajuan . ' (status tidak sesuai)';
                     continue;
                 }
 
-                // ✅ Cek belum ada invoice banding aktif
                 if ($pengajuan->pembayaranBanding) {
                     $skipped[] = $pengajuan->nomor_pengajuan . ' (invoice sudah ada)';
                     continue;
                 }
 
-                // Buat invoice banding
-                PengajuanPembayaran::create([
-                    'id_pengajuan'        => $pengajuanId,
-                    'jenis_pembayaran'    => 'banding',
-                    'nomor_invoice'       => PengajuanPembayaran::generateNomorInvoice('BND'),
-                    'jumlah_pembayaran'   => $request->jumlah_pembayaran,
+                $pembayaran = PengajuanPembayaran::create([
+                    'id_pengajuan' => $pengajuanId,
+                    'jenis_pembayaran' => 'banding',
+                    'nomor_invoice' => PengajuanPembayaran::generateNomorInvoice('BND'),
+                    'jumlah_pembayaran' => $request->jumlah_pembayaran,
                     'tanggal_jatuh_tempo' => $request->tanggal_jatuh_tempo,
-                    'status_pembayaran'   => 'menunggu_pembayaran',
-                    'keterangan'          => $request->keterangan,
-                    'created_by'          => auth()->id(),
+                    'status_pembayaran' => 'menunggu_pembayaran',
+                    'keterangan' => $request->keterangan,
+                    'created_by' => auth()->id(),
                 ]);
 
-                // Update status pengajuan
                 $pengajuan->update([
                     'status' => PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN_BANDING,
                 ]);
 
-                // Log informatif
                 $pengajuan->statusLog()->create([
                     'status_from' => PengajuanAkreditasi::STATUS_BANDING_DITERIMA,
-                    'status_to'   => PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN_BANDING,
-                    'changed_by'  => auth()->id(),
-                    'changed_at'  => now(),
-                    'keterangan'  => 'Invoice pembayaran banding dikirim. Menunggu pembayaran dari PS.',
+                    'status_to' => PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN_BANDING,
+                    'changed_by' => auth()->id(),
+                    'changed_at' => now(),
+                    'keterangan' => 'Invoice pembayaran banding dikirim. Menunggu pembayaran dari PS.',
                 ]);
+
+                $templateFormulirPembayaran = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                    ->where('jenis_dokumen', 'template_formulir_pembayaran')
+                    ->where('is_latest', true)
+                    ->latest('id')
+                    ->first();
+
+                $this->sendInvoiceEmail($pengajuan, $pembayaran, $templateFormulirPembayaran);
 
                 $sent++;
             }
@@ -239,8 +261,9 @@ class ValidasiPembayaranBandingController extends Controller
             }
 
             return redirect()->back()->with('success', $msg);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
+
             Log::error('Gagal kirim invoice banding', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -397,5 +420,43 @@ class ValidasiPembayaranBandingController extends Controller
             'ditolak'             => (int)   ($row->ditolak               ?? 0),
             'total_nominal_lunas' => (float) ($row->total_nominal_lunas   ?? 0),
         ];
+    }
+
+    private function sendInvoiceEmail(
+        PengajuanAkreditasi $pengajuan,
+        PengajuanPembayaran $pembayaran,
+        ?PengajuanDokumen $templateFormulirPembayaran = null
+    ): void {
+        $pengajuan->loadMissing([
+            'pengaju.activeEmails',
+            'studyProgram.users.activeEmails',
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+        ]);
+
+        $emails = [];
+
+        if ($pengajuan->studyProgram && $pengajuan->studyProgram->users) {
+            $emails = $this->recipientResolver->emailsForUsers($pengajuan->studyProgram->users);
+        }
+
+        if (empty($emails) && $pengajuan->pengaju) {
+            $emails = $this->recipientResolver->emailsForUser($pengajuan->pengaju);
+        }
+
+        if (empty($emails)) {
+            Log::warning('Invoice tidak dikirim karena tidak ada email tujuan', [
+                'pengajuan_id' => $pengajuan->id,
+                'pembayaran_id' => $pembayaran->id,
+                'jenis_pembayaran' => $pembayaran->jenis_pembayaran,
+            ]);
+            return;
+        }
+
+        $result = $this->mailDelivery->sendToEmails(
+            to: $emails,
+            mailable: new InvoicePembayaranMail($pembayaran, $templateFormulirPembayaran),
+            useQueue: true
+        );
     }
 }

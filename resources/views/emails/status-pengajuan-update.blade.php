@@ -23,7 +23,7 @@
                     <!-- HEADER (PAKEM) -->
                     <tr>
                         <td align="center" style="background:#932136;padding:25px;">
-                            <img src="https://daisy.sp3stab.id/assets/images/logo.png" alt="Logo Daisy" style="max-width:90px;height:auto;display:block;margin:0 auto 10px auto;background:#fff;padding:8px;border-radius:6px;">
+                            <img src="https://daisy.lamdepilar.or.id/assets/images/logo.png" alt="Logo Daisy" style="max-width:90px;height:auto;display:block;margin:0 auto 10px auto;background:#fff;padding:8px;border-radius:6px;">
                             <h2 style="margin:0;color:#ffffff;font-size:20px;line-height:1.3;">
                                 Update Status Permohonan Akreditasi
                             </h2>

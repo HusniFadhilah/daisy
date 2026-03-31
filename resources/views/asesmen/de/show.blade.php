@@ -1054,8 +1054,8 @@
                         </p>
                         @if($log->keterangan)
                         <small class="text-muted">{{ $log->keterangan }}</small>
-                        @endif
                         <br>
+                        @endif
                         <small class="text-muted">Oleh: {{ $log->changedBy->name }}</small>
                     </div>
                     @empty
@@ -1072,7 +1072,8 @@
     alertConfirm({
         selector: '.tombol-konfirmasi-setujui-ak'
         , formId: 'form-setujui-ak'
-        , isMessage: true,isDataHref:true
+        , isMessage: true
+        , isDataHref: true
     });
 
     // Show/hide pembayaran field based on hasil review

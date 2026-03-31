@@ -353,7 +353,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label">Keterangan (Opsional)</label>
-                                <textarea name="keterangan" class="form-control" rows="3" placeholder="Tambahkan catatan untuk PS..."></textarea>
+                                <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="3" placeholder="Tambahkan catatan untuk PS..." required>{{ old('keterangan', 'Templat Dokumen LED telah tersedia dalam satu berkas Ms.Word (.docx) (termasuk lembar pengesahan), sedangkan templat LKPS disediakan dalam file Excel (.xlsx).') }}</textarea>
                             </div>
 
                             <div class="alert alert-warning alert-permanent">

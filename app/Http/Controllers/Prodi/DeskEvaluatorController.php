@@ -12,7 +12,7 @@ use App\Models\BorangImport;
 use App\Models\StudyProgram;
 use Illuminate\Http\Request;
 use App\Models\AsesmenUserRole;
-use App\Mail\PembayaranVerified;
+use App\Mail\PembayaranVerifiedMail;
 use App\Models\BorangValidation;
 use App\Models\PengajuanDokumen;
 use App\Models\PengingatAkreditasi;

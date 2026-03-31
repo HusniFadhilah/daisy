@@ -863,7 +863,7 @@
                     <i class="bi bi-arrow-right"></i>
                     <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to_label) }}</span>
                 </p>
-                @if($log->keterangan)
+                @if($log->keterangan && auth()->user()->role_selected == 'super_admin')
                 <small class="text-muted">{{ $log->keterangan }}</small>
                 @endif
             </div>

@@ -33,7 +33,10 @@ class SuratPenerimaanDikirimNotification extends Notification
 
         return (new MailMessage)
             ->subject('Penerimaan Permohonan Akreditasi - ' . $this->pengajuan->studyProgram->name)
-            ->view('emails.surat-penerimaan-dikirim', [
+            ->view('emails.pengajuan.penerimaan-akreditasi', [
+                'title' => 'Penerimaan Permohonan Akreditasi',
+                'preheader' => 'Penerimaan permohonan akreditasi telah dikirim oleh LAMDEPILAR',
+                'headerTitle' => 'Penerimaan Permohonan Akreditasi',
                 'pengajuan' => $this->pengajuan,
                 'dokumen' => $this->dokumen,
                 'actionUrl' => $actionUrl,

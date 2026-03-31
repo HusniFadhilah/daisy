@@ -149,15 +149,9 @@
                                 </td>
                                 <td>
                                     @php
-                                    $statusConfig = [
-                                    'menunggu_pembayaran' => ['class' => 'warning', 'icon' => 'hourglass-split', 'text' => 'Perlu Melakukan Pembayaran'],
-                                    'menunggu_verifikasi' => ['class' => 'info', 'icon' => 'clock-history', 'text' => 'Menunggu Validasi'],
-                                    'terverifikasi' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Tervalidasi'],
-                                    'upload_ulang' => ['class' => 'secondary', 'icon' => 'arrow-repeat', 'text' => 'Upload Ulang'],
-                                    'ditolak' => ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Ditolak'],
-                                    ];
-                                    $status = $statusConfig[$pembayaran->status_pembayaran] ?? ['class' => 'secondary', 'icon' => 'question-circle', 'text' => 'Unknown'];
+                                    $status = $pembayaran->getStatusPembayaranMeta('upps');
                                     @endphp
+
                                     <span class="badge bg-{{ $status['class'] }}">
                                         <i class="bi bi-{{ $status['icon'] }}"></i>
                                         {{ $status['text'] }}

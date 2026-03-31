@@ -3,17 +3,32 @@
 namespace App\Http\Controllers\DE;
 
 use App\Http\Controllers\Controller;
-use App\Models\PengajuanAkreditasi;
-use App\Models\PengajuanPembayaran;
-use App\Models\PengajuanDokumen;
-use App\Models\University;
+use App\Mail\InvoicePembayaranMail;
 use App\Models\DegreeLevel;
+use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
+use App\Models\PengajuanPembayaran;
+use App\Models\University;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ValidasiPembayaranController extends Controller
 {
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery = $mailDelivery;
+    }
+
     /**
      * Display list of payment validation
      */
@@ -123,46 +138,64 @@ class ValidasiPembayaranController extends Controller
         ]);
 
         DB::beginTransaction();
+
         try {
             $sent = 0;
 
             foreach ($validated['id_pengajuan'] as $pengajuanId) {
-                $pengajuan = PengajuanAkreditasi::find($pengajuanId);
+                $pengajuan = PengajuanAkreditasi::with([
+                    'pengaju.activeEmails',
+                    'studyProgram.users.activeEmails',
+                    'studyProgram.university',
+                    'studyProgram.degreeLevel',
+                ])->find($pengajuanId);
 
-                // Validasi status pengajuan
+                if (!$pengajuan) {
+                    continue;
+                }
+
                 if (!in_array($pengajuan->status, [
                     PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
                 ])) {
                     continue;
                 }
 
-                // Generate nomor invoice
                 $nomorInvoice = PengajuanPembayaran::generateNomorInvoice();
 
-                // Create pembayaran record
                 $pembayaran = PengajuanPembayaran::create([
                     'id_pengajuan' => $pengajuanId,
                     'nomor_invoice' => $nomorInvoice,
                     'jumlah_pembayaran' => $validated['jumlah_pembayaran'],
                     'tanggal_jatuh_tempo' => $validated['tanggal_jatuh_tempo'],
                     'status_pembayaran' => 'menunggu_pembayaran',
+                    'jenis_pembayaran' => 'akreditasi',
                 ]);
 
-                // Update status pengajuan
                 $pengajuan->update([
                     'status' => PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN,
                 ]);
 
-                // TODO: Send email notification with invoice
-                // Mail::to($pengajuan->studyProgram->email)->send(new InvoicePembayaran($pembayaran));
+                $templateFormulirPembayaran = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                    ->where('jenis_dokumen', 'template_formulir_pembayaran')
+                    ->where('is_latest', true)
+                    ->latest('id')
+                    ->first();
+
+                $this->sendInvoiceEmail($pengajuan, $pembayaran, $templateFormulirPembayaran);
 
                 $sent++;
             }
 
             DB::commit();
+
             return redirect()->back()->with('success', "Invoice berhasil dikirim ke {$sent} program studi.");
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
+
+            Log::error('Gagal mengirim invoice', [
+                'error' => $e->getMessage(),
+            ]);
+
             return redirect()->back()->with('error', 'Gagal mengirim invoice: ' . $e->getMessage());
         }
     }
@@ -275,5 +308,35 @@ class ValidasiPembayaranController extends Controller
             'upload_ulang' => (int) $row->upload_ulang,
             'total_nominal' => (float) $row->total_nominal,
         ];
+    }
+
+    private function sendInvoiceEmail(
+        PengajuanAkreditasi $pengajuan,
+        PengajuanPembayaran $pembayaran,
+        ?PengajuanDokumen $templateFormulirPembayaran = null
+    ): void {
+        $emails = [];
+
+        if ($pengajuan->studyProgram && $pengajuan->studyProgram->users) {
+            $emails = $this->recipientResolver->emailsForUsers($pengajuan->studyProgram->users);
+        }
+
+        if (empty($emails) && $pengajuan->pengaju) {
+            $emails = $this->recipientResolver->emailsForUser($pengajuan->pengaju);
+        }
+
+        if (empty($emails)) {
+            Log::warning('Invoice tidak dikirim karena tidak ada email tujuan', [
+                'pengajuan_id' => $pengajuan->id,
+                'pembayaran_id' => $pembayaran->id,
+            ]);
+            return;
+        }
+
+        $result = $this->mailDelivery->sendToEmails(
+            to: $emails,
+            mailable: new InvoicePembayaranMail($pembayaran, $templateFormulirPembayaran),
+            useQueue: true
+        );
     }
 }

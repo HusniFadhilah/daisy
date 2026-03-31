@@ -958,21 +958,21 @@
 
         @font-face {
             font-family: 'Montserrat';
-            src: url('{{ public_path(' assets/fonts/Montserrat/static/Montserrat-Regular.ttf') }}') format('truetype');
+            src: url('{{ public_path('assets/fonts/Montserrat/static/Montserrat-Regular.ttf') }}') format('truetype');
             font-weight: 400;
             font-style: normal;
         }
 
         @font-face {
             font-family: 'Montserrat';
-            src: url('{{ public_path(' assets/fonts/Montserrat/static/Montserrat-Bold.ttf') }}') format('truetype');
+            src: url('{{ public_path('assets/fonts/Montserrat/static/Montserrat-Bold.ttf') }}') format('truetype');
             font-weight: 700;
             font-style: normal;
         }
 
         @font-face {
             font-family: 'Montserrat';
-            src: url('{{ public_path(' assets/fonts/Montserrat/static/Montserrat-SemiBold.ttf') }}') format('truetype');
+            src: url('{{ public_path('assets/fonts/Montserrat/static/Montserrat-SemiBold.ttf') }}') format('truetype');
             font-weight: 600;
             font-style: normal;
         }
@@ -987,6 +987,7 @@
         .validity {
             font-weight: 400;
         }
+
     </style>
 </head>
 
@@ -1002,7 +1003,7 @@
                     <div class="header">
                         <div class="header-col header-left">
                             <div class="logo-wrap">
-                                <img src="https://daisy.sp3stab.id/assets/images/logo.png" alt="Logo LAMDEPILAR">
+                                <img src="https://daisy.lamdepilar.or.id/assets/images/logo.png" alt="Logo LAMDEPILAR">
                             </div>
                         </div>
 
@@ -1130,7 +1131,7 @@
                     <div class="header">
                         <div class="header-col header-left">
                             <div class="logo-wrap">
-                                <img src="https://daisy.sp3stab.id/assets/images/logo.png" alt="Logo LAMDEPILAR">
+                                <img src="https://daisy.lamdepilar.or.id/assets/images/logo.png" alt="Logo LAMDEPILAR">
                             </div>
                         </div>
 
@@ -1247,6 +1248,7 @@
 
         // Initialize - show page 1
         showPage(1);
+
     </script>
 </body>
 

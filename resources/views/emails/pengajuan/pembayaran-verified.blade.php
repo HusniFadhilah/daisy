@@ -1,82 +1,88 @@
 @extends('emails.template')
 
-@php
-$title = $isVerified ? 'Pembayaran Diverifikasi' : 'Bukti Pembayaran Perlu Upload Ulang';
-$preheader = $isVerified
-? 'Pembayaran Anda telah diverifikasi. Silakan upload Borang Final.'
-: 'Bukti Pembayaran Anda perlu diupload ulang. Silakan lakukan upload ulang bukti pembayaran.';
-$headerTitle = $isVerified ? 'Pembayaran Diverifikasi' : 'Bukti Pembayaran Perlu Upload Ulang';
-@endphp
-
 @section('content')
 <p style="margin-top:0;">Yth. Tim <strong>{{ $pengajuan->studyProgram->name }}</strong>,</p>
 
 @if($isVerified)
-<p>Pembayaran akreditasi Anda telah <strong>DIVERIFIKASI</strong> oleh LAMDEPILAR.</p>
+<p>
+    Pembayaran {{ strtolower($jenisLabel) }} Anda telah diproses oleh LAMDEPILAR.
+</p>
 
-{{-- INFO BOX --}}
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #28a745;margin:20px 0;">
     <tr>
         <td style="padding:15px;font-size:14px;line-height:1.8;">
-            <strong>Nomor Pengajuan</strong> : {{ $pengajuan->nomor_pengajuan }}<br>
-            <strong>Invoice</strong> : {{ $pengajuan->pembayaran->nomor_invoice }}<br>
-            <strong>Jumlah Pembayaran</strong> : Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}<br>
-            <strong>Status</strong> : <span style="color:#28a745;">VERIFIED</span>
+            <strong>Jenis Pembayaran</strong> : {{ $jenisLabel }}<br>
+            <strong>Nomor Permohonan</strong> : {{ $pengajuan->nomor_pengajuan }}<br>
+            <strong>Invoice</strong> : {{ $pembayaran->nomor_invoice }}<br>
+            <strong>Jumlah Pembayaran</strong> : Rp {{ number_format($pembayaran->jumlah_pembayaran, 0, ',', '.') }}<br>
+            <strong>Status</strong> :
+            <span style="display:inline-block;padding:4px 10px;font-size:12px;font-weight:bold;border-radius:12px;background:#28a745;color:#ffffff;">
+                Tervalidasi
+            </span>
         </td>
     </tr>
 </table>
 
-{{-- LANGKAH SELANJUTNYA --}}
+@if($isBanding)
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff3cd;border-left:4px solid #ffc107;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:14px;line-height:1.8;">
+            <strong>Keterangan Banding:</strong><br>
+            Pembayaran ini tervalidasi untuk proses <strong>banding akreditasi</strong>.
+            Silakan lanjutkan tahapan banding sesuai ketentuan yang berlaku.
+        </td>
+    </tr>
+</table>
+@else
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#d1ecf1;border-left:4px solid #0dcaf0;margin:20px 0;">
     <tr>
         <td style="padding:15px;font-size:14px;line-height:1.8;">
             <strong>Langkah Selanjutnya:</strong><br>
             &bull; Login ke sistem<br>
             &bull; Buka detail Permohonan Akreditasi Anda<br>
-            &bull; Upload <strong>Borang Final</strong> yang telah lengkap<br>
-            &bull; <strong>PENTING:</strong> Pastikan tidak ada revisi data kuantitatif/kualitatif
+            &bull; Upload <strong>Dokumen Akreditasi</strong> yang telah lengkap
         </td>
     </tr>
 </table>
 
-{{-- PERINGATAN --}}
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff3cd;border-left:4px solid #ffc107;margin:20px 0;">
     <tr>
         <td style="padding:15px;font-size:14px;">
             <strong>Catatan Penting:</strong><br>
-            Borang final yang diupload harus sudah final dan tidak boleh ada perubahan data setelah ini.
-            Pastikan semua data telah sesuai sebelum upload!
-        </td>
-    </tr>
-</table>
-
-@else
-<p>Pembayaran akreditasi Anda <strong>Perlu Mengupload Ulang</strong> oleh LAMDEPILAR.</p>
-
-{{-- INFO BOX --}}
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #dc3545;margin:20px 0;">
-    <tr>
-        <td style="padding:15px;font-size:14px;line-height:1.8;">
-            <strong>Nomor Pengajuan</strong> : {{ $pengajuan->nomor_pengajuan }}<br>
-            <strong>Invoice</strong> : {{ $pengajuan->pembayaran->nomor_invoice }}<br>
-            <strong>Status</strong> : <span style="color:#dc3545;">Permintaan Upload Ulang</span>
-        </td>
-    </tr>
-</table>
-
-{{-- ALASAN PENOLAKAN --}}
-@if($pengajuan->pembayaran->alasan_penolakan)
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8d7da;border-left:4px solid #dc3545;margin:20px 0;">
-    <tr>
-        <td style="padding:15px;font-size:14px;">
-            <strong>Catatan LAMDEPILAR:</strong><br>
-            {{ $pengajuan->pembayaran->alasan_penolakan }}
+            Pastikan semua Dokumen Akreditasi (LED, LKPS, Suplemen) telah sesuai sebelum melakukan pengiriman dokumen.
         </td>
     </tr>
 </table>
 @endif
 
-{{-- LANGKAH SELANJUTNYA --}}
+@else
+<p>
+    Bukti pembayaran {{ strtolower($jenisLabel) }} Anda perlu diupload ulang sesuai hasil pemeriksaan LAMDEPILAR.
+</p>
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #dc3545;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:14px;line-height:1.8;">
+            <strong>Jenis Pembayaran</strong> : {{ $jenisLabel }}<br>
+            <strong>Nomor Permohonan</strong> : {{ $pengajuan->nomor_pengajuan }}<br>
+            <strong>Invoice</strong> : {{ $pembayaran->nomor_invoice }}<br>
+            <strong>Status</strong> :
+            <span style="color:#dc3545;font-weight:bold;">Permintaan Upload Ulang</span>
+        </td>
+    </tr>
+</table>
+
+@if($pembayaran->catatan_verifikasi || $pembayaran->alasan_penolakan)
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8d7da;border-left:4px solid #dc3545;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:14px;">
+            <strong>Catatan LAMDEPILAR:</strong><br>
+            {{ $pembayaran->alasan_penolakan ?? $pembayaran->catatan_verifikasi }}
+        </td>
+    </tr>
+</table>
+@endif
+
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff3cd;border-left:4px solid #ffc107;margin:20px 0;">
     <tr>
         <td style="padding:15px;font-size:14px;line-height:1.8;">
@@ -88,4 +94,14 @@ $headerTitle = $isVerified ? 'Pembayaran Diverifikasi' : 'Bukti Pembayaran Perlu
     </tr>
 </table>
 @endif
+
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:30px 0;">
+    <tr>
+        <td align="center">
+            <a href="{{ $actionUrl }}" style="background:#932136;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:6px;font-size:14px;display:inline-block;font-weight:bold;">
+                Lihat Detail Pembayaran
+            </a>
+        </td>
+    </tr>
+</table>
 @endsection

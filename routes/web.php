@@ -1262,13 +1262,11 @@ Route::prefix('preview/email')
         Route::get('/penawaran-accepted/{assignment}',    'penawaranAccepted')->name('penawaran.accepted');
         Route::get('/penawaran-rejected/{assignment}',    'penawaranRejected')->name('penawaran.rejected');
         Route::get('/pengingat-akreditasi/{studyProgram}', 'pengingatAkreditasi')->name('pengingat.akreditasi');
-        Route::get('/pembayaran-verified/{pengajuan}', function (\App\Models\PengajuanAkreditasi $pengajuan) {
-            return new \App\Mail\PembayaranVerified($pengajuan, true);
-        })->name('pembayaran.verified');
-
-        Route::get('/pembayaran-rejected/{pengajuan}', function (\App\Models\PengajuanAkreditasi $pengajuan) {
-            return new \App\Mail\PembayaranVerified($pengajuan, false);
-        })->name('pembayaran.rejected');
+        Route::get('/pembayaran-verified/{pembayaran}', 'pembayaranVerified')->name('pembayaran.verified');
+        Route::get('/pembayaran-rejected/{pembayaran}', 'pembayaranRejected')->name('pembayaran.rejected');
+        Route::get('/surat-penerimaan/{pengajuan}', 'suratPenerimaan')->name('surat.penerimaan');
+        Route::get('/borang-template-sent/{pengajuan}', 'borangTemplateSent')->name('borang.template.sent');
+        Route::get('/invoice-pembayaran/{pembayaran}', 'invoicePembayaran')->name('invoice.pembayaran');
     });
 // Route::get('/preview/email/penawaran/{assignment}', function (\App\Models\AsesmenUserRole $assignment) {
 //     return new \App\Mail\PenawaranAsesmenMail($assignment);

@@ -171,6 +171,12 @@
                     <a href="{{ route('de.pemetaan.show', $prog->id) }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-eye"></i> Detail
                     </a>
+                    @php
+                    $countPengingat = $prog->pengingatAkreditasi->count();
+                    @endphp
+                    @if($countPengingat > 0)
+                    <br><small>Telah diingatkan {{ $countPengingat }} kali</small>
+                    @endif
                 </td>
             </tr>
             @empty

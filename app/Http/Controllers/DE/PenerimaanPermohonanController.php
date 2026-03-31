@@ -5,10 +5,13 @@ namespace App\Http\Controllers\DE;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\KirimSuratPenerimaanRequest;
+use App\Mail\PenerimaanAkreditasiMail;
 use App\Models\PengajuanAkreditasi;
 use App\Models\PengajuanDokumen;
 use App\Models\University;
 use App\Notifications\SuratPenerimaanDikirimNotification;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +22,17 @@ use Illuminate\Support\Str;
 class PenerimaanPermohonanController extends Controller
 {
     use AuthorizesRequests;
+
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery = $mailDelivery;
+    }
 
     /**
      * Display list of pengajuan yang perlu penerimaan
@@ -332,11 +346,29 @@ class PenerimaanPermohonanController extends Controller
 
     private function sendNotification($pengajuan, $dokumen): void
     {
-        if ($pengajuan->pengaju) {
-            $pengajuan->pengaju->notify(
-                new SuratPenerimaanDikirimNotification($pengajuan, $dokumen)
-            );
+        $pengajuan->loadMissing([
+            'studyProgram.users.activeEmails',
+            'studyProgram',
+        ]);
+
+        $users = $pengajuan->studyProgram->users ?? collect();
+        $emails = $this->recipientResolver->emailsForUsers($users);
+
+        if (empty($emails)) {
+            Log::warning('Surat penerimaan tidak dikirim karena recipient kosong', [
+                'pengajuan_id' => $pengajuan->id,
+                'study_program_id' => $pengajuan->studyProgram->id ?? null,
+            ]);
+            return;
         }
+
+        $mailable = new PenerimaanAkreditasiMail($pengajuan, $dokumen);
+
+        $result = $this->mailDelivery->sendToEmails(
+            to: $emails,
+            mailable: $mailable,
+            useQueue: true
+        );
     }
 
     private function cleanupFailedUpload(?string $path): void

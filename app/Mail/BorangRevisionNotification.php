@@ -1,67 +1,50 @@
 <?php
-// app/Mail/BorangRevisionNotification.php
 
 namespace App\Mail;
 
-use App\Models\PengajuanAkreditasi;
 use App\Models\BorangValidation;
+use App\Models\PengajuanAkreditasi;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class BorangRevisionNotification extends Mailable
+class BorangRevisionNotification extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
     public PengajuanAkreditasi $pengajuan;
     public BorangValidation $validation;
+    public string $actionUrl;
+    public int $revisionCount;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(PengajuanAkreditasi $pengajuan, BorangValidation $validation)
     {
-        $this->pengajuan = $pengajuan;
+        $this->pengajuan = $pengajuan->loadMissing([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+        ]);
         $this->validation = $validation;
+        $this->actionUrl = route('upps.validasi-dokumen.show', $pengajuan->id);
+
+        $points = $validation->revision_points ?? [];
+        $this->revisionCount = is_array($points)
+            ? count(array_filter($points, fn($p) => !str_starts_with((string) $p, '=== ')))
+            : 0;
     }
 
-    /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
+    public function build(): self
     {
-        return new Envelope(
-            subject: '[LAMDEPILAR] LED Perlu Revisi - ' . $this->pengajuan->nomor_pengajuan,
-        );
-    }
-
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
-    {
-        return new Content(
-            view: 'emails.pengajuan.borang-revision-notification',
-            with: [
+        return $this->subject('[LAMDEPILAR] Dokumen Akreditasi Perlu Revisi - ' . $this->pengajuan->nomor_pengajuan)
+            ->with([
+                'title' => 'Dokumen Akreditasi Perlu Revisi',
+                'preheader' => 'Dokumen akreditasi Anda memerlukan revisi.',
+                'headerTitle' => 'Dokumen Akreditasi Perlu Revisi',
                 'pengajuan' => $this->pengajuan,
                 'validation' => $this->validation,
-                'studyProgram' => $this->pengajuan->studyProgram,
-                'validator' => $this->validation->assignment->user ?? null,
-                'revisionPoints' => $this->validation->revision_points ?? [],
-                'catatanValidator' => $this->validation->catatan_validator,
-            ],
-        );
-    }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
+                'actionUrl' => $this->actionUrl,
+                'revisionCount' => $this->revisionCount,
+            ])
+            ->view('emails.pengajuan.borang-revision-notification');
     }
 }
