@@ -3,17 +3,31 @@
 namespace App\Http\Controllers\DE;
 
 use App\Http\Controllers\Controller;
-use App\Models\PengajuanAkreditasi;
+use App\Mail\Reminder\ReminderValidasiDokumenMail;
 use App\Models\AsesmenUserRole;
 use App\Models\BorangValidation;
-use App\Models\University;
 use App\Models\DegreeLevel;
+use App\Models\PengajuanAkreditasi;
+use App\Models\University;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class ValidasiDokumenController extends Controller
 {
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery = $mailDelivery;
+    }
+
     /**
      * Display list of document validations
      */
@@ -122,12 +136,22 @@ class ValidasiDokumenController extends Controller
             ]);
         }
 
+        // Data untuk modal reminder
+        $pendingAssignments = \App\Models\AsesmenUserRole::with(['user', 'asesmen.pengajuan.studyProgram'])
+            ->where('jenis_asesmen', 'dokumen')
+            ->whereIn('status_penawaran', ['accepted', 'pending'])
+            ->whereIn('status_pekerjaan', ['not_started', 'in_progress'])
+            ->get();
+        $countPendingAssignments = count($pendingAssignments);
+
         return view('de.validasi-dokumen.index', compact(
             'assignments',
             'stats',
             'universities',
             'degreeLevels',
-            'validators'
+            'validators',
+            'pendingAssignments',
+            'countPendingAssignments'
         ));
     }
 
@@ -202,20 +226,29 @@ class ValidasiDokumenController extends Controller
                     'status_to' => $assignment->asesmen->pengajuan->status,
                     'changed_by' => auth()->id(),
                     'changed_at' => now(),
-                    'keterangan' => "Reminder dikirim ke validator {$assignment->user->name}: {$validated['pesan_reminder']}",
+                    'keterangan' => "Pengingat dikirim ke validator {$assignment->user->name}: {$validated['pesan_reminder']}",
                 ]);
 
-                // TODO: Send email
-                // Mail::to($assignment->user->email)->send(new ReminderValidasiDokumen($assignment, $validated['pesan_reminder']));
+                $recipientEmails = $this->recipientResolver->emailsForUsers(
+                    collect([$assignment->user])
+                );
+
+                $result = $this->mailDelivery->sendToEmails(
+                    $recipientEmails,
+                    new ReminderValidasiDokumenMail($assignment, $validated['pesan_reminder']),
+                    [],
+                    [],
+                    true
+                );
 
                 $sent++;
             }
 
             DB::commit();
-            return redirect()->back()->with('success', "Reminder berhasil dikirim ke {$sent} validator.");
+            return redirect()->back()->with('success', "Pengingat berhasil dikirim ke {$sent} validator.");
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal mengirim reminder: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal mengirim pengingat: ' . $e->getMessage());
         }
     }
 

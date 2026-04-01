@@ -42,6 +42,12 @@
         </div>
     </div>
 
+    <div class="d-flex align-items-center mb-4">
+        <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#modalKirimReminderAK">
+            <i class="bi bi-bell"></i> Kirim Pengingat ke Validator
+        </button>
+    </div>
+
     <!-- Filters -->
     {{-- <div class="card mb-3">
         <div class="card-body" style="background: linear-gradient(135deg, #932136 0%, #870820 100%);">
@@ -86,6 +92,8 @@
     </div>
 </div>
 </div>
+
+<x-modal-kirim-reminder-pelaporan modal-id="modalKirimReminderAK" form-action="{{ route('de.pelaporan-ak.kirim-reminder') }}" title="Kirim Pengingat Pelaporan AK" :assignments="$pendingReminderAssignments" :count-pending="$countPendingReminderAssignments" item-description="Belum upload laporan validasi AK" />
 
 @push('scripts')
 <script>

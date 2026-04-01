@@ -2,13 +2,23 @@
 
 namespace App\Http\Controllers\DE\Banding;
 
-use Illuminate\Http\Request;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\DE\Concerns\HasReminderPelaporan;
+use App\Models\PengajuanAkreditasi;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PelaporanAKBandingController extends Controller
 {
+    use HasReminderPelaporan;
+
+    private const JENIS_ASESMEN  = 'ak';
+    private const DOCUMENT_TYPE  = 'laporan_ak_banding';
+    private const REQUIRED_STATUSES = [
+        PengajuanAkreditasi::STATUS_AK_BANDING_SELESAI,
+        PengajuanAkreditasi::STATUS_AK_BANDING_DILAPORKAN,
+    ];
+
     /**
      * Dashboard monitoring pelaporan AK
      */
@@ -118,7 +128,27 @@ class PelaporanAKBandingController extends Controller
             ]);
         }
 
-        return view('de.banding.pelaporan-ak-banding.index', compact('pengajuans', 'stats', 'universities'));
+        $pendingReminderAssignments = $this->getPendingReminderAssignments(
+            jenisAsesmen: self::JENIS_ASESMEN,
+            documentType: self::DOCUMENT_TYPE,
+            requiredStatuses: self::REQUIRED_STATUSES,
+        );
+        $countPendingReminderAssignments = $pendingReminderAssignments->count();
+
+        return view('de.banding.pelaporan-ak-banding.index', compact('pengajuans', 'stats', 'universities', 'pendingReminderAssignments', 'countPendingReminderAssignments',));
+    }
+
+    public function kirimReminder(Request $request)
+    {
+        return $this->processKirimReminder(
+            request: $request,
+            jenisAsesmen: self::JENIS_ASESMEN,
+            documentType: self::DOCUMENT_TYPE,
+            mailSubject: 'Pengingat Pelaporan Validasi AK Banding',
+            actionRouteName: 'pelaporan.ak-banding.show', // sesuaikan nama route validator
+            requiredStatuses: self::REQUIRED_STATUSES,
+            keteranganLog: 'Pengingat pelaporan AK Banding dikirim ke validator',
+        );
     }
 
     /**

@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers\DE;
 
+use App\Http\Controllers\Controller;
+use App\Jobs\SendPenawaranAsesmenEmail;
+use App\Models\Asesmen;
+use App\Models\AsesmenKecukupan;
+use App\Models\AsesmenUserRole;
+use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\Asesmen;
 use Illuminate\Http\Request;
-use App\Models\AsesmenUserRole;
-use App\Models\AsesmenKecukupan;
-use App\Models\PengajuanDokumen;
-use Illuminate\Support\Facades\DB;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Jobs\SendPenawaranAsesmenEmail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class PenugasanAKController extends Controller
@@ -200,6 +200,14 @@ class PenugasanAKController extends Controller
             ->with('user')
             ->first();
 
+        $assignmentReminders = [];
+
+        if ($pengajuan->asesmen) {
+            foreach ($pengajuan->asesmen->asesmenUserRoles as $assignment) {
+                $assignmentReminders[$assignment->id] = $assignment->resolveReminderMeta();
+            }
+        }
+
         return view('de.penugasan-ak.show', compact(
             'pengajuan',
             'userProgress',
@@ -207,7 +215,8 @@ class PenugasanAKController extends Controller
             'availableUsers',
             'roles',
             'totalElemens',
-            'validatorDokumen'
+            'validatorDokumen',
+            'assignmentReminders'
         ));
     }
 

@@ -27,6 +27,7 @@ class PengajuanPembayaran extends Model
         'catatan_pembayaran',
         'catatan_verifikasi',
         'alasan_penolakan',
+        'keterangan',
         'verified_by',
     ];
 

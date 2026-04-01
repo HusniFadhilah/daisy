@@ -1,23 +1,23 @@
 @extends('emails.template')
 
 @section('content')
-<p style="margin-top:0;">Yth. <strong>{{ $pengajuan->pengaju->name }}</strong>,</p>
+<p style="margin-top:0;">Yth. Tim Akreditasi Program Studi <strong>{{ $pengajuan->studyProgram->name }}</strong>,</p>
 
 <p>
     LAMDEPILAR telah mengirimkan <strong>Templat Dokumen Akreditasi</strong>
     untuk permohonan akreditasi program studi Anda.
 </p>
 
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #0d6efd;margin:20px 0;">
+{{-- <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #0d6efd;margin:20px 0;">
     <tr>
         <td style="padding:15px;font-size:14px;line-height:1.8;">
             <strong>Nomor Permohonan</strong> : {{ $pengajuan->nomor_pengajuan }}<br>
-            <strong>Program Studi</strong> : {{ $pengajuan->studyProgram->name }}<br>
-            <strong>Jenjang</strong> : {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}<br>
-            <strong>Perguruan Tinggi</strong> : {{ $pengajuan->studyProgram->university->name ?? '-' }}
-        </td>
-    </tr>
-</table>
+<strong>Program Studi</strong> : {{ $pengajuan->studyProgram->name }}<br>
+<strong>Jenjang</strong> : {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}<br>
+<strong>Perguruan Tinggi</strong> : {{ $pengajuan->studyProgram->university->name ?? '-' }}
+</td>
+</tr>
+</table> --}}
 
 @if($metode === 'link')
 {{-- <table width="100%" cellpadding="0" cellspacing="0" style="background:#e7f1ff;border-left:4px solid #0d6efd;margin:20px 0;">

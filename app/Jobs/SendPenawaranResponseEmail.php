@@ -42,7 +42,7 @@ class SendPenawaranResponseEmail implements ShouldQueue
             $this->sendToUser();
 
             // ✅ 2. Email ke Admin (notifikasi)
-            $this->sendToAdmin();
+            // $this->sendToAdmin();
         } catch (\Exception $e) {
             Log::error("Gagal mengirim email response penawaran", [
                 'assignment_id' => $this->assignment->id,

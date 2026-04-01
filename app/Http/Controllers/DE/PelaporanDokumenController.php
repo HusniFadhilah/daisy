@@ -3,15 +3,28 @@
 namespace App\Http\Controllers\DE;
 
 use App\Http\Controllers\Controller;
-use App\Models\PengajuanAkreditasi;
-use App\Models\AsesmenDocument;
+use App\Mail\Reminder\ReminderPelaporanDokumenMail;
 use App\Models\AsesmenUserRole;
+use App\Models\PengajuanAkreditasi;
 use App\Models\University;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PelaporanDokumenController extends Controller
 {
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery = $mailDelivery;
+    }
+
     /**
      * Dashboard monitoring Pelaporan Validasi Dokumen validasi
      */
@@ -122,7 +135,29 @@ class PelaporanDokumenController extends Controller
             ]);
         }
 
-        return view('de.pelaporan-dokumen.index', compact('pengajuans', 'stats', 'universities'));
+        $pendingReminderAssignments = AsesmenUserRole::with([
+            'user',
+            'asesmen.pengajuan.studyProgram',
+        ])
+            ->where('jenis_asesmen', 'dokumen')
+            ->where('status_penawaran', 'accepted')
+            ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+            ->whereHas('asesmen.pengajuan.latestStatusLog', function ($q) {
+                $q->whereIn('status_to', [
+                    PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                    PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+                ]);
+            })
+            ->whereDoesntHave('asesmen.documents', function ($q) {
+                $q->where('type', 'laporan_validasi_borang')
+                    ->where('is_active', true);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $countPendingReminderAssignments = $pendingReminderAssignments->count();
+
+        return view('de.pelaporan-dokumen.index', compact('pengajuans', 'stats', 'universities', 'pendingReminderAssignments', 'countPendingReminderAssignments'));
     }
 
     /**
@@ -276,5 +311,74 @@ class PelaporanDokumenController extends Controller
     public function getTableAjax(Request $request)
     {
         return $this->index($request);
+    }
+
+    public function kirimReminder(Request $request)
+    {
+        $validated = $request->validate([
+            'id_assignment' => 'required|array',
+            'id_assignment.*' => 'exists:asesmen_user_roles,id',
+            'pesan_reminder' => 'required|string',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $assignments = AsesmenUserRole::with([
+                'user',
+                'asesmen.pengajuan',
+                'asesmen.pengajuan.latestStatusLog',
+            ])
+                ->whereIn('id', $validated['id_assignment'])
+                ->where('jenis_asesmen', 'dokumen')
+                ->where('status_penawaran', 'accepted')
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('asesmen.pengajuan.latestStatusLog', function ($q) {
+                    $q->whereIn('status_to', [
+                        PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                        PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+                    ]);
+                })
+                ->whereDoesntHave('asesmen.documents', function ($q) {
+                    $q->where('type', 'laporan_validasi_borang')
+                        ->where('is_active', true);
+                })
+                ->get();
+
+            $sent = 0;
+
+            foreach ($assignments as $assignment) {
+                $pengajuan = $assignment->asesmen->pengajuan;
+
+                $pengajuan->statusLog()->create([
+                    'status_from' => $pengajuan->status,
+                    'status_to' => $pengajuan->status,
+                    'changed_by' => auth()->id(),
+                    'changed_at' => now(),
+                    'keterangan' => 'Pengingat pelaporan dokumen dikirim ke validator ' . $assignment->user->name,
+                ]);
+
+                $recipientEmails = $this->recipientResolver->emailsForUsers(
+                    collect([$assignment->user])
+                );
+
+                $result = $this->mailDelivery->sendToEmails(
+                    $recipientEmails,
+                    new ReminderPelaporanDokumenMail($assignment, $validated['pesan_reminder']),
+                    [],
+                    [],
+                    true
+                );
+
+                $sent++;
+            }
+
+            DB::commit();
+
+            return back()->with('success', "Pengingat pelaporan berhasil dikirim ke {$sent} validator.");
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal mengirim pengingat pelaporan: ' . $e->getMessage());
+        }
     }
 }

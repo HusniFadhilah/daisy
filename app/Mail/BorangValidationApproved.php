@@ -29,15 +29,15 @@ class BorangValidationApproved extends Mailable implements ShouldQueue
 
     public function build(): self
     {
-        return $this->subject('[LAMDEPILAR] Dokumen Akreditasi Disetujui - ' . $this->pengajuan->nomor_pengajuan)
+        return $this->subject('Dokumen Akreditasi Disetujui')
             ->with([
                 'title' => 'Dokumen Akreditasi Disetujui',
-                'preheader' => 'Dokumen akreditasi Anda telah disetujui oleh validator.',
+                'preheader' => 'Dokumen akreditasi Anda telah disetujui.',
                 'headerTitle' => 'Dokumen Akreditasi Disetujui',
                 'pengajuan' => $this->pengajuan,
                 'validation' => $this->validation,
                 'actionUrl' => $this->actionUrl,
             ])
-            ->view('emails.validator.borang-validation-approved');
+            ->view('emails.pengajuan.borang-decision-approved');
     }
 }

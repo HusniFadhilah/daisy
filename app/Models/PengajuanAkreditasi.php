@@ -1636,7 +1636,7 @@ class PengajuanAkreditasi extends Model
                 // self::STATUS_PENGAJUAN_COMPLETED =>
                 // $badge('bg-success', $labelFor(self::STATUS_PENGAJUAN_COMPLETED) ?? '-'),
 
-                default => $badge('bg-secondary', '-'),
+                default => $badge('bg-secondary', 'Menunggu Pelaporan Dokumen'),
             },
             'penugasan_asesor_ak' => match ($status) {
                 self::STATUS_PENGAJUAN_COMPLETED =>

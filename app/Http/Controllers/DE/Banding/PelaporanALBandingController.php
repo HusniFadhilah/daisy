@@ -2,13 +2,23 @@
 
 namespace App\Http\Controllers\DE\Banding;
 
-use Illuminate\Http\Request;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\DE\Concerns\HasReminderPelaporan;
+use App\Models\PengajuanAkreditasi;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PelaporanALBandingController extends Controller
 {
+    use HasReminderPelaporan;
+
+    private const JENIS_ASESMEN  = 'al';
+    private const DOCUMENT_TYPE  = 'laporan_al_banding';
+    private const REQUIRED_STATUSES = [
+        PengajuanAkreditasi::STATUS_AL_BANDING_SELESAI,
+        PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
+    ];
+
     /**
      * Dashboard monitoring pelaporan AL
      */
@@ -107,11 +117,33 @@ class PelaporanALBandingController extends Controller
             ]);
         }
 
+        $pendingReminderAssignments = $this->getPendingReminderAssignments(
+            jenisAsesmen: self::JENIS_ASESMEN,
+            documentType: self::DOCUMENT_TYPE,
+            requiredStatuses: self::REQUIRED_STATUSES,
+        );
+        $countPendingReminderAssignments = $pendingReminderAssignments->count();
+
         return view('de.banding.pelaporan-al-banding.index', compact(
             'pengajuans',
             'stats',
-            'universities'
+            'universities',
+            'pendingReminderAssignments',
+            'countPendingReminderAssignments',
         ));
+    }
+
+    public function kirimReminder(Request $request)
+    {
+        return $this->processKirimReminder(
+            request: $request,
+            jenisAsesmen: self::JENIS_ASESMEN,
+            documentType: self::DOCUMENT_TYPE,
+            mailSubject: 'Pengingat Pelaporan Validasi AL Banding',
+            actionRouteName: 'pelaporan.al-banding.show', // sesuaikan nama route validator
+            requiredStatuses: self::REQUIRED_STATUSES,
+            keteranganLog: 'Pengingat pelaporan AL Banding dikirim ke validator',
+        );
     }
 
     /**

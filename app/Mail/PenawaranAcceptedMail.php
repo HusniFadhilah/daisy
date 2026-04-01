@@ -23,12 +23,11 @@ class PenawaranAcceptedMail extends Mailable
     {
         $this->assignment   = $assignment;
         $this->jenisAsesmen = $this->assignment->jenis_asesmen;
-        $route = $this->assignment->route_penawaran;
         $this->asesmen      = $assignment->asesmen;
         $this->user         = $assignment->user;
         $this->role         = $assignment->role;
         $this->adminEmail   = $adminEmail ?? config('mail.admin_email', 'admin@lamdepilar.or.id');
-        $this->dashboardUrl = route($route, $assignment->asesmen->id);
+        $this->dashboardUrl =  $this->assignment->route_penawaran;
     }
 
     public function build()

@@ -86,10 +86,11 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="30%">Nama</th>
+                                    <th width="25%">Nama</th>
                                     <th width="15%">Role</th>
                                     <th width="15%">Status</th>
-                                    <th width="35%">Progress</th>
+                                    <th width="30%">Progress</th>
+                                    <th width="10%">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -149,6 +150,15 @@
                                             <span class="text-warning">({{ $progress['pending'] }} pending)</span>
                                             @endif
                                         </small>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        @if(!empty($assignmentReminders[$assignment->id]))
+                                        @php $reminder = $assignmentReminders[$assignment->id]; @endphp
+
+                                        <button type="button" class="btn {{ $reminder['btn_class'] }} btn-sm" title="{{ $reminder['label'] }}" onclick="kirimReminderAssignment({{ $assignment->id }},@js($reminder['label']),@js($reminder['message']))">
+                                            <i class="bi {{ $reminder['icon'] }}"></i>
+                                        </button>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach
@@ -356,4 +366,6 @@
         </div>
     </div>
 </div>
+
+@include('layouts.template.kirim-reminder')
 @endsection

@@ -77,7 +77,7 @@
     {{-- STATUS BANNER --}}
     <div class="alert alert-{{ $statusClass }} alert-permanent mb-3">
         <i class="bi {{ $statusClass === 'success' ? 'bi-check-circle' : 'bi-info-circle' }}"></i>
-        {{ $statusText }}
+        {!! $statusText !!}
     </div>
 
     {{-- Progress Overview --}}

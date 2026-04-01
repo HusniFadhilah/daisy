@@ -203,12 +203,19 @@ class ValidasiAKController extends Controller
 
         // Add fully validated count
         $validationSummary->validated_count = $fullyValidatedElements->count();
+        $assignmentReminders = [];
 
+        if ($pengajuan->asesmen) {
+            foreach ($pengajuan->asesmen->asesmenUserRoles as $assignment) {
+                $assignmentReminders[$assignment->id] = $assignment->resolveReminderMeta();
+            }
+        }
         return view('de.validasi-ak.show', compact(
             'pengajuan',
             'userProgress',
             'totalElements',
-            'validationSummary'
+            'validationSummary',
+            'assignmentReminders'
         ));
     }
 

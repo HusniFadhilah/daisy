@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 
 class AsesmenUserRole extends Model
 {
@@ -346,6 +347,24 @@ class AsesmenUserRole extends Model
         return $roleAlias . ' ' . $this->jenis_asesmen_label;
     }
 
+    public function getJenisAsesmenActionLabelAttribute(): string
+    {
+        if ($this->jenis_asesmen === 'dokumen') {
+            $action = 'Validasi Dokumen';
+        } elseif ($this->jenis_asesmen === 'ak') {
+            $action = $this->id_role == Role::ID_ROLE_VALIDATOR ? 'Validasi AK' : 'Penilaian AK';
+        } elseif ($this->jenis_asesmen === 'al') {
+            $action = $this->id_role == Role::ID_ROLE_VALIDATOR ? 'Validasi AL' : 'Penilaian AL';
+        } elseif ($this->jenis_asesmen === 'ak_banding') {
+            $action = $this->id_role == Role::ID_ROLE_VALIDATOR ? 'Validasi AK Banding' : 'Penilaian AK Banding';
+        } elseif ($this->jenis_asesmen === 'al_banding') {
+            $action = $this->id_role == Role::ID_ROLE_VALIDATOR ? 'Validasi AL Banding' : 'Penilaian AL Banding';
+        } else {
+            $action = '';
+        }
+        return $action;
+    }
+
     public function getStatusLabelAttribute(): string
     {
         return $this->status_meta['label'];
@@ -366,21 +385,24 @@ class AsesmenUserRole extends Model
         return $this->status_meta['indicator'];
     }
 
-    private function getRoutePenawaranAttribute()
+    public function getRoutePenawaranAttribute()
     {
         if ($this->jenis_asesmen === 'dokumen') {
-            $route = 'validator.borang.show';
+            $route = route('validator.borang.show', $this->id);
         } elseif ($this->jenis_asesmen === 'ak') {
-            $route = 'ak.berkas.show';
+            $route = $this->id_role == Role::ID_ROLE_VALIDATOR ? route('ak.validasi.asesor', $this->id_asesmen) : route('ak.berkas.show', $this->id_asesmen);
         } elseif ($this->jenis_asesmen === 'al') {
-            $route = 'al.berkas.show';
+            $route = $this->id_role == Role::ID_ROLE_VALIDATOR ? route('pelaporan.al.show', $this->id) : route('al.berkas.show', $this->id_asesmen);
         } elseif ($this->jenis_asesmen === 'ak_banding') {
-            $route = 'ak_banding.berkas.show';
+            $route = $this->id_role == Role::ID_ROLE_VALIDATOR ? route('ak_banding.validasi.asesor', $this->id_asesmen) : route('ak_banding.berkas.show', $this->id_asesmen);
         } elseif ($this->jenis_asesmen === 'al_banding') {
-            $route = 'al_banding.berkas.show';
+            $route = $this->id_role == Role::ID_ROLE_VALIDATOR ? route('pelaporan.banding.al.show', $this->id) : route('al_banding.berkas.show', $this->id_asesmen);
         } else {
             $route = 'dashboard';
         }
+        Log::info($route);
+        Log::info($this->id_role);
+        Log::info($this->user->name);
         return $route;
     }
 
@@ -475,5 +497,54 @@ class AsesmenUserRole extends Model
         ];
 
         return $statusMap[$status] ?? $statusMap['not_started'];
+    }
+
+    public function resolveReminderMeta(): ?array
+    {
+        $assignment = $this;
+        $roleName = $assignment->role_selected?->name;
+        $statusPenawaran = $assignment->status_penawaran;
+        $statusPekerjaan = $assignment->status_pekerjaan;
+        $asesmenActionLabel = $assignment->jenis_asesmen_action_label;
+
+        if ($statusPenawaran === 'pending') {
+            return [
+                'type' => 'penawaran',
+                'label' => 'Pengingat Penawaran ' . $asesmenActionLabel,
+                'icon' => 'bi-bell',
+                'btn_class' => 'btn-warning',
+                'message' => 'Kami mengingatkan bahwa Anda telah mendapatkan penawaran penugasan ' . $asesmenActionLabel . ', namun hingga saat ini belum memberikan konfirmasi. Mohon segera memberikan persetujuan atau penolakan melalui sistem.',
+            ];
+        }
+
+        if ($statusPenawaran !== 'accepted') {
+            return null;
+        }
+
+        if ($roleName === 'asesor' && in_array($statusPekerjaan, ['pending', 'not_started', 'in_progress'])) {
+            $message = in_array($statusPekerjaan, ['pending', 'not_started'])
+                ? 'Kami mengingatkan agar Anda segera memulai ' . $asesmenActionLabel . ' yang telah ditugaskan kepada Anda.'
+                : 'Kami mengingatkan agar Anda segera menyelesaikan ' . $asesmenActionLabel . ' yang sedang Anda kerjakan.';
+
+            return [
+                'type' => 'penilaian_asesor',
+                'label' => 'Pengingat ' . $asesmenActionLabel,
+                'icon' => 'bi-bell',
+                'btn_class' => 'btn-info',
+                'message' => $message,
+            ];
+        }
+
+        if ($roleName === 'validator' && in_array($statusPekerjaan, ['pending', 'not_started', 'in_progress'])) {
+            return [
+                'type' => 'validasi_validator',
+                'label' => 'Pengingat ' . $asesmenActionLabel,
+                'icon' => 'bi-bell',
+                'btn_class' => 'btn-info',
+                'message' => 'Kami mengingatkan agar Anda segera melakukan ' . $asesmenActionLabel . ' yang telah ditugaskan kepada Anda.',
+            ];
+        }
+
+        return null;
     }
 }

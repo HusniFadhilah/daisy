@@ -1,7 +1,7 @@
 @extends('emails.template')
 
 @section('content')
-<p style="margin-top:0;">Yth. Tim <strong>{{ $pengajuan->studyProgram->name }}</strong>,</p>
+<p style="margin-top:0;">Yth. Tim Akreditasi Program Studi <strong>{{ $pengajuan->studyProgram->name }}</strong>,</p>
 
 @if($isVerified)
 <p>

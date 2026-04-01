@@ -7,11 +7,7 @@ $headerTitle = 'Pengingat Masa Akreditasi';
 @endphp
 
 @section('content')
-<p style="margin-top:0;">Kepada Yth,</p>
-
-<p style="font-size:16px;">
-    <strong>{{ $studyProgram->name }}</strong>
-</p>
+<p style="margin-top:0;">Yth. Tim Akreditasi Program Studi <strong>{{ $pengajuan->studyProgram->name }}</strong>,</p>
 
 <!-- INFO BOX -->
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #0d6efd;margin:20px 0;">

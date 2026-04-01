@@ -253,7 +253,7 @@
 
                                             @if($showActions)
                                             <div class="btn-group btn-group-sm">
-                                                <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-success" target="_blank" title="Download">
+                                                <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-outline-success" target="_blank" title="Download">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                                 {{-- <button type="button" class="btn btn-sm btn-outline-primary" onclick="showUploadSuratTugasModal('{{ $jenisDokumen }}')" title="Upload Ulang">
@@ -261,7 +261,7 @@
                                                 </button> --}}
                                             </div>
                                             @else
-                                            <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-success" target="_blank" title="Download">
+                                            <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-outline-success" target="_blank" title="Download">
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             @endif
@@ -285,8 +285,16 @@
                                         @endif
                                         @endif
                                     </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-danger" onclick="removeUser({{ $pengajuan->id }}, {{ $assignment->id_user }}, '{{ $assignment->user->name }}')">
+                                    <td class="text-nowrap">
+                                        @if(!empty($assignmentReminders[$assignment->id]))
+                                        @php $reminder = $assignmentReminders[$assignment->id]; @endphp
+
+                                        <button type="button" class="btn {{ $reminder['btn_class'] }} btn-sm" title="{{ $reminder['label'] }}" onclick="kirimReminderAssignment({{ $assignment->id }},@js($reminder['label']),@js($reminder['message']))">
+                                            <i class="bi {{ $reminder['icon'] }}"></i>
+                                        </button>
+                                        @endif
+
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeUser('{{ $pengajuan->id }}', '{{ $assignment->user->id }}','{{ $assignment->user->name }}')" title="Hapus Penugasan">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
@@ -618,6 +626,8 @@
     </div>
 </div>
 @endif
+
+@include('layouts.template.kirim-reminder')
 
 @push('scripts')
 <script>

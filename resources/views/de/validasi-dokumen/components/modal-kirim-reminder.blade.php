@@ -1,12 +1,4 @@
 {{-- resources/views/de/validasi-dokumen/components/modal-kirim-reminder.blade.php --}}
-@php
-$pendingAssignments = \App\Models\AsesmenUserRole::with(['user', 'asesmen.pengajuan.studyProgram'])
-->where('jenis_asesmen', 'dokumen')
-->whereIn('status_penawaran', ['accepted','pending'])
-->whereIn('status_pekerjaan', ['not_started', 'in_progress'])
-->get();
-$countPendingAssignments = count($pendingAssignments);
-@endphp
 <div class="modal fade" id="modalKirimReminder" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -44,7 +36,7 @@ $countPendingAssignments = count($pendingAssignments);
 
                     @if($countPendingAssignments > 0)
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Pesan Reminder</label>
+                        <label class="form-label fw-bold">Pesan Pengingat</label>
                         <textarea name="pesan_reminder" class="form-control" rows="6" required>Yth. Validator,
 
 Kami mengingatkan untuk segera menyelesaikan validasi dokumen Dokumen yang telah ditugaskan kepada Anda.

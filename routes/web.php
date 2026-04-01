@@ -3,6 +3,7 @@
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, TinyMceImageController, UserController, NotificationController};
 use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BandingController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController, SyaratAkreditasiController};
 use App\Http\Controllers\Asesmen\Banding\{AKBandingController, ALBandingDocumentController, ALBandingController, ValidasiBandingController};
+use App\Http\Controllers\Asesmen\ReminderController;
 use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, PenugasanBandingController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenerimaanPermohonanController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController, PermohonanBandingController, PaymentSummaryController};
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, JenjangPenilaianController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController, PenerimaanProdiController};
@@ -523,12 +524,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{id}/kirim-upload', [PenyampaianTemplateController::class, 'kirimTemplateUpload'])->name('.kirim-upload');
             Route::get('/{id}/download', [PenyampaianTemplateController::class, 'download'])->name('.download');
         });
-        Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
         Route::prefix('validasi-pembayaran')->name('.validasi-pembayaran')->group(function () {
             Route::get('/', [ValidasiPembayaranController::class, 'index']);
             Route::get('/{id}', [ValidasiPembayaranController::class, 'show'])->name('.show');
             Route::post('/kirim-invoice', [ValidasiPembayaranController::class, 'kirimInvoice'])->name('.kirim-invoice');
             Route::put('/{id}/validasi', [ValidasiPembayaranController::class, 'validasi'])->name('.validasi');
+            Route::post('/kirim-reminder-keuangan', [ValidasiPembayaranController::class, 'kirimReminderKeuangan'])->name('.kirim-reminder-keuangan');
+            Route::post('/kirim-reminder-upps', [ValidasiPembayaranController::class, 'kirimReminderUPPS'])->name('.kirim-reminder-upps');
         });
         Route::prefix('penerimaan-dokumen')->name('.penerimaan-dokumen')->group(function () {
             Route::get('/', [PenerimaanDokumenController::class, 'index']);
@@ -543,7 +545,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('validasi-dokumen')->name('.validasi-dokumen')->group(function () {
             Route::get('/', [ValidasiDokumenController::class, 'index']);
             Route::get('/{id}', [ValidasiDokumenController::class, 'show'])->name('.show');
-            Route::post('/kirim-reminder', [ValidasiDokumenController::class, 'kirimReminder'])->name('.kirim-reminder');
             Route::get('/{id}/assign-validator', [ValidasiDokumenController::class, 'showAssignValidatorForm'])->name('.assign-validator.form');
             Route::post('/{id}/assign-validator', [ValidasiDokumenController::class, 'assignValidator'])->name('.assign-validator');
             Route::delete('/{id}/cancel-validator', [ValidasiDokumenController::class, 'cancelValidator'])->name('.cancel-validator');
@@ -552,6 +553,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/', [PelaporanDokumenController::class, 'index']);
             Route::get('/{id}', [PelaporanDokumenController::class, 'show'])->name('.show');
             Route::get('/table/ajax', [PelaporanDokumenController::class, 'getTableAjax'])->name('.table.ajax');
+            Route::post('/kirim-reminder', [PelaporanDokumenController::class, 'kirimReminder'])->name('.kirim-reminder');
         });
         Route::prefix('penugasan-ak')->name('.penugasan-ak')->group(function () {
             Route::get('/', [\App\Http\Controllers\DE\PenugasanAKController::class, 'index']);
@@ -574,6 +576,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [PelaporanAKController::class, 'show'])->name('.show');
             Route::get('/{id}/timeline', [PelaporanAKController::class, 'getTimeline'])->name('.timeline');
             Route::get('/{id}/document/{documentId}', [PelaporanAKController::class, 'previewDocument'])->name('.document.preview');
+            Route::post('/kirim-reminder', [PelaporanAKController::class, 'kirimReminder'])->name('.kirim-reminder');
         });
         Route::prefix('penugasan-al')->name('.penugasan-al')->group(function () {
             Route::get('/', [PenugasanALController::class, 'index']);
@@ -595,6 +598,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [PelaporanALController::class, 'show'])->name('.show');
             Route::get('/{id}/timeline', [PelaporanALController::class, 'getTimeline'])->name('.timeline');
             Route::get('/{id}/document/{documentId}', [PelaporanALController::class, 'previewDocument'])->name('.document.preview');
+            Route::post('/kirim-reminder', [PelaporanALController::class, 'kirimReminder'])->name('.kirim-reminder');
         });
         Route::prefix('penyampaian-hasil-akreditasi')->name('.penyampaian-hasil-akreditasi')->group(function () {
             Route::get('/', [PenyampaianHasilAkreditasiController::class, 'index']);
@@ -739,6 +743,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/data', [PaymentSummaryController::class, 'getSummary'])->name('.data');
             Route::post('/logout', [PaymentSummaryController::class, 'logout'])->name('.logout');
         });
+        Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+        Route::post('/reminder/{assignment}', [ReminderController::class, 'kirimReminderAssignment'])->name('.kirim-reminder-assignment');
     });
 
     // ========================================
@@ -1267,6 +1273,12 @@ Route::prefix('preview/email')
         Route::get('/surat-penerimaan/{pengajuan}', 'suratPenerimaan')->name('surat.penerimaan');
         Route::get('/borang-template-sent/{pengajuan}', 'borangTemplateSent')->name('borang.template.sent');
         Route::get('/invoice-pembayaran/{pembayaran}', 'invoicePembayaran')->name('invoice.pembayaran');
+        Route::get('/borang-approved/{pengajuan}', 'borangApproved')->name('borang.approved');
+        Route::get('/borang-revision/{pengajuan}', 'borangRevision')->name('borang.revision');
+        Route::get('/reminder-validasi-dokumen/{assignment}', 'reminderValidasiDokumen')->name('reminder.validasi.dokumen');
+        Route::get('/reminder-pelaporan-dokumen/{assignment}', 'reminderPelaporanDokumen')->name('reminder.pelaporan.dokumen');
+        Route::get('/reminder-penawaran-asesmen/{assignment}', 'reminderPenawaranAsesmen')->name('reminder.penawaran.asesmen');
+        Route::get('/reminder-progress-asesmen/{assignment}', 'reminderProgressAsesmen')->name('reminder.progress.asesmen');
     });
 // Route::get('/preview/email/penawaran/{assignment}', function (\App\Models\AsesmenUserRole $assignment) {
 //     return new \App\Mail\PenawaranAsesmenMail($assignment);

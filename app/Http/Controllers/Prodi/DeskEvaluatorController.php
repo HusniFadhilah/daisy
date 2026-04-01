@@ -994,10 +994,6 @@ class DeskEvaluatorController extends Controller
                 'LED dikembalikan ke validator ' . $previousValidator->user->name . ' untuk review ulang setelah revisi'
             );
 
-            // Send email to validator
-            Mail::to($previousValidator->user->email)
-                ->queue(new \App\Mail\BorangRevalidationRequest($pengajuan));
-
             DB::commit();
 
             return back()->with('success', 'LED berhasil dikembalikan ke validator untuk review ulang.');

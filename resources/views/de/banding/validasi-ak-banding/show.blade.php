@@ -356,4 +356,6 @@
         </div>
     </div>
 </div>
+
+@include('layouts.template.kirim-reminder')
 @endsection

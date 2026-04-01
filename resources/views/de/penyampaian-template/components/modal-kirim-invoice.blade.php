@@ -50,6 +50,12 @@
                                 <input type="date" name="tanggal_jatuh_tempo" class="form-control" required min="{{ date('Y-m-d', strtotime('+1 day')) }}" value="{{ date('Y-m-d', strtotime('+7 day')) }}">
                             </div>
                         </div>
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Keterangan</label>
+                                <textarea name="keterangan" class="form-control" rows="3" placeholder="Petunjuk pembayaran / rekening / hal yang perlu diperhatikan...">{{ old('keterangan','Mohon memastikan pembayaran dilakukan sesuai nominal invoice dan sebelum tanggal jatuh tempo.') }}</textarea>
+                            </div>
+                        </div>
                     </div>
                     @endif
                 </div>

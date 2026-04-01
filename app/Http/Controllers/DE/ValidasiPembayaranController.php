@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\DE;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\DE\Concerns\HasReminderPembayaran;
 use App\Mail\InvoicePembayaranMail;
 use App\Models\DegreeLevel;
 use App\Models\PengajuanAkreditasi;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 
 class ValidasiPembayaranController extends Controller
 {
+    use HasReminderPembayaran;
     private RecipientResolverService $recipientResolver;
     private MailDeliveryService $mailDelivery;
 
@@ -96,12 +98,57 @@ class ValidasiPembayaranController extends Controller
             ]);
         }
 
+        $pendingValidasi    = $this->getPendingValidasi();
+        $pendingPembayaran  = $this->getPendingPembayaran();
+
         return view('de.validasi-pembayaran.index', compact(
             'pembayarans',
             'stats',
             'universities',
             'degreeLevels',
+            'pendingValidasi',
+            'pendingPembayaran'
         ));
+    }
+
+    /**
+     * Reminder ke Keuangan untuk segera memvalidasi.
+     */
+    public function kirimReminderKeuangan(Request $request)
+    {
+        return $this->processKirimReminderKeuangan($request);
+    }
+
+    /**
+     * Reminder ke UPPS untuk segera membayar / upload ulang.
+     */
+    public function kirimReminderUPPS(Request $request)
+    {
+        return $this->processKirimReminderUPPS($request);
+    }
+
+    /**
+     * Data pending untuk modal reminder keuangan.
+     */
+    private function getPendingValidasi()
+    {
+        return PengajuanPembayaran::with([
+            'pengajuan.studyProgram.university',
+        ])
+            ->where('status_pembayaran', 'menunggu_verifikasi')
+            ->get();
+    }
+
+    /**
+     * Data pending untuk modal reminder UPPS.
+     */
+    private function getPendingPembayaran()
+    {
+        return PengajuanPembayaran::with([
+            'pengajuan.studyProgram.university',
+        ])
+            ->whereIn('status_pembayaran', ['menunggu_pembayaran', 'upload_ulang'])
+            ->get();
     }
 
     /**
@@ -169,6 +216,7 @@ class ValidasiPembayaranController extends Controller
                     'tanggal_jatuh_tempo' => $validated['tanggal_jatuh_tempo'],
                     'status_pembayaran' => 'menunggu_pembayaran',
                     'jenis_pembayaran' => 'akreditasi',
+                    'keterangan' => $request->keterangan,
                 ]);
 
                 $pengajuan->update([

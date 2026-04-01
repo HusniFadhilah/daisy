@@ -102,6 +102,12 @@
         </div>
     </div>
 
+    <div class="d-flex align-items-center mb-4">
+        <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#modalKirimReminderPelaporan">
+            <i class="bi bi-bell"></i> Kirim Pengingat ke Validator
+        </button>
+    </div>
+
     <!-- Main Content -->
     <div class="row">
         <!-- Filters -->
@@ -181,6 +187,8 @@
 </div>
 </div>
 </div>
+
+<x-modal-kirim-reminder-pelaporan form-action="{{ route('de.pelaporan-dokumen.kirim-reminder') }}" title="Kirim Pengingat Pelaporan Dokumen" :assignments="$pendingReminderAssignments" :count-pending="$countPendingReminderAssignments" item-description="Belum upload laporan validasi dokumen" />
 
 @push('scripts')
 <script>

@@ -2,13 +2,23 @@
 
 namespace App\Http\Controllers\DE;
 
-use Illuminate\Http\Request;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\DE\Concerns\HasReminderPelaporan;
+use App\Models\PengajuanAkreditasi;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PelaporanAKController extends Controller
 {
+    use HasReminderPelaporan;
+
+    private const JENIS_ASESMEN  = 'ak';
+    private const DOCUMENT_TYPE  = 'laporan_ak';
+    private const REQUIRED_STATUSES = [
+        PengajuanAkreditasi::STATUS_AK_SELESAI,
+        PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+    ];
+
     /**
      * Dashboard monitoring pelaporan AK
      */
@@ -117,8 +127,26 @@ class PelaporanAKController extends Controller
                 'total' => $pengajuans->total(),
             ]);
         }
+        $pendingReminderAssignments = $this->getPendingReminderAssignments(
+            jenisAsesmen: self::JENIS_ASESMEN,
+            documentType: self::DOCUMENT_TYPE,
+            requiredStatuses: self::REQUIRED_STATUSES,
+        );
+        $countPendingReminderAssignments = $pendingReminderAssignments->count();
+        return view('de.pelaporan-ak.index', compact('pengajuans', 'stats', 'universities', 'pendingReminderAssignments', 'countPendingReminderAssignments'));
+    }
 
-        return view('de.pelaporan-ak.index', compact('pengajuans', 'stats', 'universities'));
+    public function kirimReminder(Request $request)
+    {
+        return $this->processKirimReminder(
+            request: $request,
+            jenisAsesmen: self::JENIS_ASESMEN,
+            documentType: self::DOCUMENT_TYPE,
+            mailSubject: 'Pengingat Pelaporan Validasi AK',
+            actionRouteName: 'pelaporan.ak.show', // sesuaikan nama route validator
+            requiredStatuses: self::REQUIRED_STATUSES,
+            keteranganLog: 'Pengingat pelaporan AK dikirim ke validator',
+        );
     }
 
     /**

@@ -71,8 +71,25 @@
 
     <!-- Payment Summary Card with Password Protection - BARU -->
     <div class="row mb-4">
-        <div class="col-12">
+        <div class="col-md-9 mt-3">
             @include('de.validasi-pembayaran.components.payment-summary-card')
+        </div>
+        <div class="col-md-3 mt-2">
+            {{-- Tombol reminder keuangan --}}
+            <button type="button" class="btn btn-primary btn-sm my-1 w-100" data-bs-toggle="modal" data-bs-target="#modalReminderKeuangan" {{ $pendingValidasi->isEmpty() ? 'disabled' : '' }}>
+                <i class="bi bi-bell"></i> Ingatkan Keuangan
+                @if($pendingValidasi->isNotEmpty())
+                <span class="badge bg-danger">{{ $pendingValidasi->count() }}</span>
+                @endif
+            </button>
+
+            {{-- Tombol reminder UPPS --}}
+            <button type="button" class="btn btn-primary btn-sm my-1 w-100" data-bs-toggle="modal" data-bs-target="#modalReminderUPPS" {{ $pendingPembayaran->isEmpty() ? 'disabled' : '' }}>
+                <i class="bi bi-bell"></i> Ingatkan UPPS
+                @if($pendingPembayaran->isNotEmpty())
+                <span class="badge bg-danger">{{ $pendingPembayaran->count() }}</span>
+                @endif
+            </button>
         </div>
     </div>
 
@@ -180,7 +197,18 @@
         </div>
     </div>
 </div>
+<x-modal-kirim-reminder-pembayaran modal-id="modalReminderKeuangan" form-action="{{ route('de.validasi-pembayaran.kirim-reminder-keuangan') }}" title="Ingatkan Keuangan untuk Segera Validasi" :pembayarans="$pendingValidasi" input-name="id_pembayaran" item-description="Menunggu validasi keuangan" default-message="Yth. Bagian Keuangan LAMDEPILAR,
 
+Terdapat bukti pembayaran yang masih menunggu validasi. Mohon segera diproses agar tidak menghambat proses akreditasi program studi terkait.
+
+Terima kasih.
+Sekretariat LAMDEPILAR" />
+<x-modal-kirim-reminder-pembayaran modal-id="modalReminderUPPS" form-action="{{ route('de.validasi-pembayaran.kirim-reminder-upps') }}" title="Ingatkan UPPS untuk Segera Membayar" :pembayarans="$pendingPembayaran" input-name="id_pembayaran" item-description="Menunggu pembayaran / upload ulang bukti" default-message="Yth. Unit Pengelola Program Studi,
+
+Kami mengingatkan bahwa invoice akreditasi Anda masih belum dibayarkan. Mohon segera lakukan pembayaran sebelum melewati tanggal jatuh tempo.
+
+Terima kasih atas perhatiannya.
+Sekretariat LAMDEPILAR" />
 @endsection
 
 @push('scripts')

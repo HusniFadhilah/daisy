@@ -1,7 +1,7 @@
 @extends('emails.template')
 
 @section('content')
-<p style="margin-top:0;">Yth. Tim <strong>{{ $pengajuan->studyProgram->name }}</strong>,</p>
+<p style="margin-top:0;">Yth. Tim Akreditasi Program Studi <strong>{{ $pengajuan->studyProgram->name }}</strong>,</p>
 
 @if($isBanding)
 <p>
@@ -20,8 +20,8 @@
         <td style="padding:15px;font-size:14px;line-height:1.8;">
             <strong>Nomor Permohonan</strong> : {{ $pengajuan->nomor_pengajuan }}<br>
             <strong>Nomor Invoice</strong> : {{ $pembayaran->nomor_invoice }}<br>
-            <strong>Program Studi</strong> : {{ $pengajuan->studyProgram->name }}<br>
-            <strong>Perguruan Tinggi</strong> : {{ $pengajuan->studyProgram->university->name ?? '-' }}<br>
+            {{-- <strong>Program Studi</strong> : {{ $pengajuan->studyProgram->name }}<br>
+            <strong>Perguruan Tinggi</strong> : {{ $pengajuan->studyProgram->university->name ?? '-' }}<br> --}}
             <strong>Jumlah Pembayaran</strong> :
             Rp {{ number_format($pembayaran->jumlah_pembayaran, 0, ',', '.') }}<br>
             <strong>Jatuh Tempo</strong> :
@@ -75,7 +75,7 @@
             Invoice ini diterbitkan khusus untuk <strong>proses banding akreditasi</strong>.
             <br>
             @endif
-            Pastikan pembayaran dilakukan sesuai nominal invoice dan sebelum tanggal jatuh tempo.
+            {{ $pembayaran->keterangan }}
         </td>
     </tr>
 </table>

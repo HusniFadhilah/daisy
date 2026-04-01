@@ -299,6 +299,7 @@ return new class extends Migration
             $table->text('catatan_pembayaran')->nullable();
             $table->text('catatan_verifikasi')->nullable();
             $table->text('alasan_penolakan')->nullable();
+            $table->text('keterangan')->nullable();
 
             // Verifikator
             $table->foreignId('verified_by')

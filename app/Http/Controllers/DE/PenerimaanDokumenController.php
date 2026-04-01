@@ -5,6 +5,7 @@ namespace App\Http\Controllers\DE;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
+use App\Mail\Reminder\ReminderContextMail;
 use App\Models\Asesmen;
 use App\Models\AsesmenUserRole;
 use App\Models\BorangValidation;
@@ -15,6 +16,8 @@ use App\Models\PengajuanStatusLog;
 use App\Models\Role;
 use App\Models\University;
 use App\Models\User;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +32,16 @@ class PenerimaanDokumenController extends Controller
      * CONFIG: Set validation mode
      */
     private const BORANG_VALIDATOR_MODE = 'strict'; // Only 1 validator allowed
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery,
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery      = $mailDelivery;
+    }
 
     /**
      * Display list of document submissions
@@ -620,7 +633,7 @@ class PenerimaanDokumenController extends Controller
     public function kirimReminder(Request $request)
     {
         $validated = $request->validate([
-            'id_pengajuan' => 'required|array',
+            'id_pengajuan'   => 'required|array',
             'id_pengajuan.*' => 'exists:pengajuan_akreditasi,id',
             'pesan_reminder' => 'required|string',
         ]);
@@ -629,39 +642,75 @@ class PenerimaanDokumenController extends Controller
         try {
             $sent = 0;
 
-            foreach ($validated['id_pengajuan'] as $pengajuanId) {
-                $pengajuan = PengajuanAkreditasi::with('studyProgram', 'latestStatusLog')->find($pengajuanId);
+            $pengajuans = PengajuanAkreditasi::with([
+                'studyProgram.university',
+                'studyProgram.users.activeEmails',
+                'pengaju.activeEmails',
+                'latestStatusLog',
+            ])
+                ->whereIn('id', $validated['id_pengajuan'])
+                ->whereHas(
+                    'statusLog',
+                    fn($q) =>
+                    $q->where('status_to', PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI)
+                )
+                ->whereDoesntHave(
+                    'dokumen',
+                    fn($q) =>
+                    $q->where('is_latest', true)
+                        ->whereIn('jenis_dokumen', ['draft_borang', 'data_kualitatif'])
+                )
+                ->get();
 
-                if (!$pengajuan) continue;
-
-                // Get actual status
-                $actualStatus = $pengajuan->latestStatusLog
-                    ? $pengajuan->latestStatusLog->status_to
-                    : $pengajuan->status;
+            foreach ($pengajuans as $pengajuan) {
+                $actualStatus = $pengajuan->latestStatusLog?->status_to ?? $pengajuan->status;
 
                 // Log reminder
                 $pengajuan->statusLog()->create([
                     'status_from' => $actualStatus,
-                    'status_to' => $actualStatus,
-                    'changed_by' => auth()->id(),
-                    'changed_at' => now(),
-                    'keterangan' => "Reminder dikirim: {$validated['pesan_reminder']}",
+                    'status_to'   => $actualStatus,
+                    'changed_by'  => auth()->id(),
+                    'changed_at'  => now(),
+                    'keterangan'  => 'Pengingat upload dokumen dikirim ke UPPS ' .
+                        ($pengajuan->studyProgram->university->name ?? '-'),
                 ]);
 
-                // TODO: Send email
-                // Mail::to($pengajuan->studyProgram->email)->send(new ReminderUploadDokumen($pengajuan, $validated['pesan_reminder']));
+                // Resolve penerima: prodi users atau pengaju
+                $recipients = $pengajuan->studyProgram?->users;
+                $emails = $recipients && $recipients->isNotEmpty()
+                    ? $this->recipientResolver->emailsForUsers($recipients)
+                    : $this->recipientResolver->emailsForUser($pengajuan->pengaju);
+
+                if (empty($emails)) continue;
+
+                $contextInfo = 'Berikut adalah pesan dari LAMDEPILAR mengenai proses akreditasi.';
+
+                $this->mailDelivery->sendToEmails(
+                    $emails,
+                    new ReminderContextMail(
+                        recipientName: 'Tim akreditasi program studi <strong>' . $pengajuan->studyProgram->name . '</strong>',
+                        pesanReminder: $validated['pesan_reminder'],
+                        subject: 'Pengingat Upload Dokumen Akreditasi',
+                        actionUrl: route('upps.penerimaan-dokumen.show', $pengajuan->id),
+                        actionLabel: 'Upload Dokumen Sekarang',
+                        contextInfo: $contextInfo,
+                        headerTitle: 'Pengingat Upload Dokumen Akreditasi',
+                        preheader: 'Segera upload dokumen akreditasi melalui sistem DAISY.',
+                    ),
+                    [],
+                    [],
+                    true
+                );
 
                 $sent++;
             }
 
             DB::commit();
-            return redirect()->back()->with('success', "Reminder berhasil dikirim ke {$sent} program studi.");
-        } catch (\Exception $e) {
+            return back()->with('success', "Pengingat berhasil dikirim ke {$sent} program studi.");
+        } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Kirim reminder gagal', [
-                'error' => $e->getMessage()
-            ]);
-            return redirect()->back()->with('error', 'Gagal mengirim reminder: ' . $e->getMessage());
+            Log::error('Kirim reminder penerimaan dokumen gagal', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Gagal mengirim pengingat: ' . $e->getMessage());
         }
     }
 

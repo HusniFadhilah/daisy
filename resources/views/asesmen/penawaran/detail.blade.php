@@ -144,13 +144,14 @@
 <script>
     const btnAccept = document.getElementById('btnAccept')
     const btnReject = document.getElementById('btnReject')
+    const asesmenActionLabel = '{{ $assignment->jenis_asesmen_action_label }}';
     if (btnAccept) btnAccept.addEventListener('click', async function() {
         const note = document.querySelector('[name="response_note"]').value;
 
         const result = await Swal.fire({
             icon: 'question'
             , title: 'Terima Penawaran?'
-            , text: 'Anda akan ditugaskan untuk melakukan penilaian asesmen ini.'
+            , text: 'Anda akan ditugaskan untuk melakukan ' + asesmenActionLabel + ' ini.'
             , showCancelButton: true
             , confirmButtonText: 'Ya, Terima'
             , cancelButtonText: 'Batal'
@@ -184,16 +185,7 @@
                 });
 
                 // Redirect ke berkas
-                const route = '{{ $assignment->jenis_asesmen }}' === 'dokumen' ?
-                    "{{ route('validator.borang.show', $assignment->id) }}" :
-                    ('{{ $assignment->jenis_asesmen }}' === 'ak' ?
-                        "{{ route('ak.berkas.show', $asesmen->id) }}" : ('{{ $assignment->jenis_asesmen }}' === 'al' ?
-                            "{{ route('al.berkas.show', $asesmen->id) }}" :
-                            ('{{ $assignment->jenis_asesmen }}' === 'ak_banding' ?
-                                "{{ route('ak_banding.berkas.show', $asesmen->id) }}" :
-                                ('{{ $assignment->jenis_asesmen }}' === 'al_banding' ?
-                                    "{{ route('al_banding.berkas.show', $asesmen->id) }}" :
-                                    "{{ route('dashboard') }}"))));
+                const route = '{{ $assignment->route_penawaran }}';
                 window.location.href = route;
             } else {
                 throw new Error(data.message);

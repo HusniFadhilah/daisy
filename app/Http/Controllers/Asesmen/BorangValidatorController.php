@@ -3,29 +3,40 @@
 
 namespace App\Http\Controllers\Asesmen;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Mail\BorangRevisionNotification;
+use App\Mail\BorangValidationApproved;
 use App\Models\AsesmenDocument;
 use App\Models\AsesmenUserRole;
-use App\Models\DatasetSuplemen;
-use Illuminate\Validation\Rule;
 use App\Models\BorangValidation;
-use Illuminate\Support\Facades\DB;
+use App\Models\DatasetSuplemen;
 use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
+use App\Services\BorangValidationExcelService;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
-use App\Services\BorangValidationExcelService;
+use Illuminate\Validation\Rule;
 
 class BorangValidatorController extends Controller
 {
     protected $excelService;
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
 
-    public function __construct(BorangValidationExcelService $excelService)
-    {
+    public function __construct(
+        BorangValidationExcelService $excelService,
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery
+    ) {
         $this->excelService = $excelService;
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery = $mailDelivery;
     }
 
     /**
@@ -269,7 +280,7 @@ class BorangValidatorController extends Controller
 
         if ($lockBorang) {
             $statusClass = 'success';
-            $statusText  = 'Validasi telah selesai. Dokumen bersifat read-only dan tidak dapat diubah.';
+            $statusText  = 'Validasi telah selesai. Dokumen bersifat <i>read-only</i> dan tidak dapat diubah.';
         } else {
             if ($assignment->status_pekerjaan === 'not_started') {
                 $statusClass = 'info';
@@ -504,9 +515,8 @@ class BorangValidatorController extends Controller
 
                 // Send email notification
                 try {
-                    Mail::to($pengajuan->pengaju->email)
-                        ->queue(new \App\Mail\BorangValidationApproved($pengajuan, $validation));
-                } catch (\Exception $e) {
+                    $this->sendBorangDecisionEmail($pengajuan, $validation, 'approve');
+                } catch (\Throwable $e) {
                     Log::error('Failed to send approval email', [
                         'pengajuan_id' => $pengajuan->id,
                         'error' => $e->getMessage(),
@@ -642,8 +652,14 @@ class BorangValidatorController extends Controller
                     'changed_at' => now(),
                 ]);
 
-                // Send email notification - will be handled by DE
-
+                try {
+                    $this->sendBorangDecisionEmail($pengajuan, $validation, 'revision');
+                } catch (\Throwable $e) {
+                    Log::error('Failed to send revision email', [
+                        'pengajuan_id' => $pengajuan->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
                 $message = 'Permintaan revisi berhasil dikirim.';
             }
 
@@ -1181,5 +1197,46 @@ class BorangValidatorController extends Controller
             'sarjana-terapan', 's1-terapan' => 'd4',
             default => $raw,
         };
+    }
+
+    private function sendBorangDecisionEmail(
+        PengajuanAkreditasi $pengajuan,
+        BorangValidation $validation,
+        string $action
+    ): void {
+        $pengajuan->loadMissing([
+            'pengaju.activeEmails',
+            'studyProgram.users.activeEmails',
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+        ]);
+
+        $emails = [];
+
+        if ($pengajuan->studyProgram && $pengajuan->studyProgram->users) {
+            $emails = $this->recipientResolver->emailsForUsers($pengajuan->studyProgram->users);
+        }
+
+        if (empty($emails) && $pengajuan->pengaju) {
+            $emails = $this->recipientResolver->emailsForUser($pengajuan->pengaju);
+        }
+
+        if (empty($emails)) {
+            Log::warning('Email keputusan validasi borang tidak dikirim karena tidak ada recipient', [
+                'pengajuan_id' => $pengajuan->id,
+                'action' => $action,
+            ]);
+            return;
+        }
+
+        $mailable = $action === 'approve'
+            ? new BorangValidationApproved($pengajuan, $validation)
+            : new BorangRevisionNotification($pengajuan, $validation);
+
+        $result = $this->mailDelivery->sendToEmails(
+            to: $emails,
+            mailable: $mailable,
+            useQueue: true
+        );
     }
 }

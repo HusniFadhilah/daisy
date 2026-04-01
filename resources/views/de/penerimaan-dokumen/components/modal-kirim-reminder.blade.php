@@ -37,7 +37,7 @@
 
                     @if($countPengajuanMenunggu > 0)
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Pesan Reminder</label>
+                        <label class="form-label fw-bold">Pesan Pengingat</label>
                         <textarea name="pesan_reminder" class="form-control" rows="6" required>Yth. Unit Pengelola Program Studi,
 
 Pembayaran Anda telah tervalidasi. Kami mengingatkan untuk segera mengunggah dokumen Dokumen melalui sistem DAISY LAMDEPILAR.

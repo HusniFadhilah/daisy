@@ -521,6 +521,7 @@
 $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
 @endphp
 
+@include('layouts.template.kirim-reminder')
 @push('scripts')
 <script>
     const csrfToken = '{{ csrf_token() }}';

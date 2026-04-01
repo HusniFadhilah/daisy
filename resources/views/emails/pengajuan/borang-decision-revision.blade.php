@@ -1,7 +1,7 @@
 @extends('emails.template')
 
 @section('content')
-<p style="margin-top:0;">Yth. Tim <strong>{{ $pengajuan->studyProgram->name }}</strong>,</p>
+<p style="margin-top:0;">Yth. Tim Akreditasi Program Studi <strong>{{ $pengajuan->studyProgram->name }}</strong>,</p>
 
 <p>
     Dokumen akreditasi Anda telah direview oleh validator dan <strong>memerlukan revisi</strong>
@@ -12,8 +12,8 @@
     <tr>
         <td style="padding:15px;font-size:14px;line-height:1.8;">
             <strong>Nomor Permohonan</strong> : {{ $pengajuan->nomor_pengajuan }}<br>
-            <strong>Program Studi</strong> : {{ $pengajuan->studyProgram->name }}<br>
-            <strong>Perguruan Tinggi</strong> : {{ $pengajuan->studyProgram->university->name ?? '-' }}<br>
+            {{-- <strong>Program Studi</strong> : {{ $pengajuan->studyProgram->name }}<br>
+            <strong>Perguruan Tinggi</strong> : {{ $pengajuan->studyProgram->university->name ?? '-' }}<br> --}}
             <strong>Status</strong> :
             <span style="display:inline-block;padding:4px 10px;font-size:12px;font-weight:bold;border-radius:12px;background:#dc3545;color:#ffffff;">
                 Perlu Revisi
@@ -28,7 +28,7 @@
             <strong>Ringkasan Validasi:</strong><br>
             Validator menemukan beberapa bagian dokumen yang masih perlu diperbaiki.
             @if($revisionCount > 0)
-            Terdapat sekitar <strong>{{ $revisionCount }} poin revisi</strong> yang perlu Anda tindak lanjuti.
+            Terdapat <strong>{{ $revisionCount }} poin revisi</strong> yang perlu ditindaklanjuti.
             @endif
             Silakan buka detail validasi di sistem untuk melihat hasil review lengkap.
         </td>

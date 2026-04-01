@@ -2,23 +2,39 @@
 
 namespace App\Http\Controllers\DE\Banding;
 
+use App\Http\Controllers\Controller;
+use App\Jobs\SendPenawaranAsesmenEmail;
+use App\Mail\Reminder\ReminderPenawaranAsesmenMail;
+use App\Mail\Reminder\ReminderProgressAsesmenMail;
+use App\Models\Asesmen;
+use App\Models\AsesmenKecukupanBanding;
+use App\Models\AsesmenUserRole;
+use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\Asesmen;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Illuminate\Http\Request;
-use App\Models\AsesmenUserRole;
-use App\Models\AsesmenKecukupanBanding;
-use App\Models\PengajuanDokumen;
-use Illuminate\Support\Facades\DB;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Jobs\SendPenawaranAsesmenEmail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class PenugasanAKBandingController extends Controller
 {
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery = $mailDelivery;
+    }
+
+
     /**
      * Dashboard penugasan AK
      */
@@ -200,6 +216,14 @@ class PenugasanAKBandingController extends Controller
             ->with('user')
             ->first();
 
+        $assignmentReminders = [];
+
+        if ($pengajuan->asesmen) {
+            foreach ($pengajuan->asesmen->asesmenUserRoles as $assignment) {
+                $assignmentReminders[$assignment->id] = $assignment->resolveReminderMeta();
+            }
+        }
+
         return view('de.banding.penugasan-ak-banding.show', compact(
             'pengajuan',
             'userProgress',
@@ -207,8 +231,169 @@ class PenugasanAKBandingController extends Controller
             'availableUsers',
             'roles',
             'totalElemens',
-            'validatorDokumen'
+            'validatorDokumen',
+            'assignmentReminders'
         ));
+    }
+
+    public function kirimReminderPenawaran(Request $request)
+    {
+        $validated = $request->validate([
+            'id_assignment' => 'required|array',
+            'id_assignment.*' => 'exists:asesmen_user_roles,id',
+            'pesan_reminder' => 'required|string',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $assignments = AsesmenUserRole::query()
+                ->with([
+                    'user.activeEmails',
+                    'role_selected',
+                    'asesmen.pengajuan.studyProgram.university',
+                    'asesmen.pengajuan.studyProgram.degreeLevel',
+                ])
+                ->whereIn('id', $validated['id_assignment'])
+                ->where('jenis_asesmen', 'ak_banding')
+                ->where('status_penawaran', 'pending')
+                ->whereHas('role_selected', function ($q) {
+                    $q->whereIn('name', ['asesor_banding', 'validator']);
+                })
+                ->get();
+
+            $sent = 0;
+            $emailGlobal = [];
+
+            foreach ($assignments as $assignment) {
+                $pengajuan = $assignment->asesmen->pengajuan;
+
+                $recipientEmails = $this->recipientResolver->emailsForUsers(
+                    collect([$assignment->user])
+                );
+
+                $result = $this->mailDelivery->sendToEmails(
+                    $recipientEmails,
+                    new ReminderPenawaranAsesmenMail($assignment, $validated['pesan_reminder']),
+                    [],
+                    [],
+                    false
+                );
+
+                $pengajuan->statusLog()->create([
+                    'status_from' => $pengajuan->status,
+                    'status_to' => $pengajuan->status,
+                    'changed_by' => auth()->id(),
+                    'changed_at' => now(),
+                    'keterangan' => 'Pengingat penawaran AK Banding dikirim ke ' .
+                        $assignment->role_selected->alias . ' ' . $assignment->user->name,
+                ]);
+
+                if (!empty($result['sent_to'])) {
+                    $emailGlobal = array_merge($emailGlobal, $result['sent_to']);
+                }
+
+                $sent++;
+            }
+
+            DB::commit();
+
+            $emailGlobal = array_values(array_unique(array_filter($emailGlobal)));
+
+            return back()->with(
+                'success',
+                "Pengingat penawaran berhasil dikirim ke {$sent} penugasan. Total " . count($emailGlobal) . " email terkirim."
+            );
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('kirimReminderPenawaran failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('error', 'Gagal mengirim pengingat penawaran: ' . $e->getMessage());
+        }
+    }
+
+    public function kirimReminderAssignment(Request $request, $assignmentId)
+    {
+        $request->validate([
+            'pesan_reminder' => 'nullable|string',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $assignment = AsesmenUserRole::with([
+                'user.activeEmails',
+                'role_selected',
+                'asesmen.pengajuan.studyProgram.university',
+                'asesmen.pengajuan.studyProgram.degreeLevel',
+            ])->findOrFail($assignmentId);
+
+            if ($assignment->jenis_asesmen !== 'ak_banding') {
+                return back()->with('error', 'Pengingat hanya berlaku untuk penugasan AK Banding.');
+            }
+
+            $meta = $assignment->resolveReminderMeta();
+
+            if (!$meta) {
+                return back()->with('error', 'Penugasan ini tidak memenuhi syarat untuk dikirim pengingat.');
+            }
+
+            $pesanReminder = $request->filled('pesan_reminder')
+                ? $request->pesan_reminder
+                : $meta['message'];
+
+            $recipientEmails = $this->recipientResolver->emailsForUsers(
+                collect([$assignment->user])
+            );
+
+            if ($meta['type'] === 'penawaran') {
+                $result = $this->mailDelivery->sendToEmails(
+                    $recipientEmails,
+                    new ReminderPenawaranAsesmenMail($assignment, $pesanReminder),
+                    [],
+                    [],
+                    false
+                );
+            } else {
+                $result = $this->mailDelivery->sendToEmails(
+                    $recipientEmails,
+                    new ReminderProgressAsesmenMail($assignment, $pesanReminder),
+                    [],
+                    [],
+                    false
+                );
+            }
+
+            $pengajuan = $assignment->asesmen->pengajuan;
+
+            $pengajuan->statusLog()->create([
+                'status_from' => $pengajuan->status,
+                'status_to' => $pengajuan->status,
+                'changed_by' => auth()->id(),
+                'changed_at' => now(),
+                'keterangan' => 'Pengingat ' . $meta['type'] . ' dikirim ke ' .
+                    ($assignment->role_selected->alias ?? $assignment->role_selected->name) .
+                    ' ' . $assignment->user->name,
+            ]);
+
+            DB::commit();
+
+            $totalEmail = count($result['sent_to'] ?? []);
+
+            return back()->with('success', "Pengingat berhasil dikirim ke {$assignment->user->name}. Total {$totalEmail} email terkirim.");
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            Log::error('kirimReminderAssignment failed', [
+                'assignment_id' => $assignmentId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Gagal mengirim pengingat: ' . $e->getMessage());
+        }
     }
 
     /**

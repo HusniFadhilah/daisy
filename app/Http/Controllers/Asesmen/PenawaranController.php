@@ -55,7 +55,6 @@ class PenawaranController extends Controller
         $user = Auth::user();
         // Get assignment
         $assignmentId = RouteHelper::decryptId($token);
-
         // Get assignment
         $assignment = AsesmenUserRole::where('id', $assignmentId)
             ->where('id_user', $user->id)
@@ -66,9 +65,7 @@ class PenawaranController extends Controller
 
         // ✅ If already accepted, redirect ke berkas
         if ($assignment->status_penawaran === 'accepted') {
-            $route = $assignment->route_penawaran;
-            $param = $asesmen->id;
-            return redirect()->route($route, $param)
+            return redirect($assignment->route_penawaran)
                 ->with('info', 'Penawaran telah diterima. Silakan lanjutkan ' . ($assignment->jenis_asesmen === 'dokumen' ? 'validasi' : 'penilaian'));
         }
 
@@ -158,7 +155,7 @@ class PenawaranController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Penawaran berhasil diterima. Anda dapat mulai melakukan ' . ($assignment->jenis_asesmen === 'dokumen' ? 'validasi' : 'penilaian'),
+                'message' => 'Penawaran berhasil diterima. Anda dapat mulai melakukan ' . ($assignment->jenis_asesmen_action_label),
             ]);
         } catch (\Exception $e) {
             Log::error($e);

@@ -28,14 +28,12 @@ class BorangRevisionNotification extends Mailable implements ShouldQueue
         $this->actionUrl = route('upps.validasi-dokumen.show', $pengajuan->id);
 
         $points = $validation->revision_points ?? [];
-        $this->revisionCount = is_array($points)
-            ? count(array_filter($points, fn($p) => !str_starts_with((string) $p, '=== ')))
-            : 0;
+        $this->revisionCount = is_array($points) ? count($points) : 0;
     }
 
     public function build(): self
     {
-        return $this->subject('[LAMDEPILAR] Dokumen Akreditasi Perlu Revisi - ' . $this->pengajuan->nomor_pengajuan)
+        return $this->subject('Dokumen Akreditasi Perlu Revisi')
             ->with([
                 'title' => 'Dokumen Akreditasi Perlu Revisi',
                 'preheader' => 'Dokumen akreditasi Anda memerlukan revisi.',
@@ -45,6 +43,6 @@ class BorangRevisionNotification extends Mailable implements ShouldQueue
                 'actionUrl' => $this->actionUrl,
                 'revisionCount' => $this->revisionCount,
             ])
-            ->view('emails.pengajuan.borang-revision-notification');
+            ->view('emails.pengajuan.borang-decision-revision');
     }
 }
