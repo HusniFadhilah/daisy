@@ -9,7 +9,7 @@ $headerTitle = 'Penawaran Validasi Dokumen';
 @section('content')
 <p style="margin-top:0;">Yth. <strong>{{ $assignment->user->name }}</strong>,</p>
 
-<p>Anda telah ditunjuk sebagai <strong>Validator Dokumen</strong> untuk pengajuan berikut:</p>
+<p>Anda telah ditunjuk sebagai <strong>Validator Dokumen</strong> untuk permohonan akreditasi berikut:</p>
 
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #0d6efd;margin:20px 0;">
     <tr>

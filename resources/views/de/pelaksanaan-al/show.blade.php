@@ -157,7 +157,7 @@
                         <th>Nama Validator</th>
                         <th>Status</th>
                         {{-- <th>Progress</th> --}}
-                        <th width="80">Aksi</th>
+                        <th width="120">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -197,6 +197,13 @@
     @endif
     </td> --}}
     <td>
+        @if(!empty($assignmentReminders[$validator->id]))
+        @php $reminder = $assignmentReminders[$validator->id]; @endphp
+
+        <button type="button" class="btn {{ $reminder['btn_class'] }} btn-sm" title="{{ $reminder['label'] }}" onclick="kirimReminderAssignment({{ $validator->id }},@js($reminder['label']),@js($reminder['message']))">
+            <i class="bi {{ $reminder['icon'] }}"></i>
+        </button>
+        @endif
         <button class="btn btn-sm btn-danger" onclick="removeValidator({{ $pengajuan->id }}, {{ $validator->id_user }}, '{{ $validator->user->name }}')" {{ ($validator->status_pekerjaan ?? 'not_started') !== 'not_started' ? 'disabled' : '' }}>
             <i class="bi bi-trash"></i>
         </button>
@@ -566,6 +573,8 @@
         </div>
     </div>
 </div>
+
+@include('layouts.template.kirim-reminder')
 
 @push('scripts')
 <script>

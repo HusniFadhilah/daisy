@@ -12,6 +12,7 @@ $pengajuan = $assignment->asesmen->pengajuan;
 </p>
 
 <p>
+    Berikut informasi penugasan Anda:<br>
     Program Studi: <strong>{{ $pengajuan->studyProgram->name ?? '-' }}</strong><br>
     Universitas: <strong>{{ $pengajuan->studyProgram->university->name ?? '-' }}</strong>
 </p>

@@ -249,6 +249,14 @@ class PelaksanaanALController extends Controller
         // Available validators
         $availableValidators = User::notAdmin()->orderBy('name')->get();
 
+        $assignmentReminders = [];
+
+        if ($pengajuan->asesmen) {
+            foreach ($pengajuan->asesmen->asesmenUserRoles as $assignment) {
+                $assignmentReminders[$assignment->id] = $assignment->resolveReminderMeta();
+            }
+        }
+
         return view('de.pelaksanaan-al.show', compact(
             'pengajuan',
             'userProgress',
@@ -256,7 +264,8 @@ class PelaksanaanALController extends Controller
             'beritaAcaraProgress',
             'availableValidators',
             'validatorAK', // ✅ NEW
-            'totalElemens'
+            'totalElemens',
+            'assignmentReminders'
         ));
     }
 

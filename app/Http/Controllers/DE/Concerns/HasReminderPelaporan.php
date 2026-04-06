@@ -115,6 +115,8 @@ trait HasReminderPelaporan
                         pesanReminder: $validated['pesan_reminder'],
                         subject: $mailSubject,
                         actionUrl: route($actionRouteName, $assignment->id),
+                        preheader: '',
+                        headerTitle: $mailSubject
                     ),
                     [],
                     [],

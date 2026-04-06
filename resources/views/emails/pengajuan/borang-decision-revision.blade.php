@@ -4,7 +4,7 @@
 <p style="margin-top:0;">Yth. Tim Akreditasi Program Studi <strong>{{ $pengajuan->studyProgram->name }}</strong>,</p>
 
 <p>
-    Dokumen akreditasi Anda telah direview oleh validator dan <strong>memerlukan revisi</strong>
+    Dokumen akreditasi Anda telah divalidasi oleh validator dan <strong>memerlukan revisi</strong>
     sebelum dapat dilanjutkan ke tahap berikutnya.
 </p>
 

@@ -41,16 +41,11 @@ class ReminderController extends Controller
                 'asesmen.pengajuan.studyProgram.degreeLevel',
             ])->findOrFail($assignmentId);
 
-            if ($assignment->jenis_asesmen !== 'ak') {
-                return back()->with('error', 'Pengingat hanya berlaku untuk penugasan AK.');
-            }
-
             $meta = $assignment->resolveReminderMeta();
 
             if (!$meta) {
                 return back()->with('error', 'Penugasan ini tidak memenuhi syarat untuk dikirim pengingat.');
             }
-
             $pesanReminder = $request->filled('pesan_reminder')
                 ? $request->pesan_reminder
                 : $meta['message'];

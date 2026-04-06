@@ -12,17 +12,21 @@ use App\Mail\PenawaranAcceptedMail;
 use App\Mail\PenawaranRejectedMail;
 use App\Mail\PenerimaanAkreditasiMail;
 use App\Mail\PengingatAkreditasiMail;
+use App\Mail\Reminder\ReminderContextMail;
 use App\Mail\Reminder\ReminderPelaporanDokumenMail;
+use App\Mail\Reminder\ReminderPelaporanMail;
 use App\Mail\Reminder\ReminderPenawaranAsesmenMail;
 use App\Mail\Reminder\ReminderProgressAsesmenMail;
 use App\Mail\Reminder\ReminderValidasiDokumenMail;
 use App\Mail\ValidatorBorangAssignedMail;
+use App\Models\Asesmen;
 use App\Models\AsesmenUserRole;
 use App\Models\BorangValidation;
 use App\Models\PengajuanAkreditasi;
 use App\Models\PengajuanDokumen;
 use App\Models\PengajuanPembayaran;
 use App\Models\StudyProgram;
+use Carbon\Carbon;
 
 class EmailPreviewController extends Controller
 {
@@ -220,5 +224,257 @@ class EmailPreviewController extends Controller
         }
 
         return new ReminderProgressAsesmenMail($assignment, $pesan);
+    }
+
+    // =========================================================
+    // REMINDER PELAPORAN — ReminderPelaporanMail
+    // =========================================================
+
+    public function reminderPelaporanAK(AsesmenUserRole $assignment)
+    {
+        $assignment->loadMissing([
+            'user.activeEmails',
+            'asesmen.pengajuan.studyProgram.university',
+            'asesmen.pengajuan.studyProgram.degreeLevel',
+        ]);
+
+        return new ReminderPelaporanMail(
+            assignment: $assignment,
+            pesanReminder: 'Kami mengingatkan untuk segera mengunggah laporan validasi AK yang menjadi penugasan Anda agar proses akreditasi dapat dilanjutkan.',
+            subject: 'Pengingat Pelaporan Validasi AK',
+            actionUrl: route('pelaporan.validasiAk.show', $assignment->id),
+            headerTitle: 'Pengingat Pelaporan Validasi AK',
+            preheader: 'Segera upload laporan validasi AK Anda melalui sistem.',
+        );
+    }
+
+    public function reminderPelaporanAL(AsesmenUserRole $assignment)
+    {
+        $assignment->loadMissing([
+            'user.activeEmails',
+            'asesmen.pengajuan.studyProgram.university',
+            'asesmen.pengajuan.studyProgram.degreeLevel',
+        ]);
+
+        return new ReminderPelaporanMail(
+            assignment: $assignment,
+            pesanReminder: 'Kami mengingatkan untuk segera mengunggah laporan AL yang menjadi penugasan Anda agar proses akreditasi dapat dilanjutkan.',
+            subject: 'Pengingat Pelaporan Validasi AL',
+            actionUrl: route('pelaporan.al.show', $assignment->id),
+            headerTitle: 'Pengingat Pelaporan Validasi AL',
+            preheader: 'Segera upload laporan validasi AL Anda melalui sistem.',
+        );
+    }
+
+    public function reminderPelaporanAKBanding(AsesmenUserRole $assignment)
+    {
+        $assignment->loadMissing([
+            'user.activeEmails',
+            'asesmen.pengajuan.studyProgram.university',
+            'asesmen.pengajuan.studyProgram.degreeLevel',
+        ]);
+
+        return new ReminderPelaporanMail(
+            assignment: $assignment,
+            pesanReminder: 'Kami mengingatkan untuk segera mengunggah laporan validasi AK Banding yang menjadi penugasan Anda agar proses banding dapat dilanjutkan.',
+            subject: 'Pengingat Pelaporan Validasi AK Banding',
+            actionUrl: route('pelaporan.ak-banding.show', $assignment->id),
+            headerTitle: 'Pengingat Pelaporan Validasi AK Banding',
+            preheader: 'Segera upload laporan validasi AK Banding Anda melalui sistem.',
+        );
+    }
+
+    public function reminderPelaporanALBanding(AsesmenUserRole $assignment)
+    {
+        $assignment->loadMissing([
+            'user.activeEmails',
+            'asesmen.pengajuan.studyProgram.university',
+            'asesmen.pengajuan.studyProgram.degreeLevel',
+        ]);
+
+        return new ReminderPelaporanMail(
+            assignment: $assignment,
+            pesanReminder: 'Kami mengingatkan untuk segera mengunggah laporan AL Banding yang menjadi penugasan Anda agar proses banding dapat dilanjutkan.',
+            subject: 'Pengingat Pelaporan Validasi AL Banding',
+            actionUrl: route('pelaporan.al-banding.show', $assignment->id),
+            headerTitle: 'Pengingat Pelaporan Validasi AL Banding',
+            preheader: 'Segera upload laporan validasi AL Banding Anda melalui sistem.',
+        );
+    }
+
+    // =========================================================
+    // REMINDER CONTEXT — ReminderContextMail
+    // =========================================================
+
+    public function reminderUploadDokumen(PengajuanAkreditasi $pengajuan)
+    {
+        $pengajuan->loadMissing([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+        ]);
+
+        $contextInfo = implode(' | ', array_filter([
+            $pengajuan->studyProgram->name ?? null,
+            $pengajuan->studyProgram->university->name ?? null,
+            $pengajuan->nomor_pengajuan ?? null,
+        ]));
+
+        return new ReminderContextMail(
+            recipientName: $pengajuan->studyProgram->name ?? 'UPPS',
+            pesanReminder: "Pembayaran Anda telah tervalidasi. Kami mengingatkan untuk segera mengunggah dokumen akreditasi melalui sistem DAISY LAMDEPILAR.\n\nDokumen yang perlu diunggah:\n1. Laporan Evaluasi Diri (LED) + Suplemen\n2. Laporan Kinerja Program Studi (LKPS)",
+            subject: 'Pengingat Upload Dokumen Akreditasi',
+            actionUrl: route('upps.penerimaan-dokumen.show', $pengajuan->id),
+            actionLabel: 'Upload Dokumen Sekarang',
+            contextInfo: $contextInfo,
+            headerTitle: 'Pengingat Upload Dokumen Akreditasi',
+            preheader: 'Segera upload dokumen akreditasi Anda melalui sistem DAISY.',
+        );
+    }
+
+    public function reminderValidasiPembayaran(PengajuanPembayaran $pembayaran)
+    {
+        $pembayaran->loadMissing([
+            'pengajuan.studyProgram.university',
+            'pengajuan.studyProgram.degreeLevel',
+        ]);
+
+        $contextInfo = implode(' | ', array_filter([
+            $pembayaran->pengajuan->studyProgram->name ?? null,
+            $pembayaran->pengajuan->studyProgram->university->name ?? null,
+            'Invoice: ' . $pembayaran->nomor_invoice,
+        ]));
+
+        return new ReminderContextMail(
+            recipientName: 'Bagian Keuangan LAMDEPILAR',
+            pesanReminder: 'Terdapat bukti pembayaran akreditasi yang masih menunggu validasi. Mohon segera diproses agar tidak menghambat proses akreditasi program studi terkait.',
+            subject: 'Pengingat Validasi Pembayaran Akreditasi',
+            actionUrl: route('keuangan.pembayaran.show', $pembayaran->id),
+            actionLabel: 'Validasi Pembayaran',
+            contextInfo: $contextInfo,
+            headerTitle: 'Pengingat Validasi Pembayaran',
+            preheader: 'Terdapat bukti pembayaran yang menunggu validasi Anda.',
+        );
+    }
+
+    public function reminderBayarInvoice(PengajuanPembayaran $pembayaran)
+    {
+        $pembayaran->loadMissing([
+            'pengajuan.studyProgram.university',
+            'pengajuan.studyProgram.degreeLevel',
+        ]);
+
+        $namaProdi   = $pembayaran->pengajuan->studyProgram->name ?? '-';
+        $namaUniv    = $pembayaran->pengajuan->studyProgram->university->name ?? '-';
+        $contextInfo = implode(' | ', array_filter([
+            $namaProdi,
+            $namaUniv,
+            'Invoice: ' . $pembayaran->nomor_invoice,
+            $pembayaran->tanggal_jatuh_tempo
+                ? 'Jatuh Tempo: ' . Carbon::parse($pembayaran->tanggal_jatuh_tempo)->translatedFormat('d M Y')
+                : null,
+        ]));
+
+        return new ReminderContextMail(
+            recipientName: $namaProdi,
+            pesanReminder: 'Kami mengingatkan bahwa invoice akreditasi Anda masih belum dibayarkan. Mohon segera lakukan pembayaran sebelum melewati tanggal jatuh tempo.',
+            subject: 'Pengingat Pembayaran Invoice Akreditasi',
+            actionUrl: route('upps.validasi-pembayaran.show', $pembayaran->id),
+            actionLabel: 'Bayar Sekarang',
+            contextInfo: $contextInfo,
+            headerTitle: 'Pengingat Pembayaran Invoice Akreditasi',
+            preheader: 'Invoice akreditasi Anda belum dibayarkan, segera selesaikan sebelum jatuh tempo.',
+        );
+    }
+
+    public function reminderUploadUlangBukti(PengajuanPembayaran $pembayaran)
+    {
+        $pembayaran->loadMissing([
+            'pengajuan.studyProgram.university',
+            'pengajuan.studyProgram.degreeLevel',
+        ]);
+
+        $namaProdi   = $pembayaran->pengajuan->studyProgram->name ?? '-';
+        $namaUniv    = $pembayaran->pengajuan->studyProgram->university->name ?? '-';
+        $contextInfo = implode(' | ', array_filter([
+            $namaProdi,
+            $namaUniv,
+            'Invoice: ' . $pembayaran->nomor_invoice,
+        ]));
+
+        return new ReminderContextMail(
+            recipientName: $namaProdi,
+            pesanReminder: 'Bukti pembayaran yang Anda upload sebelumnya perlu diperbaiki. Mohon segera upload ulang bukti pembayaran yang lebih jelas agar dapat diverifikasi oleh bagian keuangan.',
+            subject: 'Pengingat Upload Ulang Bukti Pembayaran',
+            actionUrl: route('upps.validasi-pembayaran.show', $pembayaran->id),
+            actionLabel: 'Upload Ulang Bukti',
+            contextInfo: $contextInfo,
+            headerTitle: 'Upload Ulang Bukti Pembayaran',
+            preheader: 'Bukti pembayaran Anda perlu diupload ulang agar dapat diverifikasi.',
+        );
+    }
+
+    public function notifikasiLhaFinalized(Asesmen $asesmen)
+    {
+        $asesmen->loadMissing([
+            'pengajuan.studyProgram.university',
+        ]);
+
+        $pengajuan   = $asesmen->pengajuan;
+        $contextInfo = 'Berikut adalah detail proses penyusunan LHA: ';
+
+        return new ReminderContextMail(
+            recipientName: 'Tim Akreditasi Program Studi <strong>' . $pengajuan->studyProgram->name . '</strong>',
+            pesanReminder: "Laporan Hasil Asesmen Lapangan (LHA) untuk program studi Anda telah selesai disusun oleh tim asesor dan siap untuk ditinjau.\n\nMohon segera melakukan peninjauan dan memberikan persetujuan atau permintaan revisi melalui sistem.",
+            subject: 'Laporan Hasil Asesmen Lapangan (LHA) Siap Ditinjau',
+            actionUrl: route('upps.pelaksanaan-al.show', $pengajuan->id),
+            actionLabel: 'Tinjau LHA Sekarang',
+            contextInfo: $contextInfo,
+            headerTitle: 'Laporan Hasil Asesmen Lapangan (LHA) Siap Ditinjau',
+            preheader: 'Tim asesor telah menyelesaikan LHA, segera lakukan peninjauan.',
+        );
+    }
+
+    public function notifikasiLhaApproved(PengajuanAkreditasi $pengajuan)
+    {
+        $pengajuan->loadMissing([
+            'studyProgram.university',
+        ]);
+
+        $namaProdi = $pengajuan->studyProgram->name ?? '-';
+        $namaUniv  = $pengajuan->studyProgram->university->name ?? '-';
+        $contextInfo = 'Berikut adalah detail proses persetujuan LHA: ';
+
+        return new ReminderContextMail(
+            recipientName: 'Tim Asesor AL',
+            pesanReminder: "Program studi {$namaProdi} ({$namaUniv}) telah meninjau dan menyetujui Laporan Hasil Asesmen Lapangan (LHA) yang Anda susun.\n\nTerima kasih atas dedikasi Anda dalam proses asesmen ini.\n\nCatatan dari Program Studi:\n[Contoh catatan persetujuan dari program studi]",
+            subject: 'LHA Disetujui oleh Program Studi — ' . $namaProdi,
+            actionUrl: route('al.berkas.lha-asesor.page', $pengajuan->asesmen->id),
+            actionLabel: 'Lihat LHA',
+            contextInfo: $contextInfo,
+            headerTitle: 'Laporan Hasil Asesmen Lapangan (LHA) Disetujui',
+            preheader: "{$namaProdi} telah menyetujui LHA yang Anda susun.",
+        );
+    }
+
+    public function notifikasiLhaRevision(PengajuanAkreditasi $pengajuan)
+    {
+        $pengajuan->loadMissing([
+            'studyProgram.university',
+        ]);
+
+        $namaProdi = $pengajuan->studyProgram->name ?? '-';
+        $namaUniv  = $pengajuan->studyProgram->university->name ?? '-';
+        $contextInfo = 'Berikut adalah detail permintaan revisi LHA: ';
+
+        return new ReminderContextMail(
+            recipientName: 'Tim Asesor AL',
+            pesanReminder: "Program studi {$namaProdi} ({$namaUniv}) mengajukan permintaan revisi terhadap Laporan Hasil Asesmen Lapangan (LHA) yang Anda susun.\n\nMohon segera lakukan perbaikan sesuai catatan yang diberikan, kemudian finalisasi ulang dokumen.\n\nCatatan Revisi dari Program Studi:\n[Contoh catatan revisi: Mohon perbaiki bagian hasil AL pada poin 3 mengenai capaian pembelajaran]",
+            subject: 'Permintaan Revisi LHA dari Program Studi — ' . $namaProdi,
+            actionUrl: route('al.berkas.lha-asesor.page', $pengajuan->asesmen->id),
+            actionLabel: 'Perbaiki LHA Sekarang',
+            contextInfo: $contextInfo,
+            headerTitle: 'Permintaan Revisi Laporan Hasil Asesmen Lapangan (LHA)',
+            preheader: "{$namaProdi} meminta revisi pada LHA Anda, segera lakukan perbaikan.",
+        );
     }
 }

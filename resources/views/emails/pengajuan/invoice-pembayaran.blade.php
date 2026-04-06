@@ -26,9 +26,6 @@
             Rp {{ number_format($pembayaran->jumlah_pembayaran, 0, ',', '.') }}<br>
             <strong>Jatuh Tempo</strong> :
             {{ \Carbon\Carbon::parse($pembayaran->tanggal_jatuh_tempo)->locale('id')->translatedFormat('d F Y') }}
-            @if(!empty($pembayaran->keterangan))
-            <br><strong>Keterangan</strong> : {{ $pembayaran->keterangan }}
-            @endif
         </td>
     </tr>
 </table>

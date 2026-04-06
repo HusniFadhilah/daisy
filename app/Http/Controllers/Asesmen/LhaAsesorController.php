@@ -4,10 +4,13 @@
 namespace App\Http\Controllers\Asesmen;
 
 use App\Http\Controllers\Controller;
+use App\Mail\Reminder\ReminderContextMail;
 use App\Models\Asesmen;
 use App\Models\AsesmenDocument;
 use App\Models\AsesmenUserRole;
 use App\Models\LhaAsesor;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +21,17 @@ use Illuminate\Support\Str;
 
 class LhaAsesorController extends Controller
 {
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery,
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery      = $mailDelivery;
+    }
+
     /**
      * Show LHA form
      */
@@ -291,6 +305,9 @@ class LhaAsesorController extends Controller
 
             DB::commit();
 
+            // Kirim notifikasi ke UPPS setelah commit
+            $this->notifikasiUPPSLhaFinalized($asesmen, $document);
+
             return response()->json([
                 'success' => true,
                 'message' => 'LHA berhasil difinalisasi dan PDF telah dibuat.'
@@ -303,6 +320,53 @@ class LhaAsesorController extends Controller
                 'success' => false,
                 'message' => 'Gagal finalisasi LHA: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    private function notifikasiUPPSLhaFinalized(Asesmen $asesmen, AsesmenDocument $document): void
+    {
+        try {
+            $asesmen->loadMissing([
+                'pengajuan.studyProgram.university',
+                'pengajuan.studyProgram.users.activeEmails',
+                'pengajuan.pengaju.activeEmails',
+            ]);
+
+            $pengajuan   = $asesmen->pengajuan;
+
+            $prodUsers = $pengajuan->studyProgram?->users;
+            $emails = $prodUsers && $prodUsers->isNotEmpty()
+                ? $this->recipientResolver->emailsForUsers($prodUsers)
+                : $this->recipientResolver->emailsForUser($pengajuan->pengaju);
+
+            if (empty($emails)) {
+                Log::warning('Notifikasi LHA finalized tidak dikirim: tidak ada email UPPS.', [
+                    'asesmen_id' => $asesmen->id,
+                ]);
+                return;
+            }
+
+            $this->mailDelivery->sendToEmails(
+                $emails,
+                new ReminderContextMail(
+                    recipientName: 'Tim Akreditasi Program Studi <strong>' . $pengajuan->studyProgram->name . '</strong>',
+                    pesanReminder: "Laporan Hasil Asesmen Lapangan (LHA) untuk program studi Anda telah selesai disusun oleh tim asesor dan siap untuk ditinjau.\n\nMohon segera melakukan peninjauan dan memberikan persetujuan atau permintaan revisi melalui sistem.",
+                    subject: 'Laporan Hasil Asesmen Lapangan (LHA) Siap Ditinjau',
+                    actionUrl: route('upps.pelaksanaan-al.show', $pengajuan->id),
+                    actionLabel: 'Tinjau LHA Sekarang',
+                    contextInfo: 'Berikut adalah detail proses penyusunan LHA: ',
+                    headerTitle: 'Laporan Hasil Asesmen Lapangan Siap Ditinjau',
+                    preheader: 'Tim asesor telah menyelesaikan LHA, segera lakukan peninjauan.',
+                ),
+                [],
+                [],
+                true
+            );
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim notifikasi LHA finalized ke UPPS', [
+                'asesmen_id' => $asesmen->id,
+                'error'      => $e->getMessage(),
+            ]);
         }
     }
 

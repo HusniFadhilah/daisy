@@ -42,7 +42,7 @@ trait HasReminderPembayaran
             $delivery = app(MailDeliveryService::class);
 
             // Ambil semua user dengan role keuangan
-            $keuanganUsers = User::role('keuangan')->with('activeEmails')->get();
+            $keuanganUsers = User::where('role_selected', 'keuangan_lamdepilar')->with('activeEmails')->get();
             $keuanganEmails = $resolver->emailsForUsers($keuanganUsers);
 
             if (empty($keuanganEmails)) {
@@ -55,7 +55,15 @@ trait HasReminderPembayaran
                 $pengajuan   = $pembayaran->pengajuan;
                 $namaProdi   = $pengajuan->studyProgram->name ?? '-';
                 $namaUniv    = $pengajuan->studyProgram->university->name ?? '-';
-                $contextInfo = "{$namaProdi} | {$namaUniv} | Invoice: {$pembayaran->nomor_invoice}";
+                $contextInfo = 'Berikut adalah pesan dari LAMDEPILAR mengenai proses pembayaran akreditasi: ';
+                $contextInfo = implode(' | ', array_filter([
+                    $namaProdi,
+                    $namaUniv,
+                    'Invoice: ' . $pembayaran->nomor_invoice,
+                    'Jatuh Tempo: ' . ($pembayaran->tanggal_jatuh_tempo
+                        ? \Carbon\Carbon::parse($pembayaran->tanggal_jatuh_tempo)->translatedFormat('d M Y')
+                        : null),
+                ]));
 
                 // Log ke pengajuan
                 $pengajuan->statusLog()->create([
@@ -130,9 +138,9 @@ trait HasReminderPembayaran
                 $pengajuan   = $pembayaran->pengajuan;
                 $namaProdi   = $pengajuan->studyProgram->name ?? '-';
                 $namaUniv    = $pengajuan->studyProgram->university->name ?? '-';
-                $contextInfo = implode(' | ', array_filter([
-                    $namaProdi,
-                    $namaUniv,
+
+                $contextInfo = 'Berikut adalah pesan dari LAMDEPILAR mengenai proses pembayaran akreditasi dengan ';
+                $contextInfo .= implode(' | ', array_filter([
                     'Invoice: ' . $pembayaran->nomor_invoice,
                     'Jatuh Tempo: ' . ($pembayaran->tanggal_jatuh_tempo
                         ? \Carbon\Carbon::parse($pembayaran->tanggal_jatuh_tempo)->translatedFormat('d M Y')
@@ -153,7 +161,7 @@ trait HasReminderPembayaran
                     'status_to'   => $pengajuan->status,
                     'changed_by'  => auth()->id(),
                     'changed_at'  => now(),
-                    'keterangan'  => 'Pengingat pembayaran invoice dikirim ke UPPS ' . $namaProdi,
+                    'keterangan'  => 'Pengingat pembayaran akreditasi dikirim ke UPPS ' . $namaProdi,
                 ]);
 
                 $isUploadUlang = $pembayaran->status_pembayaran === 'upload_ulang';
@@ -165,12 +173,12 @@ trait HasReminderPembayaran
                         pesanReminder: $validated['pesan_reminder'],
                         subject: $isUploadUlang
                             ? 'Pengingat Upload Ulang Bukti Pembayaran'
-                            : 'Pengingat Pembayaran Invoice Akreditasi',
+                            : 'Pengingat Pembayaran Akreditasi',
                         actionUrl: route('upps.validasi-pembayaran.show', $pembayaran->id),
-                        actionLabel: $isUploadUlang ? 'Upload Ulang Bukti' : 'Bayar Sekarang',
+                        actionLabel: $isUploadUlang ? 'Upload Ulang Bukti' : 'Buka Halaman Pembayaran',
                         contextInfo: $contextInfo,
-                        headerTitle: 'Pengingat Upload Ulang Bukti Pembayaran',
-                        preheader: 'Segera upload ulang bukti pembayaran akreditasi melalui sistem DAISY.',
+                        headerTitle: 'Pengingat Upload ' . ($isUploadUlang ? 'Ulang' : '') . ' Bukti Pembayaran',
+                        preheader: 'Mohon segera upload ' . ($isUploadUlang ? 'ulang' : '') . ' bukti pembayaran akreditasi melalui sistem DAISY.',
                     ),
                     [],
                     [],

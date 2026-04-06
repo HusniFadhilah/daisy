@@ -566,7 +566,7 @@ $lhaIsFinalizedApproved = $lha->isFinalizedApproved();
             return;
         }
 
-        if (!(await swalConfirmSubmit('warning', `Apakah Anda yakin ingin finalisasi LHA?<br><br>Setelah difinalisasi:<ul style="text-align: left; margin-left: 1.2rem;"><li>LHA akan di-generate menjadi PDF</li><li>Dokumen akan dikirim ke Program Studi</li><li>LHA tidak dapat diubah lagi</li></ul>`))) {
+        if (!(await swalConfirmSubmit('warning', `Apakah Anda yakin ingin finalisasi LHA?<br><br>Setelah difinalisasi:<ul style="text-align: left; margin-left: 1.2rem;"><li>LHA akan di-<i>generate</i> menjadi PDF</li><li>Dokumen akan dikirim ke Program Studi</li><li>LHA tidak dapat diubah lagi</li></ul>`))) {
             return;
         }
 

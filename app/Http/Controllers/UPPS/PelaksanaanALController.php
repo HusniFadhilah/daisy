@@ -3,25 +3,34 @@
 
 namespace App\Http\Controllers\UPPS;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Mail\Reminder\ReminderContextMail;
 use App\Models\AsesmenDocument;
 use App\Models\HasilAkreditasi;
-use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use App\Services\HasilAkreditasiService;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PelaksanaanALController extends Controller
 {
     protected $hasilService;
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
 
-    public function __construct(HasilAkreditasiService $hasilService)
-    {
-        $this->hasilService = $hasilService;
+    public function __construct(
+        HasilAkreditasiService $hasilService,
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery,
+    ) {
+        $this->hasilService      = $hasilService;
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery      = $mailDelivery;
     }
-
     /**
      * Display list of pelaksanaan AL
      */
@@ -209,6 +218,13 @@ class PelaksanaanALController extends Controller
 
             DB::commit();
 
+            // Kirim notifikasi ke asesor setelah commit
+            $this->notifikasiAsesorLHAReviewed(
+                pengajuan: $pengajuan,
+                newStatus: $newStatus,
+                catatanProdi: $request->catatan_prodi,
+            );
+
             // Success messages
             $messages = [
                 'approved' => 'Laporan hasil asesmen berhasil disetujui.',
@@ -228,6 +244,87 @@ class PelaksanaanALController extends Controller
 
             return back()
                 ->with('error', 'Gagal memproses persetujuan: ' . $e->getMessage());
+        }
+    }
+
+    private function notifikasiAsesorLHAReviewed(
+        PengajuanAkreditasi $pengajuan,
+        string $newStatus,
+        ?string $catatanProdi,
+    ): void {
+        try {
+            $pengajuan->loadMissing([
+                'studyProgram.university',
+                'asesmen.asesmenUserRoles' => fn($q) => $q
+                    ->where('jenis_asesmen', 'al')
+                    ->where('status_penawaran', 'accepted')
+                    ->whereHas('role_selected', fn($r) => $r->where('name', 'asesor'))
+                    ->with('user.activeEmails'),
+            ]);
+
+            $namaProdi = $pengajuan->studyProgram->name ?? '-';
+            $namaUniv  = $pengajuan->studyProgram->university->name ?? '-';
+
+            $asesorUsers = $pengajuan->asesmen->asesmenUserRoles->map->user;
+
+            if ($asesorUsers->isEmpty()) {
+                Log::warning('Notifikasi LHA reviewed tidak dikirim: tidak ada asesor AL.', [
+                    'pengajuan_id' => $pengajuan->id,
+                ]);
+                return;
+            }
+
+            $asesorEmails = $this->recipientResolver->emailsForUsers($asesorUsers);
+
+            if (empty($asesorEmails)) return;
+
+            if ($newStatus === 'approved') {
+                $pesanReminder = "Program studi {$namaProdi} ({$namaUniv}) telah meninjau dan menyetujui Laporan Hasil Asesmen Lapangan (LHA) yang Anda susun.\n\nTerima kasih atas dedikasi Anda dalam proses asesmen ini."
+                    . ($catatanProdi ? "\n\nCatatan dari Program Studi:\n{$catatanProdi}" : '');
+
+                $this->mailDelivery->sendToEmails(
+                    $asesorEmails,
+                    new ReminderContextMail(
+                        recipientName: 'Tim Asesor AL',
+                        pesanReminder: $pesanReminder,
+                        subject: 'LHA Disetujui oleh Program Studi — ' . $namaProdi,
+                        actionUrl: route('al.berkas.lha-asesor.page', $pengajuan->asesmen->id),
+                        actionLabel: 'Lihat LHA',
+                        contextInfo: 'Berikut adalah detail proses persetujuan LHA: ',
+                        headerTitle: 'Laporan Hasil Asesmen Lapangan (LHA) Disetujui',
+                        preheader: "Prodi {$namaProdi} telah menyetujui LHA yang Anda susun.",
+                    ),
+                    [],
+                    [],
+                    true
+                );
+            } elseif ($newStatus === 'revision_required') {
+                $pesanReminder = "Program studi {$namaProdi} ({$namaUniv}) mengajukan permintaan revisi terhadap Laporan Hasil Asesmen Lapangan (LHA) yang Anda susun.\n\nMohon segera lakukan perbaikan sesuai catatan yang diberikan, kemudian finalisasi ulang dokumen."
+                    . ($catatanProdi ? "\n\nCatatan Revisi dari Program Studi:\n{$catatanProdi}" : '');
+
+                $this->mailDelivery->sendToEmails(
+                    $asesorEmails,
+                    new ReminderContextMail(
+                        recipientName: 'Tim Asesor AL',
+                        pesanReminder: $pesanReminder,
+                        subject: 'Permintaan Revisi LHA dari Program Studi — ' . $namaProdi,
+                        actionUrl: route('al.berkas.lha-asesor.page', $pengajuan->asesmen->id),
+                        actionLabel: 'Perbaiki LHA Sekarang',
+                        contextInfo: 'Berikut adalah detail permintaan revisi LHA: ',
+                        headerTitle: 'Permintaan Revisi Laporan Hasil Asesmen Lapangan (LHA)',
+                        preheader: "Prodi {$namaProdi} meminta revisi pada LHA Anda, segera lakukan perbaikan.",
+                    ),
+                    [],
+                    [],
+                    true
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim notifikasi LHA reviewed ke asesor', [
+                'pengajuan_id' => $pengajuan->id,
+                'new_status'   => $newStatus,
+                'error'        => $e->getMessage(),
+            ]);
         }
     }
 

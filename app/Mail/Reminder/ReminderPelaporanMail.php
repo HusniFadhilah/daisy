@@ -14,16 +14,22 @@ class ReminderPelaporanMail extends Mailable
     public AsesmenUserRole $assignment;
     public string $pesanReminder;
     public string $actionUrl;
+    public string $headerTitle;
+    public string $preheader;
 
     public function __construct(
         AsesmenUserRole $assignment,
         string $pesanReminder,
         string $subject,
-        string $actionUrl
+        string $actionUrl,
+        string $headerTitle,
+        string $preheader
     ) {
         $this->assignment    = $assignment;
         $this->pesanReminder = $pesanReminder;
         $this->actionUrl     = $actionUrl;
+        $this->headerTitle   = $headerTitle ?? $subject;
+        $this->preheader     = $preheader   ?? $subject;
         $this->subject($subject);
     }
 

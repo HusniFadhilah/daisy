@@ -450,6 +450,11 @@ class PelaporanController extends Controller
         return $this->genericShowPelaporan($idAssignment, 'ak');
     }
 
+    public function showAK($idAssignment)
+    {
+        return $this->genericShowPelaporan($idAssignment, 'ak');
+    }
+
     public function showAL($idAssignment)
     {
         return $this->genericShowPelaporan($idAssignment, 'al');

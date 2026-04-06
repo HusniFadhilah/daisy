@@ -262,7 +262,11 @@ class HasilAkreditasiService
 
             // ── Gunakan status non-Unggul sebagai placeholder draft ──
             // Syarat perlu baru bisa dicek saat finalize, bukan di sini.
-            $idStatusDraft = $this->resolveStatusIdForDraft((int)$calc['skor_total']);
+            $skorTotal = (int)$calc['skor_total'];
+            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorTotal);
+
+            $peringkat  = $resolved['peringkat'];
+            $idStatusDraft = $resolved['status_id'];
             $syarat = $this->cekSyaratUnggul($hasil, $calc['skor_total'], 'al');
             $hasil->update([
                 'id_status_al'             => $idStatusDraft,
@@ -325,9 +329,10 @@ class HasilAkreditasiService
             // ── Set atribut SEBELUM getPeringkatFromSkor() dipanggil ──
             // Model membaca $this->al_memenuhi_syarat_unggul, bukan parameter eksternal
             $hasil->al_memenuhi_syarat_unggul = $syarat['memenuhi'];
+            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorALFinal);
 
-            $peringkat  = $hasil->getPeringkatFromSkor($skorALFinal);
-            $idStatusAL = $this->resolveStatusIdByPeringkat($peringkat);
+            $peringkat  = $resolved['peringkat'];
+            $idStatusAL = $resolved['status_id'];
 
             $catatan = $syarat['keterangan'];
 
@@ -412,8 +417,10 @@ class HasilAkreditasiService
                     'source'        => 'al_banding',
                 ],
             ];
+            $resolved = $this->resolvePeringkatDanStatus($hasil, (int)$calc['skor_total']);
 
-            $idStatusDraft = $this->resolveStatusIdForDraft((int)$calc['skor_total']);
+            $peringkat  = $resolved['peringkat'];
+            $idStatusDraft = $resolved['status_id'];
             $syarat = $this->cekSyaratUnggul($hasil, $calc['skor_total'], 'al_banding');
             $hasil->update([
                 'id_status_al_banding'             => $idStatusDraft,
@@ -452,8 +459,10 @@ class HasilAkreditasiService
 
             // ── Set atribut sebelum getPeringkatFromSkor ──
             $hasil->al_banding_memenuhi_syarat_unggul = $syarat['memenuhi'];
-            $peringkat                     = $hasil->getPeringkatFromSkor($skorALBanding);
-            $idStatus                      = $this->resolveStatusIdByPeringkat($peringkat);
+            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorALBanding);
+
+            $peringkat  = $resolved['peringkat'];
+            $idStatus = $resolved['status_id'];
 
             $hasil->update([
                 'id_status_al_banding'          => $idStatus,
@@ -501,8 +510,10 @@ class HasilAkreditasiService
 
             // ── Set atribut sebelum getPeringkatFromSkor ──
             $hasil->final_memenuhi_syarat_unggul = $syarat['memenuhi'];
-            $peringkat                     = $hasil->getPeringkatFromSkor($skorFinal);
-            $idStatusFinal                 = $this->resolveStatusIdByPeringkat($peringkat);
+            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorFinal);
+
+            $peringkat  = $resolved['peringkat'];
+            $idStatusFinal = $resolved['status_id'];
 
             $hasil->update([
                 'status'                     => 'draft_penetapan',
@@ -556,11 +567,15 @@ class HasilAkreditasiService
             // getPeringkatFromSkor membaca $hasil->final_memenuhi_syarat_unggul
             // Tidak perlu re-compute peringkat — sudah tersimpan di draft_penetapan.
             // Tapi lakukan re-check untuk validasi konsistensi:
-            $peringkatRecheck = $hasil->getPeringkatFromSkor((float)$hasil->skor_final);
+            $skorFinal = (float)$hasil->skor_final;
+            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorFinal);
+
+            $peringkatRecheck  = $resolved['peringkat'];
+            $idStatusFinal = $resolved['status_id'];
             if ($peringkatRecheck !== $hasil->peringkat_akreditasi_final) {
                 // Update jika ada perubahan (misal: data LKPS diupdate antara draft dan finalize)
                 $hasil->peringkat_akreditasi_final = $peringkatRecheck;
-                $hasil->id_status_final            = $this->resolveStatusIdByPeringkat($peringkatRecheck);
+                $hasil->id_status_final            = $idStatusFinal;
             }
 
             $catatan = $syarat['keterangan'];
@@ -695,41 +710,36 @@ class HasilAkreditasiService
     // =========================================================
 
     /**
-     * Untuk DRAFT: kembalikan id status non-Unggul tertinggi jika skor
-     * masuk range Unggul. Unggul belum bisa ditetapkan sebelum syarat perlu divalidasi.
-     */
-    private function resolveStatusIdForDraft(int $skor): ?int
-    {
-        $all = $this->getAllStatusAkreditasi();
-
-        $match = $all
-            ->filter(fn($s) => $s->skor_min <= $skor && $s->skor_max >= $skor)
-            ->sortByDesc('skor_min')
-            ->first();
-
-        if (!$match) {
-            return null;
-        }
-
-        // Bukan Unggul → aman dipakai langsung
-        if (!$this->isStatusUnggul($match)) {
-            return $match->id;
-        }
-
-        // Unggul → ambil non-Unggul tertinggi sebagai placeholder
-        return $this->getStatusNonUnggulTertinggi()?->id ?? $match->id;
-    }
-
-    /**
      * Setelah peringkat efektif diketahui (post-validasi syarat perlu),
      * cari id status yang string-nya match persis dengan peringkat tersebut.
      * Ini menjamin id_status_* dan peringkat_akreditasi_* selalu konsisten.
      */
-    private function resolveStatusIdByPeringkat(string $peringkat): ?int
+    private function resolvePeringkatDanStatus(HasilAkreditasi $hasil, float $skor): array
     {
-        return $this->getAllStatusAkreditasi()
-            ->firstWhere('status', $peringkat)
-            ?->id;
+        $peringkat = $hasil->getPeringkatFromSkor($skor);
+
+        $status = $this->getAllStatusAkreditasi()
+            ->filter(function ($item) use ($skor, $peringkat) {
+                return $item->skor_min <= $skor
+                    && $item->skor_max >= $skor
+                    && strcasecmp(trim($item->status), trim($peringkat)) === 0;
+            })
+            ->sortByDesc('skor_min')
+            ->first();
+
+        // fallback kalau tidak ketemu exact match nama + skor
+        if (!$status) {
+            $status = $this->getAllStatusAkreditasi()
+                ->filter(fn($item) => $item->skor_min <= $skor && $item->skor_max >= $skor)
+                ->sortByDesc('skor_min')
+                ->first();
+        }
+
+        return [
+            'peringkat' => $peringkat,
+            'status_id' => $status?->id,
+            'status'    => $status,
+        ];
     }
 
     /**
@@ -753,7 +763,7 @@ class HasilAkreditasiService
 
     /**
      * Cache semua StatusAkreditasi dalam satu request untuk menghindari
-     * query berulang di resolveStatusIdForDraft, resolveStatusIdByPeringkat, dll.
+     * query berulang di resolveStatusIdForDraft, resolveStatusIdBySkor, dll.
      */
     private function getAllStatusAkreditasi(): Collection
     {

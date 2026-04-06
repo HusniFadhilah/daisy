@@ -136,11 +136,14 @@
     }
 
     // Event listeners
-    document.getElementById('filterUniversity').addEventListener('change', applyFilters);
-    document.getElementById('filterStatus').addEventListener('change', applyFilters);
+    let filterUniversity = document.getElementById('filterUniversity')
+    if (filterUniversity) filterUniversity.addEventListener('change', applyFilters);
+    let filterStatus = document.getElementById('filterStatus')
+    if (filterStatus) filterStatus.addEventListener('change', applyFilters);
 
     // Debounced search
-    document.getElementById('searchInput').addEventListener('input', function() {
+    let searchInput = document.getElementById('searchInput')
+    if (searchInput) searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(applyFilters, 500);
     });

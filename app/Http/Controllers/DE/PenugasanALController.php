@@ -189,12 +189,21 @@ class PenugasanALController extends Controller
         // Available users for assignment
         $availableUsers = User::notAdmin()->orderBy('name')->get();
 
+        $assignmentReminders = [];
+
+        if ($pengajuan->asesmen) {
+            foreach ($pengajuan->asesmen->asesmenUserRoles as $assignment) {
+                $assignmentReminders[$assignment->id] = $assignment->resolveReminderMeta();
+            }
+        }
+
         return view('de.penugasan-al.show', compact(
             'pengajuan',
             'userProgress',
             'requirementsStatus',
             'availableUsers',
-            'totalElemens'
+            'totalElemens',
+            'assignmentReminders'
         ));
     }
 

@@ -548,6 +548,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/assign-validator', [ValidasiDokumenController::class, 'showAssignValidatorForm'])->name('.assign-validator.form');
             Route::post('/{id}/assign-validator', [ValidasiDokumenController::class, 'assignValidator'])->name('.assign-validator');
             Route::delete('/{id}/cancel-validator', [ValidasiDokumenController::class, 'cancelValidator'])->name('.cancel-validator');
+            Route::post('/kirim-reminder', [PenerimaanDokumenController::class, 'kirimReminder'])->name('.kirim-reminder');
         });
         Route::prefix('pelaporan-dokumen')->name('.pelaporan-dokumen')->group(function () {
             Route::get('/', [PelaporanDokumenController::class, 'index']);
@@ -1279,6 +1280,21 @@ Route::prefix('preview/email')
         Route::get('/reminder-pelaporan-dokumen/{assignment}', 'reminderPelaporanDokumen')->name('reminder.pelaporan.dokumen');
         Route::get('/reminder-penawaran-asesmen/{assignment}', 'reminderPenawaranAsesmen')->name('reminder.penawaran.asesmen');
         Route::get('/reminder-progress-asesmen/{assignment}', 'reminderProgressAsesmen')->name('reminder.progress.asesmen');
+        // Reminder Pelaporan (ReminderPelaporanMail)
+        Route::get('/reminder-pelaporan-ak/{assignment}',         'reminderPelaporanAK')->name('reminder.pelaporan.ak');
+        Route::get('/reminder-pelaporan-al/{assignment}',         'reminderPelaporanAL')->name('reminder.pelaporan.al');
+        Route::get('/reminder-pelaporan-ak-banding/{assignment}', 'reminderPelaporanAKBanding')->name('reminder.pelaporan.ak.banding');
+        Route::get('/reminder-pelaporan-al-banding/{assignment}', 'reminderPelaporanALBanding')->name('reminder.pelaporan.al.banding');
+
+        // Reminder Context (ReminderContextMail)
+        Route::get('/reminder-upload-dokumen/{pengajuan}',        'reminderUploadDokumen')->name('reminder.upload.dokumen');
+        Route::get('/reminder-validasi-pembayaran/{pembayaran}',  'reminderValidasiPembayaran')->name('reminder.validasi.pembayaran');
+        Route::get('/reminder-bayar-invoice/{pembayaran}',        'reminderBayarInvoice')->name('reminder.bayar.invoice');
+        Route::get('/reminder-upload-ulang-bukti/{pembayaran}',   'reminderUploadUlangBukti')->name('reminder.upload.ulang.bukti');
+
+        Route::get('/notifikasi-lha-finalized/{asesmen}',        'notifikasiLhaFinalized')->name('notifikasi.lha.finalized');
+        Route::get('/notifikasi-lha-approved/{pengajuan}',        'notifikasiLhaApproved')->name('notifikasi.lha.approved');
+        Route::get('/notifikasi-lha-revision/{pengajuan}',        'notifikasiLhaRevision')->name('notifikasi.lha.revision');
     });
 // Route::get('/preview/email/penawaran/{assignment}', function (\App\Models\AsesmenUserRole $assignment) {
 //     return new \App\Mail\PenawaranAsesmenMail($assignment);

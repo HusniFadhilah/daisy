@@ -8,6 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class BorangRevisionNotification extends Mailable implements ShouldQueue
 {
@@ -27,8 +28,8 @@ class BorangRevisionNotification extends Mailable implements ShouldQueue
         $this->validation = $validation;
         $this->actionUrl = route('upps.validasi-dokumen.show', $pengajuan->id);
 
-        $points = $validation->revision_points ?? [];
-        $this->revisionCount = is_array($points) ? count($points) : 0;
+        $points = $validation->getNeedsRevisionItems();
+        $this->revisionCount = is_array($points) ? collect($points)->sum(fn($items) => count($items)) : 0;
     }
 
     public function build(): self

@@ -206,7 +206,7 @@
                     @if($currentValidator)
                     <div class="row align-items-start">
                         {{-- Validator Info --}}
-                        <div class="col-md-3">
+                        <div class="col-lg-3">
                             <div class="text-center">
                                 <div class="avatar-circle mx-auto mb-2" style="width: 80px; height: 80px; font-size: 2rem;">
                                     {{ substr($currentValidator->user->name, 0, 1) }}
@@ -217,7 +217,7 @@
                         </div>
 
                         {{-- Validator Status --}}
-                        <div class="col-md-5">
+                        <div class="col-lg-5">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="text-muted small">Role</label>
@@ -283,12 +283,19 @@
                                 @endif
                             </div>
 
-                            <div class="d-flex gap-2 mt-2">
+                            <div class="d-flex gap-2 my-2">
                                 @if($currentValidator->status_penawaran === 'pending')
                                 <span class="badge bg-warning">
                                     <i class="bi bi-hourglass-split"></i>
                                     Menunggu validator menerima penawaran
                                 </span>
+                                @if(!empty($assignmentReminders[$currentValidator->id]))
+                                @php $reminder = $assignmentReminders[$currentValidator->id]; @endphp
+
+                                <button type="button" class="btn {{ $reminder['btn_class'] }} btn-sm" title="{{ $reminder['label'] }}" onclick="kirimReminderAssignment({{ $currentValidator->id }},@js($reminder['label']),@js($reminder['message']))">
+                                    <i class="bi {{ $reminder['icon'] }}"></i>
+                                </button>
+                                @endif
                                 @elseif($currentValidator->status_penawaran === 'rejected')
                                 <a href="{{ route('de.penerimaan-dokumen.assign-validator', $pengajuan->id) }}" class="btn btn-warning btn-sm">
                                     <i class="bi bi-arrow-repeat"></i>
@@ -306,7 +313,7 @@
                         </div>
 
                         {{-- ✅ NEW: Surat Tugas Validator --}}
-                        <div class="col-md-4">
+                        <div class="col-lg-4">
                             @php
                             $suratTugas = $pengajuan->dokumen
                             ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
@@ -666,6 +673,8 @@
     </div>
 </div>
 @endif
+
+@include('layouts.template.kirim-reminder')
 @endsection
 
 

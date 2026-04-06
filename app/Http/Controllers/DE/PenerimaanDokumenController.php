@@ -288,12 +288,21 @@ class PenerimaanDokumenController extends Controller
         // Can assign validator if docs complete and status allows
         $canAssignValidator = $pengajuan->canAssignValidator();
 
+        $assignmentReminders = [];
+
+        if ($pengajuan->asesmen) {
+            foreach ($pengajuan->asesmen->asesmenUserRoles as $assignment) {
+                $assignmentReminders[$assignment->id] = $assignment->resolveReminderMeta();
+            }
+        }
+
         return view('de.penerimaan-dokumen.show', compact(
             'pengajuan',
             'uploadedDocuments',
             'docCompleteness',
             'currentValidator',
-            'canAssignValidator'
+            'canAssignValidator',
+            'assignmentReminders'
         ));
     }
 

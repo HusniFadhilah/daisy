@@ -354,11 +354,11 @@ class AsesmenUserRole extends Model
         } elseif ($this->jenis_asesmen === 'ak') {
             $action = $this->id_role == Role::ID_ROLE_VALIDATOR ? 'Validasi AK' : 'Penilaian AK';
         } elseif ($this->jenis_asesmen === 'al') {
-            $action = $this->id_role == Role::ID_ROLE_VALIDATOR ? 'Validasi AL' : 'Penilaian AL';
+            $action = $this->id_role == Role::ID_ROLE_VALIDATOR ? 'Pelaporan Validasi AL' : 'Penilaian AL';
         } elseif ($this->jenis_asesmen === 'ak_banding') {
             $action = $this->id_role == Role::ID_ROLE_VALIDATOR ? 'Validasi AK Banding' : 'Penilaian AK Banding';
         } elseif ($this->jenis_asesmen === 'al_banding') {
-            $action = $this->id_role == Role::ID_ROLE_VALIDATOR ? 'Validasi AL Banding' : 'Penilaian AL Banding';
+            $action = $this->id_role == Role::ID_ROLE_VALIDATOR ? 'Pelaporan Validasi AL Banding' : 'Penilaian AL Banding';
         } else {
             $action = '';
         }
@@ -400,9 +400,6 @@ class AsesmenUserRole extends Model
         } else {
             $route = 'dashboard';
         }
-        Log::info($route);
-        Log::info($this->id_role);
-        Log::info($this->user->name);
         return $route;
     }
 

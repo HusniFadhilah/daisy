@@ -285,6 +285,13 @@
                                         @endif
                                     </td>
                                     <td>
+                                        @if(!empty($assignmentReminders[$assignment->id]))
+                                        @php $reminder = $assignmentReminders[$assignment->id]; @endphp
+
+                                        <button type="button" class="btn {{ $reminder['btn_class'] }} btn-sm" title="{{ $reminder['label'] }}" onclick="kirimReminderAssignment({{ $assignment->id }},@js($reminder['label']),@js($reminder['message']))">
+                                            <i class="bi {{ $reminder['icon'] }}"></i>
+                                        </button>
+                                        @endif
                                         <button class="btn btn-sm btn-danger" onclick="removeUser({{ $pengajuan->id }}, {{ $assignment->id_user }}, '{{ $assignment->user->name }}')">
                                             <i class="bi bi-trash"></i>
                                         </button>

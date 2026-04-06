@@ -326,6 +326,7 @@
 
                 $logs = $pengajuan->statusLog
                 ->whereIn('status_to', $filterStatuses)
+                ->unique('status_to')
                 ->sortBy('changed_at');
                 @endphp
 

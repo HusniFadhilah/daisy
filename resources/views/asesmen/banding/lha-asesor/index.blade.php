@@ -566,7 +566,7 @@ $lhaIsFinalizedApproved = $lha->isFinalizedApproved();
             return;
         }
 
-        if (!(await swalConfirmSubmit('warning', `Apakah Anda yakin ingin finalisasi Laporan Surveillance?<br><br>Setelah difinalisasi:<ul style="text-align: left; margin-left: 1.2rem;"><li>Laporan Surveillance akan di-generate menjadi PDF</li><li>Dokumen akan dikirim ke Program Studi</li><li>Laporan Surveillance tidak dapat diubah lagi</li></ul>`))) {
+        if (!(await swalConfirmSubmit('warning', `Apakah Anda yakin ingin finalisasi Laporan Surveillance?<br><br>Setelah difinalisasi:<ul style="text-align: left; margin-left: 1.2rem;"><li>Laporan Surveillance akan di-<i>generate</i> menjadi PDF</li><li>Dokumen akan dikirim ke Program Studi</li><li>Laporan Surveillance tidak dapat diubah lagi</li></ul>`))) {
             return;
         }
 

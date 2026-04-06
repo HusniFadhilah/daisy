@@ -223,6 +223,7 @@
 
         $logs = $pengajuan->statusLog
         ->whereIn('status_to', $filterStatuses)
+        ->unique('status_to')
         ->sortBy('created_at');
         @endphp
 

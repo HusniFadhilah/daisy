@@ -95,15 +95,19 @@
             });
     }
 
-    document.getElementById('btnApply').addEventListener('click', function(e) {
+    let btnApply = document.getElementById('btnApply')
+    if (btnApply) btnApply.addEventListener('click', function(e) {
         e.preventDefault();
         applyFilters();
     });
 
-    document.getElementById('filterStatus').addEventListener('change', applyFilters);
-    document.getElementById('filterPeringkat').addEventListener('change', applyFilters);
+    let filterStatus = document.getElementById('filterStatus')
+    if (filterStatus) filterStatus.addEventListener('change', applyFilters);
+    let filterPeringkat = document.getElementById('filterPeringkat')
+    if (filterPeringkat) filterPeringkat.addEventListener('change', applyFilters);
 
-    document.getElementById('searchInput').addEventListener('input', function() {
+    let searchInput = document.getElementById('searchInput')
+    if (searchInput) searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(applyFilters, 500);
     });

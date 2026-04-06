@@ -4,16 +4,32 @@
 namespace App\Http\Controllers\UPPS;
 
 use App\Http\Controllers\Controller;
+use App\Mail\Reminder\ReminderContextMail;
 use App\Models\PengajuanAkreditasi;
-use App\Models\PengajuanPembayaran;
 use App\Models\PengajuanDokumen;
+use App\Models\PengajuanPembayaran;
+use App\Models\User;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ValidasiPembayaranController extends Controller
 {
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery,
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery      = $mailDelivery;
+    }
+
     /**
      * Display list of pembayaran
      */
@@ -123,24 +139,27 @@ class ValidasiPembayaranController extends Controller
     {
         $validated = $request->validate([
             'file_formulir_pembayaran' => 'required|file|mimes:xlsx,pdf,jpg,jpeg,png|max:5120',
-            'tanggal_pembayaran' => 'required|date_format:Y-m-d\TH:i',
-            'catatan_pembayaran' => 'nullable|string|max:500',
+            'tanggal_pembayaran'       => 'required|date_format:Y-m-d\TH:i',
+            'catatan_pembayaran'       => 'nullable|string|max:500',
         ], [
-            'file_formulir_pembayaran.required' => 'File formulir & bukti pembayaran harus diupload.',
-            'file_formulir_pembayaran.mimes' => 'File harus berformat PDF, JPG, JPEG, PNG, atau XLSX.',
-            'file_formulir_pembayaran.max' => 'Ukuran file maksimal 5MB.',
-            'tanggal_pembayaran.required' => 'Tanggal pembayaran harus diisi.',
-            'tanggal_pembayaran.date_format' => 'Format tanggal & waktu tidak valid.',
-            'tanggal_pembayaran.before_or_equal' => 'Tanggal pembayaran tidak boleh melebihi saat ini.',
-            'catatan_pembayaran.max' => 'Catatan maksimal 500 karakter.',
+            'file_formulir_pembayaran.required'    => 'File formulir & bukti pembayaran harus diupload.',
+            'file_formulir_pembayaran.mimes'       => 'File harus berformat PDF, JPG, JPEG, PNG, atau XLSX.',
+            'file_formulir_pembayaran.max'         => 'Ukuran file maksimal 5MB.',
+            'tanggal_pembayaran.required'          => 'Tanggal pembayaran harus diisi.',
+            'tanggal_pembayaran.date_format'       => 'Format tanggal & waktu tidak valid.',
+            'tanggal_pembayaran.before_or_equal'   => 'Tanggal pembayaran tidak boleh melebihi saat ini.',
+            'catatan_pembayaran.max'               => 'Catatan maksimal 500 karakter.',
         ]);
 
         DB::beginTransaction();
         try {
-            $pembayaran = PengajuanPembayaran::with('pengajuan')->findOrFail($id);
+            $pembayaran = PengajuanPembayaran::with([
+                'pengajuan.studyProgram.university',
+                'pengajuan.studyProgram.degreeLevel',
+            ])->findOrFail($id);
 
             // Check access
-            $user = Auth::user();
+            $user            = Auth::user();
             $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
             if (!$studyProgramIds->contains($pembayaran->pengajuan->id_program_studi)) {
@@ -153,7 +172,7 @@ class ValidasiPembayaranController extends Controller
             }
 
             // Upload file
-            $file = $request->file('file_formulir_pembayaran');
+            $file     = $request->file('file_formulir_pembayaran');
             $fileName = 'formulir_pembayaran_' . time() . '.' . $file->getClientOriginalExtension();
             $filePath = $file->storeAs(
                 'permohonan-akreditasi/' . $pembayaran->id_pengajuan . '/formulir-pembayaran',
@@ -167,22 +186,22 @@ class ValidasiPembayaranController extends Controller
                 ->update(['is_latest' => false]);
 
             // Create new dokumen record
-            $dokumen = PengajuanDokumen::create([
-                'id_pengajuan' => $pembayaran->id_pengajuan,
-                'jenis_dokumen' => 'formulir_pembayaran',
-                'path_file' => $filePath,
+            PengajuanDokumen::create([
+                'id_pengajuan'      => $pembayaran->id_pengajuan,
+                'jenis_dokumen'     => 'formulir_pembayaran',
+                'path_file'         => $filePath,
                 'original_filename' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
-                'uploaded_by' => Auth::id(),
-                'versi' => PengajuanDokumen::where('id_pengajuan', $pembayaran->id_pengajuan)
+                'file_size'         => $file->getSize(),
+                'uploaded_by'       => Auth::id(),
+                'versi'             => PengajuanDokumen::where('id_pengajuan', $pembayaran->id_pengajuan)
                     ->where('jenis_dokumen', 'formulir_pembayaran')
                     ->max('versi') + 1,
-                'is_latest' => true,
+                'is_latest'         => true,
             ]);
 
             // Update pembayaran
             $pembayaran->update([
-                'bukti_path' => $filePath,
+                'bukti_path'        => $filePath,
                 'status_pembayaran' => 'menunggu_verifikasi',
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                 'catatan_pembayaran' => $validated['catatan_pembayaran'],
@@ -196,12 +215,67 @@ class ValidasiPembayaranController extends Controller
 
             DB::commit();
 
+            // Kirim notifikasi ke keuangan (after commit)
+            $this->notifikasiKeuangan($pembayaran);
+
             return redirect()
                 ->route('upps.validasi-pembayaran.show', $id)
                 ->with('success', 'Formulir & Bukti pembayaran berhasil diupload. Menunggu validasi dari LAMDEPILAR.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Gagal mengupload formulir & bukti pembayaran: ' . $e->getMessage());
+        }
+    }
+
+    private function notifikasiKeuangan(PengajuanPembayaran $pembayaran): void
+    {
+        try {
+            $pembayaran->loadMissing([
+                'pengajuan.studyProgram.university',
+                'pengajuan.studyProgram.degreeLevel',
+            ]);
+
+            $keuanganUsers  = User::where('role_selected', 'keuangan_lamdepilar')->with('activeEmails')->get();
+            $keuanganEmails = $this->recipientResolver->emailsForUsers($keuanganUsers);
+
+            if (empty($keuanganEmails)) {
+                Log::warning('Notifikasi keuangan tidak dikirim: tidak ada akun keuangan.', [
+                    'pembayaran_id' => $pembayaran->id,
+                ]);
+                return;
+            }
+
+            $namaProdi   = $pembayaran->pengajuan->studyProgram->name ?? '-';
+            $namaUniv    = $pembayaran->pengajuan->studyProgram->university->name ?? '-';
+            $contextInfo = 'Berikut adalah pesan dari LAMDEPILAR mengenai proses pembayaran akreditasi untuk ';
+            $contextInfo .= implode(' | ', array_filter([
+                $namaProdi,
+                $namaUniv,
+                'Invoice: ' . $pembayaran->nomor_invoice,
+            ]));
+
+            $this->mailDelivery->sendToEmails(
+                $keuanganEmails,
+                new ReminderContextMail(
+                    recipientName: 'Bagian Keuangan LAMDEPILAR',
+                    pesanReminder: "Program studi {$namaProdi} ({$namaUniv}) telah mengunggah bukti pembayaran dan sedang menunggu validasi Anda.\n\nMohon segera melakukan pengecekan dan validasi agar proses akreditasi dapat dilanjutkan.",
+                    subject: 'Bukti Pembayaran Menunggu Validasi',
+                    actionUrl: route('keuangan.pembayaran.show', $pembayaran->id),
+                    actionLabel: 'Validasi Sekarang',
+                    contextInfo: $contextInfo,
+                    headerTitle: 'Bukti Pembayaran Menunggu Validasi',
+                    preheader: "{$namaProdi} telah mengupload bukti pembayaran, segera validasi.",
+                ),
+                [],
+                [],
+                true
+            );
+        } catch (\Throwable $e) {
+            // Tidak throw — upload sudah sukses, email gagal tidak boleh batalkan response
+            Log::error('Gagal mengirim notifikasi keuangan setelah upload bukti pembayaran', [
+                'pembayaran_id' => $pembayaran->id,
+                'error'         => $e->getMessage(),
+            ]);
         }
     }
 

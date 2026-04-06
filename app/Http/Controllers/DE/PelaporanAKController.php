@@ -143,7 +143,7 @@ class PelaporanAKController extends Controller
             jenisAsesmen: self::JENIS_ASESMEN,
             documentType: self::DOCUMENT_TYPE,
             mailSubject: 'Pengingat Pelaporan Validasi AK',
-            actionRouteName: 'pelaporan.ak.show', // sesuaikan nama route validator
+            actionRouteName: 'pelaporan.validasiAk.show', // sesuaikan nama route validator
             requiredStatuses: self::REQUIRED_STATUSES,
             keteranganLog: 'Pengingat pelaporan AK dikirim ke validator',
         );

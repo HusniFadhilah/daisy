@@ -1,3 +1,4 @@
+{{-- resources\views\layouts\template\kirim-reminder.blade.php --}}
 <form id="formReminderAssignment" method="POST" style="display:none;">
     @csrf
     <input type="hidden" name="pesan_reminder" id="pesanReminderAssignment">
@@ -5,6 +6,7 @@
 
 <script>
     function kirimReminderAssignment(assignmentId, title, defaultMessage) {
+
         Swal.fire({
             title: title
             , input: 'textarea'
@@ -32,7 +34,7 @@
                 const input = document.getElementById('pesanReminderAssignment');
 
                 input.value = result.value;
-                form.action = "{{ route('de.kirim-reminder-assignment',$assignment->id) }}";
+                form.action = "{{ url('/de/reminder') }}/" + assignmentId;
                 form.submit();
             }
         });

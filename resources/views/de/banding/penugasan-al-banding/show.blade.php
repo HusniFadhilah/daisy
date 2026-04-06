@@ -185,7 +185,7 @@
                                     <th>Nama</th>
                                     <th>Status</th>
                                     {{-- <th>Progress</th> --}}
-                                    <th width="80">Aksi</th>
+                                    <th width="120">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -220,6 +220,13 @@
                 <small class="text-muted">{{ $progress['completed'] }}/{{ $progress['total'] }}</small>
                 </td> --}}
                 <td>
+                    @if(!empty($assignmentReminders[$assignment->id]))
+                    @php $reminder = $assignmentReminders[$assignment->id]; @endphp
+
+                    <button type="button" class="btn {{ $reminder['btn_class'] }} btn-sm" title="{{ $reminder['label'] }}" onclick="kirimReminderAssignment({{ $assignment->id }},@js($reminder['label']),@js($reminder['message']))">
+                        <i class="bi {{ $reminder['icon'] }}"></i>
+                    </button>
+                    @endif
                     <button class="btn btn-sm btn-danger" onclick="removeAsesor({{ $pengajuan->id }}, {{ $assignment->id_user }}, '{{ $assignment->user->name }}')" {{ ($assignment->status_pekerjaan ?? 'not_started') !== 'not_started' ? 'disabled' : '' }}>
                         <i class="bi bi-trash"></i>
                     </button>
@@ -453,12 +460,12 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Tanggal Mulai <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" id="updateTanggalMulai" value="{{ old('updateTanggalMulai',optional($pengajuan->asesmen->asesmenLapanganBanding->tanggal_mulai)?->format('Y-m-d')) }}" required>
+                        <input type="date" class="form-control" id="updateTanggalMulai" value="{{ old('updateTanggalMulai',optional($pengajuan->asesmen->asesmenLapanganBanding?->tanggal_mulai)?->format('Y-m-d')) }}" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Estimasi Tanggal Selesai <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" id="updateTanggalSelesai" value="{{ old('updateTanggalSelesai',optional($pengajuan->asesmen->asesmenLapanganBanding->tanggal_selesai)?->format('Y-m-d')) }}" required>
+                        <input type="date" class="form-control" id="updateTanggalSelesai" value="{{ old('updateTanggalSelesai',optional($pengajuan->asesmen->asesmenLapanganBanding?->tanggal_selesai)?->format('Y-m-d')) }}" required>
                     </div>
 
                     <div class="mb-3">
