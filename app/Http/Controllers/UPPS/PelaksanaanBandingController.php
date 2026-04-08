@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\UPPS;
 
 use App\Http\Controllers\Controller;
+use App\Mail\Reminder\ReminderContextMail;
 use App\Models\AsesmenDocument;
 use App\Models\PengajuanAkreditasi;
 use App\Models\PengajuanDokumen;
 use App\Models\PengajuanPembayaran;
+use App\Models\User;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +39,16 @@ class PelaksanaanBandingController extends Controller
         PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
     ];
 
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery,
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery      = $mailDelivery;
+    }
     // ============================================================
     // INDEX
     // ============================================================
@@ -98,7 +112,7 @@ class PelaksanaanBandingController extends Controller
                 ->whereIn('jenis_dokumen', [
                     'surat_permohonan_banding',
                     'formulir_pembayaran_banding',
-                    'dokumen_banding',
+                    'surat_tugas_asesor_al_banding',
                 ])
                 ->where('is_latest', true)
                 ->orderBy('created_at', 'desc'),
@@ -156,6 +170,11 @@ class PelaksanaanBandingController extends Controller
         }
 
         // Hanya bisa upload jika status menunggu_pembayaran atau upload_ulang
+        if (in_array($pembayaranBanding->status_pembayaran, ['menunggu_verifikasi', 'terverifikasi'])) {
+            return redirect()
+                ->route('upps.pelaksanaan-banding.show', $id);
+        }
+
         if (!in_array($pembayaranBanding->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang'])) {
             return redirect()
                 ->route('upps.pelaksanaan-banding.show', $id)
@@ -249,6 +268,9 @@ class PelaksanaanBandingController extends Controller
 
             DB::commit();
 
+            // Kirim notifikasi ke keuangan (after commit)
+            $this->notifikasiKeuangan($pembayaranBanding);
+
             return redirect()
                 ->route('upps.pelaksanaan-banding.show', $id)
                 ->with('success', 'Formulir & bukti pembayaran banding berhasil diupload. Menunggu validasi dari LAMDEPILAR.');
@@ -266,6 +288,58 @@ class PelaksanaanBandingController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Gagal mengupload: ' . $e->getMessage());
+        }
+    }
+
+    private function notifikasiKeuangan(PengajuanPembayaran $pembayaran): void
+    {
+        try {
+            $pembayaran->loadMissing([
+                'pengajuan.studyProgram.university',
+                'pengajuan.studyProgram.degreeLevel',
+            ]);
+
+            $keuanganUsers  = User::where('role_selected', 'keuangan_lamdepilar')->with('activeEmails')->get();
+            $keuanganEmails = $this->recipientResolver->emailsForUsers($keuanganUsers);
+
+            if (empty($keuanganEmails)) {
+                Log::warning('Notifikasi keuangan tidak dikirim: tidak ada akun keuangan.', [
+                    'pembayaran_id' => $pembayaran->id,
+                ]);
+                return;
+            }
+
+            $namaProdi   = $pembayaran->pengajuan->studyProgram->name ?? '-';
+            $namaUniv    = $pembayaran->pengajuan->studyProgram->university->name ?? '-';
+            $contextInfo = 'Berikut adalah pesan dari LAMDEPILAR mengenai proses pembayaran banding untuk ';
+            $contextInfo .= implode(' | ', array_filter([
+                $namaProdi,
+                $namaUniv,
+                'Invoice: ' . $pembayaran->nomor_invoice,
+            ]));
+
+            $this->mailDelivery->sendToEmails(
+                $keuanganEmails,
+                new ReminderContextMail(
+                    recipientName: 'Bagian Keuangan LAMDEPILAR',
+                    pesanReminder: "Program studi {$namaProdi} ({$namaUniv}) telah mengunggah bukti pembayaran banding dan sedang menunggu validasi Anda.\n\nMohon segera melakukan pengecekan dan validasi agar proses surveillance banding dapat dilanjutkan.",
+                    subject: 'Bukti Pembayaran Banding Menunggu Validasi',
+                    actionUrl: route('keuangan.pembayaran.show', $pembayaran->id),
+                    actionLabel: 'Validasi Sekarang',
+                    contextInfo: $contextInfo,
+                    headerTitle: 'Bukti Pembayaran Banding Menunggu Validasi',
+                    preheader: "{$namaProdi} telah mengupload bukti pembayaran banding, segera validasi.",
+                ),
+                [],
+                [],
+                true
+            );
+        } catch (\Throwable $e) {
+            // Tidak throw — upload sudah sukses, email gagal tidak boleh batalkan response
+            Log::error('Gagal mengirim notifikasi keuangan setelah upload bukti pembayaran', [
+                'pembayaran_id' => $pembayaran->id,
+                'error'         => $e->getMessage(),
+            ]);
         }
     }
 
@@ -418,6 +492,13 @@ class PelaksanaanBandingController extends Controller
 
             DB::commit();
 
+            $this->notifikasiAsesorLHAReviewed(
+                pengajuan: $pengajuan,
+                newStatus: $newStatus,
+                catatanProdi: $request->catatan_prodi,
+                namaReviewer: $user->name,
+            );
+
             // Success messages
             $messages = [
                 'approved' => 'Laporan hasil surveillance banding berhasil disetujui.',
@@ -467,5 +548,85 @@ class PelaksanaanBandingController extends Controller
             'changed_at' => now(),
             'keterangan' => $logMessages[$newStatus],
         ]);   //
+    }
+
+    private function notifikasiAsesorLHAReviewed(
+        PengajuanAkreditasi $pengajuan,
+        string $newStatus,
+        ?string $catatanProdi,
+        string $namaReviewer,
+    ): void {
+        try {
+            $pengajuan->loadMissing([
+                'studyProgram.university',
+                'asesmen.asesmenUserRoles' => fn($q) => $q
+                    ->where('jenis_asesmen', 'al_banding')
+                    ->where('status_penawaran', 'accepted')
+                    ->whereHas('role_selected', fn($r) => $r->where('name', 'asesor_banding'))
+                    ->with('user.activeEmails'),
+            ]);
+
+            $namaProdi   = $pengajuan->studyProgram->name ?? '-';
+            $namaUniv    = $pengajuan->studyProgram->university->name ?? '-';
+
+            $asesorUsers = $pengajuan->asesmen->asesmenUserRoles->map->user->filter();
+
+            if ($asesorUsers->isEmpty()) {
+                Log::warning('Notifikasi LHS Banding reviewed tidak dikirim: tidak ada asesor.', [
+                    'pengajuan_id' => $pengajuan->id,
+                ]);
+                return;
+            }
+
+            $asesorEmails = $this->recipientResolver->emailsForUsers($asesorUsers);
+
+            if (empty($asesorEmails)) return;
+
+            $catatanSection = $catatanProdi
+                ? "\n\nCatatan dari Program Studi ({$namaReviewer}):\n{$catatanProdi}"
+                : '';
+
+            if ($newStatus === 'approved') {
+                $this->mailDelivery->sendToEmails(
+                    $asesorEmails,
+                    new ReminderContextMail(
+                        recipientName: 'Tim Asesor AL Banding',
+                        pesanReminder: "Program studi {$namaProdi} ({$namaUniv}) telah meninjau dan menyetujui Laporan Surveilance Penanganan Banding yang Anda susun.\n\nProses asesmen lapangan banding untuk program studi ini telah selesai. Terima kasih atas dedikasi dan kerja keras tim asesor.{$catatanSection}",
+                        subject: "Laporan Surveilance Banding Disetujui — {$namaProdi}",
+                        actionUrl: route('al_banding.berkas.lha-asesor.page', $pengajuan->asesmen->id),
+                        actionLabel: 'Lihat Laporan',
+                        contextInfo: 'Berikut adalah detail proses persetujuan Laporan Surveilance Banding: ',
+                        headerTitle: 'Laporan Surveilance Banding Disetujui',
+                        preheader: "{$namaProdi} telah menyetujui Laporan Surveilance Banding. Terima kasih.",
+                    ),
+                    [],
+                    [],
+                    true
+                );
+            } elseif ($newStatus === 'revision_required') {
+                $this->mailDelivery->sendToEmails(
+                    $asesorEmails,
+                    new ReminderContextMail(
+                        recipientName: 'Tim Asesor AL Banding',
+                        pesanReminder: "Program studi {$namaProdi} ({$namaUniv}) mengajukan permintaan revisi terhadap Laporan Surveilance Penanganan Banding yang Anda susun.\n\nMohon segera:\n1. Baca catatan revisi dari program studi\n2. Lakukan perbaikan yang diperlukan\n3. Finalisasi ulang dokumen setelah diperbaiki{$catatanSection}",
+                        subject: "Permintaan Revisi Laporan Surveilance Banding — {$namaProdi}",
+                        actionUrl: route('al_banding.berkas.lha-asesor.page', $pengajuan->asesmen->id),
+                        actionLabel: 'Perbaiki Laporan Sekarang',
+                        contextInfo: 'Berikut adalah detail permintaan revisi Laporan Surveillance Banding: ',
+                        headerTitle: 'Permintaan Revisi Laporan Surveilance Banding',
+                        preheader: "{$namaProdi} meminta revisi Laporan Surveilance Banding, segera lakukan perbaikan.",
+                    ),
+                    [],
+                    [],
+                    true
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim notifikasi LHS Banding reviewed ke asesor', [
+                'pengajuan_id' => $pengajuan->id,
+                'new_status'   => $newStatus,
+                'error'        => $e->getMessage(),
+            ]);
+        }
     }
 }

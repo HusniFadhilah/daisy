@@ -398,7 +398,7 @@ $isComplete = $progress['percentage'] == 100;
                 <strong>Petunjuk:</strong>
                 <ol class="mb-0 mt-2">
                     <li>Gunakan <strong>tombol Finalisasi & Kirim</strong> untuk submit penilaian, <strong>tombol Download Excel</strong> untuk mengunduh templat atau hasil penilaian dalam format excel, serta <strong>tombol Upload Excel</strong> untuk mengupload penilaian excel serta menyimpannya ke sistem</li>
-                    <li>Klik <strong>Expand/Collapse All</strong> untuk membuka/menutup semua form elemen penilaian</li>
+                    <li>Klik <strong><i>Expand/Collapse All</i></strong> untuk membuka/menutup semua form elemen penilaian</li>
                     <li>Klik <strong>sel di matriks visualisasi penilaian</strong> untuk langsung membuka elemen penilaian dan menilai elemen tersebut</li>
                     <li>Pilih kategori penilaian:
                         @foreach ($jenjangs as $jenjang)

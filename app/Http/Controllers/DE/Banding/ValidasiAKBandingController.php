@@ -248,16 +248,16 @@ class ValidasiAKBandingController extends Controller
 
         // ✅ 3 ini pakai snapshot dari pengajuan_akreditasi.status
         $belumMulai = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED)
+            ->whereHas('latestStatusLog', function ($q) {
+                $q->where('status_to', PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED);
+            })
             ->count();
 
         $sedangPenilaian = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_AK_BANDING_IN_PROGRESS)
-            ->count();
+            ->where('status', PengajuanAkreditasi::STATUS_AK_BANDING_IN_PROGRESS)->count();
 
         $sedangValidasi = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_AK_BANDING_ON_VALIDATION)
-            ->count();
+            ->where('status', PengajuanAkreditasi::STATUS_AK_BANDING_ON_VALIDATION)->count();
 
         // tetap pakai status log (historical)
         $selesai = (clone $base)->whereHas(

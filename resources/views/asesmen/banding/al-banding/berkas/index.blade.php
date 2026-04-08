@@ -175,33 +175,33 @@
                                         <span>Berita Acara AL Banding</span>
                                     </div>
 
-                                    {{-- 3. LHA (Laporan Hasil Asesmen) --}}
+                                    {{-- 3. LHA (Laporan Hasil Surveillance Banding) --}}
                                     @php
                                     [$lhaItemClass, $lhaIcon, $lhaLabel] = match($lhaStatus) {
                                     'approved' => [
                                     'done',
                                     'bi-check-circle-fill text-success',
-                                    'Laporan Hasil Asesmen',
+                                    'Laporan Hasil Surveillance Banding',
                                     ],
                                     'revision_required' => [
                                     'active text-dark',
                                     'bi-exclamation-circle-fill text-warning',
-                                    'LHA — Permintaan Revisi',
+                                    'Laporan Hasil Surveillance Banding — Permintaan Revisi',
                                     ],
                                     'rejected' => [
                                     'active text-dark',
                                     'bi-x-circle-fill text-danger',
-                                    'LHA — Ditolak',
+                                    'Laporan Hasil Surveillance Banding — Ditolak',
                                     ],
                                     'pending' => [
                                     'active text-dark',
                                     'bi-clock-fill text-info',
-                                    'Laporan Surveillance — Menunggu Persetujuan Prodi',
+                                    'Laporan Hasil Surveillance Banding — Menunggu Persetujuan Prodi',
                                     ],
                                     default => [ // null = belum ada dokumen
                                     '',
                                     'bi-circle text-secondary',
-                                    'Laporan Hasil Asesmen',
+                                    'Laporan Hasil Surveillance Banding',
                                     ],
                                     };
                                     @endphp

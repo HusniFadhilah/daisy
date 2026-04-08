@@ -157,7 +157,7 @@
                         <th>Nama Validator</th>
                         <th>Status</th>
                         {{-- <th>Progress</th> --}}
-                        <th width="80">Aksi</th>
+                        <th width="120">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -197,6 +197,13 @@
     @endif
     </td> --}}
     <td>
+        @if(!empty($assignmentReminders[$validator->id]))
+        @php $reminder = $assignmentReminders[$validator->id]; @endphp
+
+        <button type="button" class="btn {{ $reminder['btn_class'] }} btn-sm" title="{{ $reminder['label'] }}" onclick="kirimReminderAssignment({{ $validator->id }},@js($reminder['label']),@js($reminder['message']))">
+            <i class="bi {{ $reminder['icon'] }}"></i>
+        </button>
+        @endif
         <button class="btn btn-sm btn-danger" onclick="removeValidator({{ $pengajuan->id }}, {{ $validator->id_user }}, '{{ $validator->user->name }}')" {{ ($validator->status_pekerjaan ?? 'not_started') !== 'not_started' ? 'disabled' : '' }}>
             <i class="bi bi-trash"></i>
         </button>
@@ -213,10 +220,18 @@
 
 <!-- Berita Acara Asesmen Lapangan -->
 <div class="card mb-4">
-    <div class="card-header bg-secondary text-white">
+    <div class="card-header bg-secondary text-white d-flex flex-column flex-md-row
+                justify-content-between align-items-start align-items-md-center gap-2">
         <h5 class="mb-0">
             <i class="bi bi-file-earmark-text"></i> Berita Acara Asesmen Lapangan Banding
         </h5>
+
+        {{-- Tombol reminder: tampil hanya jika BA belum ada --}}
+        @if(!$beritaAcaraProgress)
+        <button type="button" class="btn btn-sm btn-warning" onclick="showModalReminderBeritaAcara()">
+            <i class="bi bi-bell"></i> Ingatkan Asesor Upload BA
+        </button>
+        @endif
     </div>
     <div class="card-body">
         @php
@@ -270,20 +285,44 @@
 
 <!-- Laporan Hasil Asesmen (LHA) -->
 <div class="card mb-4">
-    <div class="card-header bg-info text-white">
+    <div class="card-header bg-info text-white d-flex flex-column flex-md-row
+                justify-content-between align-items-start align-items-md-center gap-2">
         <h5 class="mb-0">
             <i class="bi bi-file-earmark-check"></i> Laporan Hasil Surveillance Banding
         </h5>
-    </div>
-    <div class="card-body">
+
         @php
         $lhaList = $pengajuan->asesmen?->documents()
         ->where('type', 'lha_asesor_banding')
         ->where('is_active', true)
         ->latest('uploaded_at')
         ->get() ?? collect([]);
+
+        $lhaPending = $lhaList->firstWhere('status_persetujuan_prodi', 'pending');
+        $lhaRevisi = $lhaList->firstWhere('status_persetujuan_prodi', 'revision_required');
+        $lhaApproved = $lhaList->firstWhere('status_persetujuan_prodi', 'approved');
+        $lhaBelumAda = $lhaList->isEmpty();
         @endphp
 
+        <div class="d-flex gap-2 flex-wrap">
+            {{-- Reminder ke Asesor: jika LHA belum ada ATAU ada permintaan revisi --}}
+            @if(($lhaBelumAda || $lhaRevisi) && !$lhaApproved)
+            <button type="button" class="btn btn-sm btn-warning" onclick="showModalReminderAsesor()">
+                <i class="bi bi-bell"></i>
+                {{ $lhaRevisi ? 'Ingatkan Asesor (Revisi)' : 'Ingatkan Asesor Finalisasi' }}
+            </button>
+            @endif
+
+            {{-- Reminder ke UPPS: jika LHA pending --}}
+            @if($lhaPending && !$lhaApproved)
+            <button type="button" class="btn btn-sm btn-light" onclick="showModalReminderUPPS()">
+                <i class="bi bi-bell"></i> Ingatkan UPPS Tinjau Laporan
+            </button>
+            @endif
+        </div>
+    </div>
+
+    <div class="card-body">
         @if($lhaList->count() > 0)
         <div class="alert alert-info alert-permanent mb-3">
             <i class="bi bi-info-circle"></i>
@@ -292,10 +331,10 @@
 
         @foreach($lhaList as $index => $lha)
         <div class="card mb-3 border-{{
-                        $lha->status_persetujuan_prodi === 'approved' ? 'success' :
-                        ($lha->status_persetujuan_prodi === 'rejected' ? 'danger' :
-                        ($lha->status_persetujuan_prodi === 'revision_required' ? 'warning' : 'secondary'))
-                    }}">
+            $lha->status_persetujuan_prodi === 'approved'          ? 'success' :
+            ($lha->status_persetujuan_prodi === 'rejected'         ? 'danger'  :
+            ($lha->status_persetujuan_prodi === 'revision_required' ? 'warning' : 'secondary'))
+        }}">
             <div class="card-body">
                 <div class="d-flex align-items-start mb-2">
                     <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 40px;"></i>
@@ -315,19 +354,20 @@
                             {{ $lha->status_prodi_label ?? 'Menunggu Peninjauan' }}
                         </span>
                     </div>
-                    <a href="{{ route('al_banding.berkas.documents.preview', ['id' => $pengajuan->asesmen->id, 'docId' => $lha->id]) }}" class="btn btn-success" target="_blank">
+                    <a href="{{ route('al.berkas.documents.preview', ['id' => $pengajuan->asesmen->id, 'docId' => $lha->id]) }}" class="btn btn-sm btn-success" target="_blank">
                         <i class="bi bi-eye"></i> Lihat File
                     </a>
                 </div>
 
-                <!-- Catatan Prodi (jika ada) -->
+                {{-- Catatan Prodi --}}
                 @if($lha->catatan_prodi)
                 <div class="alert alert-light alert-permanent border mt-3 mb-0">
                     <strong><i class="bi bi-chat-left-text"></i> Catatan Program Studi:</strong><br>
                     {{ $lha->catatan_prodi }}
                     @if($lha->approved_at_prodi)
                     <br><small class="text-muted">
-                        <i class="bi bi-clock"></i> {{ $lha->approved_at_prodi->locale('id')->translatedFormat('d M Y H:i') }}
+                        <i class="bi bi-clock"></i>
+                        {{ $lha->approved_at_prodi->locale('id')->translatedFormat('d M Y H:i') }}
                     </small>
                     @endif
                 </div>
@@ -335,6 +375,7 @@
             </div>
         </div>
         @endforeach
+
         @else
         <div class="text-center py-5">
             <i class="bi bi-file-earmark-x" style="font-size: 64px; color: #dee2e6;"></i>
@@ -565,6 +606,8 @@
     </div>
 </div>
 
+@include('de.banding.pelaksanaan-al-banding.components.modal-reminder')
+@include('layouts.template.kirim-reminder')
 @push('scripts')
 <script>
     const csrfToken = '{{ csrf_token() }}';

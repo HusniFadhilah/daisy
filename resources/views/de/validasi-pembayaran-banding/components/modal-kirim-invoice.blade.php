@@ -116,6 +116,22 @@ $pengajuanInModal = $pengajuanBelumInvoice ?? collect();
     </div>
 </div>
 
+{{-- Modal Reminder Keuangan --}}
+<x-modal-kirim-reminder-pembayaran modal-id="modalReminderKeuanganBanding" form-action="{{ route('de.validasi-pembayaran-banding.kirim-reminder-keuangan') }}" title="Ingatkan Keuangan untuk Segera Validasi Pembayaran Banding" :pembayarans="$pendingValidasi" input-name="id_pembayaran" item-description="Menunggu validasi keuangan" default-message="Yth. Bagian Keuangan LAMDEPILAR,
+
+Terdapat bukti pembayaran banding yang masih menunggu validasi. Mohon segera diproses agar tidak menghambat proses banding program studi terkait.
+
+Terima kasih.
+Sekretariat LAMDEPILAR" />
+
+{{-- Modal Reminder UPPS --}}
+<x-modal-kirim-reminder-pembayaran modal-id="modalReminderUPPSBanding" form-action="{{ route('de.validasi-pembayaran-banding.kirim-reminder-upps') }}" title="Ingatkan UPPS untuk Segera Melakukan Pembayaran Banding" :pembayarans="$pendingPembayaran" input-name="id_pembayaran" item-description="Menunggu pembayaran / upload ulang bukti" default-message="Yth. Unit Pengelola Program Studi,
+
+Kami mengingatkan bahwa pembayaran banding Anda masih belum diselesaikan. Mohon segera lakukan pembayaran sebelum melewati tanggal jatuh tempo.
+
+Terima kasih atas perhatiannya.
+Sekretariat LAMDEPILAR" />
+
 @push('scripts')
 <script>
     const formKirimInvoiceBanding = document.getElementById('formKirimInvoiceBanding')

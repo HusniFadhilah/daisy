@@ -1662,7 +1662,9 @@ class PengajuanAkreditasi extends Model
             },
             'pelaporan_ak' => match ($status) {
                 self::STATUS_AK_SELESAI =>
-                $badge('bg-info', $labelFor(self::STATUS_AK_SELESAI) ?? '-'),
+                $audience === 'de'
+                    ? $badge('bg-info', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AK' : 'Menunggu Pelaporan')
+                    : $badge('bg-info', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AK' : 'Menunggu Pelaporan'),
                 self::STATUS_AK_DILAPORKAN =>
                 $badge('bg-success', $labelFor(self::STATUS_AK_DILAPORKAN) ?? '-'),
 
@@ -1700,7 +1702,9 @@ class PengajuanAkreditasi extends Model
             },
             'pelaporan_al' => match ($status) {
                 self::STATUS_AL_SELESAI =>
-                $badge('bg-info', $labelFor(self::STATUS_AL_SELESAI) ?? '-'),
+                $audience === 'de'
+                    ? $badge('bg-info', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AL' : 'Menunggu Pelaporan')
+                    : $badge('bg-info', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AL' : 'Menunggu Pelaporan'),
                 self::STATUS_AL_DILAPORKAN =>
                 $badge('bg-success', $labelFor(self::STATUS_AL_DILAPORKAN) ?? '-'),
 
@@ -1900,7 +1904,9 @@ class PengajuanAkreditasi extends Model
             },
             'pelaporan_ak_banding' => match ($status) {
                 self::STATUS_AK_BANDING_SELESAI =>
-                $badge('bg-info', $labelFor(self::STATUS_AK_BANDING_SELESAI) ?? '-'),
+                $audience === 'de'
+                    ? $badge('bg-info', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AK Banding' : 'Menunggu Pelaporan')
+                    : $badge('bg-info', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AK Banding' : 'Menunggu Pelaporan'),
                 self::STATUS_AK_BANDING_DILAPORKAN =>
                 $badge('bg-success', $labelFor(self::STATUS_AK_BANDING_DILAPORKAN) ?? '-'),
 
@@ -1944,7 +1950,9 @@ class PengajuanAkreditasi extends Model
              */
             'pelaporan_al_banding' => match ($status) {
                 self::STATUS_AL_BANDING_SELESAI =>
-                $badge('bg-info', $labelFor(self::STATUS_AL_BANDING_SELESAI) ?? '-'),
+                $audience === 'de'
+                    ? $badge('bg-info', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AK Banding' : 'Menunggu Pelaporan')
+                    : $badge('bg-info', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AK Banding' : 'Menunggu Pelaporan'),
                 self::STATUS_AL_BANDING_DILAPORKAN =>
                 $badge('bg-success', $labelFor(self::STATUS_AL_BANDING_DILAPORKAN) ?? '-'),
 

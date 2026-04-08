@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers\DE\Banding;
 
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\DE\Concerns\HasReminderLHABanding;
+use App\Jobs\SendPenawaranAsesmenEmail;
+use App\Models\Asesmen;
+use App\Models\AsesmenLapangan;
+use App\Models\AsesmenUserRole;
+use App\Models\PengajuanAkreditasi;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\Asesmen;
 use Illuminate\Http\Request;
-use App\Models\AsesmenUserRole;
-use App\Models\AsesmenLapangan;
-use Illuminate\Support\Facades\DB;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Jobs\SendPenawaranAsesmenEmail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PelaksanaanALBandingController extends Controller
 {
+    use HasReminderLHABanding;
+
     /**
      * Dashboard pelaksanaan & monitoring AL
      */
@@ -159,6 +162,21 @@ class PelaksanaanALBandingController extends Controller
         ));
     }
 
+    public function kirimReminderAsesor(Request $request, $id)
+    {
+        return $this->kirimReminderAsesorBanding($request, $id);
+    }
+
+    public function kirimReminderUPPS(Request $request, $id)
+    {
+        return $this->kirimReminderUPPSBanding($request, $id);
+    }
+
+    public function kirimReminderBeritaAcara(Request $request, $id)
+    {
+        return $this->kirimReminderBeritaAcaraBanding($request, $id);
+    }
+
     /**
      * Detail pelaksanaan AL untuk satu pengajuan
      */
@@ -249,6 +267,14 @@ class PelaksanaanALBandingController extends Controller
         // Available validators
         $availableValidators = User::notAdmin()->orderBy('name')->get();
 
+        $assignmentReminders = [];
+
+        if ($pengajuan->asesmen) {
+            foreach ($pengajuan->asesmen->asesmenUserRoles as $assignment) {
+                $assignmentReminders[$assignment->id] = $assignment->resolveReminderMeta();
+            }
+        }
+
         return view('de.banding.pelaksanaan-al-banding.show', compact(
             'pengajuan',
             'userProgress',
@@ -256,7 +282,8 @@ class PelaksanaanALBandingController extends Controller
             'beritaAcaraProgress',
             'availableValidators',
             'validatorAK', // ✅ NEW
-            'totalElemens'
+            'totalElemens',
+            'assignmentReminders'
         ));
     }
 

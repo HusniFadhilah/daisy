@@ -185,7 +185,7 @@
         </div>
         <div class="card-body">
             <div class="row g-3">
-                @if (app()->environment('local'))
+                {{-- @if (app()->environment('local')) --}}
                 <div class="col-md-6">
                     <button type="button" class="btn btn-outline-success w-100" id="btnValidateAllAgreed" {{ $isApproved ? 'disabled' : '' }}>
                         <i class="bi bi-check-circle"></i>
@@ -193,7 +193,7 @@
                         <small>Otomatis approve nilai yang sama dari semua asesor</small>
                     </button>
                 </div>
-                @endif
+                {{-- @endif --}}
                 <div class="col-md-6">
                     <button type="button" class="btn btn-outline-warning w-100" id="btnReviewDifferences">
                         <i class="bi bi-exclamation-triangle"></i>

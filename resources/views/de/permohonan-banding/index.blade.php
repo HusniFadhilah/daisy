@@ -83,7 +83,7 @@
             <x-stat-card title="Total Permohonan Banding" :value="$stats['total']" description="Seluruh permohonan banding yang masuk" icon="file-earmark-text" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
         </div>
         <div class="col mb-3">
-            <x-stat-card title="Belum Dikirim Penerimaan" :value="$stats['belum_terkirim']" description="Banding diajukan PS, penerimaan belum dikirim DE" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
+            <x-stat-card title="Belum Dikirim Penerimaan" :value="$stats['belum_terkirim']" description="Perlu segera mengirim penerimaan permohonan banding" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
         </div>
         <div class="col mb-3">
             <x-stat-card title="Penerimaan Telah Dikirim" :value="$stats['terkirim']" description="Surat penerimaan banding sudah dikirim ke PS" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />

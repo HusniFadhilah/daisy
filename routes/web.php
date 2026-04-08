@@ -593,6 +593,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [PelaksanaanALController::class, 'show'])->name('.show');
             Route::post('/{id}/assign-validator', [PelaksanaanALController::class, 'assignValidator'])->name('.assign-validator');
             Route::delete('/{id}/remove-validator/{userId}', [PelaksanaanALController::class, 'removeValidator'])->name('.remove-validator');
+            Route::post('/{id}/kirim-reminder-asesor', [PelaksanaanALController::class, 'kirimReminderAsesor'])->name('.kirim-reminder-asesor');
+            Route::post('/{id}/kirim-reminder-upps',   [PelaksanaanALController::class, 'kirimReminderUPPS'])->name('.kirim-reminder-upps');
+            Route::post('/{id}/kirim-reminder-berita-acara',  [PelaksanaanALController::class, 'kirimReminderBeritaAcara'])->name('.kirim-reminder-berita-acara');
         });
         Route::prefix('pelaporan-al')->name('.pelaporan-al')->group(function () {
             Route::get('/', [PelaporanALController::class, 'index']);
@@ -634,6 +637,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/kirim-invoice', [\App\Http\Controllers\DE\ValidasiPembayaranBandingController::class, 'kirimInvoice'])->name('kirim-invoice');
             Route::post('/{id}/validasi', [\App\Http\Controllers\DE\ValidasiPembayaranBandingController::class, 'validasi'])->name('validasi');
             Route::get('/{id}/download-formulir', [\App\Http\Controllers\DE\ValidasiPembayaranBandingController::class, 'downloadFormulir'])->name('download-formulir');
+            Route::post('/kirim-reminder-keuangan', [\App\Http\Controllers\DE\ValidasiPembayaranBandingController::class, 'kirimReminderKeuangan'])->name('kirim-reminder-keuangan');
+            Route::post('/kirim-reminder-upps',     [\App\Http\Controllers\DE\ValidasiPembayaranBandingController::class, 'kirimReminderUPPS'])->name('kirim-reminder-upps');
         });
         Route::prefix('pelaksanaan-banding')->name('.pelaksanaan-banding')->group(function () {
             Route::get('/', [PelaksanaanBandingController::class, 'index']);
@@ -676,6 +681,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::get('/{id}', [\App\Http\Controllers\DE\Banding\PelaporanAKBandingController::class, 'show'])->name('.show');
                 Route::get('/{id}/timeline', [\App\Http\Controllers\DE\Banding\PelaporanAKBandingController::class, 'getTimeline'])->name('.timeline');
                 Route::get('/{id}/document/{documentId}', [\App\Http\Controllers\DE\Banding\PelaporanAKBandingController::class, 'previewDocument'])->name('.document.preview');
+                Route::post('/kirim-reminder', [\App\Http\Controllers\DE\Banding\PelaporanAKBandingController::class, 'kirimReminder'])->name('.kirim-reminder');
             });
             Route::prefix('penugasan-al-banding')->name('.penugasan-al-banding')->group(function () {
                 Route::get('/', [\App\Http\Controllers\DE\Banding\PenugasanALBandingController::class, 'index']);
@@ -691,12 +697,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::get('/{id}', [\App\Http\Controllers\DE\Banding\PelaksanaanALBandingController::class, 'show'])->name('.show');
                 Route::post('/{id}/assign-validator', [\App\Http\Controllers\DE\Banding\PelaksanaanALBandingController::class, 'assignValidator'])->name('.assign-validator');
                 Route::delete('/{id}/remove-validator/{userId}', [\App\Http\Controllers\DE\Banding\PelaksanaanALBandingController::class, 'removeValidator'])->name('.remove-validator');
+                Route::post('/{id}/kirim-reminder-berita-acara', [\App\Http\Controllers\DE\Banding\PelaksanaanALBandingController::class, 'kirimReminderBeritaAcara'])->name('.kirim-reminder-berita-acara');
+                Route::post('/{id}/kirim-reminder-asesor', [\App\Http\Controllers\DE\Banding\PelaksanaanALBandingController::class, 'kirimReminderAsesor'])->name('.kirim-reminder-asesor');
+                Route::post('/{id}/kirim-reminder-upps',   [\App\Http\Controllers\DE\Banding\PelaksanaanALBandingController::class, 'kirimReminderUPPS'])->name('.kirim-reminder-upps');
             });
             Route::prefix('pelaporan-al-banding')->name('.pelaporan-al-banding')->group(function () {
                 Route::get('/', [\App\Http\Controllers\DE\Banding\PelaporanALBandingController::class, 'index']);
                 Route::get('/{id}', [\App\Http\Controllers\DE\Banding\PelaporanALBandingController::class, 'show'])->name('.show');
                 Route::get('/{id}/timeline', [\App\Http\Controllers\DE\Banding\PelaporanALBandingController::class, 'getTimeline'])->name('.timeline');
                 Route::get('/{id}/document/{documentId}', [\App\Http\Controllers\DE\Banding\PelaporanALBandingController::class, 'previewDocument'])->name('.document.preview');
+                Route::post('/kirim-reminder', [\App\Http\Controllers\DE\Banding\PelaporanALBandingController::class, 'kirimReminder'])->name('.kirim-reminder');
             });
         });
         Route::prefix('pelaporan-banding')->name('.pelaporan-banding')->group(function () {
@@ -1295,6 +1305,12 @@ Route::prefix('preview/email')
         Route::get('/notifikasi-lha-finalized/{asesmen}',        'notifikasiLhaFinalized')->name('notifikasi.lha.finalized');
         Route::get('/notifikasi-lha-approved/{pengajuan}',        'notifikasiLhaApproved')->name('notifikasi.lha.approved');
         Route::get('/notifikasi-lha-revision/{pengajuan}',        'notifikasiLhaRevision')->name('notifikasi.lha.revision');
+        Route::get('/reminder-ba-al/{pengajuan}',  'reminderBeritaAcaraAL')->name('reminder.ba.al');
+        Route::get('/reminder-lha-asesor/{pengajuan}', 'reminderLhaAsesor')->name('reminder.lha.asesor');
+
+        Route::get('/penerimaan-banding/{pengajuan}', 'penerimaanBanding')->name('penerimaan.banding');
+        Route::get('/notifikasi-hasil-disampaikan/{pengajuan}', 'notifikasiHasilDisampaikan')->name('notifikasi.hasil.disampaikan');
+        Route::get('/notifikasi-hasil-ditetapkan/{pengajuan}',  'notifikasiHasilDitetapkan')->name('notifikasi.hasil.ditetapkan');
     });
 // Route::get('/preview/email/penawaran/{assignment}', function (\App\Models\AsesmenUserRole $assignment) {
 //     return new \App\Mail\PenawaranAsesmenMail($assignment);

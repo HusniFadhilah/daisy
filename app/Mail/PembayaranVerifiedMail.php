@@ -32,9 +32,10 @@ class PembayaranVerifiedMail extends Mailable implements ShouldQueue
 
         $this->pengajuan = $this->pembayaran->pengajuan;
         $this->isVerified = $isVerified;
-        $this->isBanding = $this->pembayaran->jenis_pembayaran === 'banding';
+        $this->isBanding = $this->pembayaran->jenis_pembayaran == 'banding';
         $this->jenisLabel = $this->isBanding ? 'Banding' : 'Akreditasi';
-        $this->actionUrl = route('upps.validasi-pembayaran.show', $pembayaran->id);
+        $route = $this->isBanding ? 'upps.pelaksanaan-banding.show' : 'upps.validasi-pembayaran.show';
+        $this->actionUrl = route($route, $this->isBanding ? $this->pengajuan->id : $pembayaran->id);
     }
 
     public function build(): self

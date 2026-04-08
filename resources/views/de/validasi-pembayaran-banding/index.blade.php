@@ -39,17 +39,6 @@
             <h4 class="mb-1"><i class="bi bi-credit-card"></i> Validasi Pembayaran Banding</h4>
             <p class="text-muted mb-0">Monitor invoice dan validasi pembayaran proses banding</p>
         </div>
-        {{-- Tombol Kirim Invoice --}}
-        <div class="text-end">
-            <button type="button" class="btn btn-primary {{ $stats['belum_invoice'] === 0 ? 'disabled' : '' }}" data-bs-toggle="modal" data-bs-target="#modalKirimInvoiceBanding" {{ $stats['belum_invoice'] === 0 ? 'disabled' : '' }}>
-                <i class="bi bi-send"></i> Kirim Invoice Banding
-            </button>
-            <div class="mt-1">
-                <small class="text-muted">
-                    {{ $stats['belum_invoice'] }} permohonan belum dikirimi invoice
-                </small>
-            </div>
-        </div>
     </div>
 
     {{-- Alert perlu kirim invoice --}}
@@ -100,6 +89,37 @@
         </div>
         <div class="col mb-3">
             <x-stat-card title="Tervalidasi" :value="$stats['terverifikasi']" description="Pembayaran banding sudah lunas" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
+        </div>
+    </div>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
+        {{-- Grup Kiri (Reminder) --}}
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalReminderKeuanganBanding" {{ $pendingValidasi->isEmpty() ? 'disabled' : '' }}>
+                <i class="bi bi-bell"></i> Ingatkan Keuangan
+                @if($pendingValidasi->isNotEmpty())
+                <span class="badge bg-danger">{{ $pendingValidasi->count() }}</span>
+                @endif
+            </button>
+
+            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalReminderUPPSBanding" {{ $pendingPembayaran->isEmpty() ? 'disabled' : '' }}>
+                <i class="bi bi-bell"></i> Ingatkan UPPS
+                @if($pendingPembayaran->isNotEmpty())
+                <span class="badge bg-danger">{{ $pendingPembayaran->count() }}</span>
+                @endif
+            </button>
+        </div>
+
+        {{-- Grup Kanan (Kirim Invoice) --}}
+        <div class="text-end">
+            <button type="button" class="btn btn-primary {{ $stats['belum_invoice'] === 0 ? 'disabled' : '' }}" data-bs-toggle="modal" data-bs-target="#modalKirimInvoiceBanding" {{ $stats['belum_invoice'] === 0 ? 'disabled' : '' }}>
+                <i class="bi bi-send"></i> Kirim Invoice Banding
+            </button>
+            <div class="mt-1">
+                <small class="text-muted">
+                    {{ $stats['belum_invoice'] }} permohonan belum dikirimi invoice
+                </small>
+            </div>
         </div>
     </div>
 

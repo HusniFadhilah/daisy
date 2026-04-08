@@ -454,11 +454,6 @@ class HasilAkreditasi extends Model
 
     public function getPeringkatColor(): string
     {
-        Log::info($this->statusFinal?->warna);
-        Log::info($this->statusBanding?->warna);
-        Log::info($this->statusHasil?->warna);
-        Log::info($this->statusAl?->warna);
-        Log::info($this->statusAk?->warna);
         return $this->statusFinal?->warna
             ?? $this->statusBanding?->warna ?? $this->statusHasil?->warna
             ?? $this->statusAl?->warna

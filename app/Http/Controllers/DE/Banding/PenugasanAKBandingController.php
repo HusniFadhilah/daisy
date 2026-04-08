@@ -914,14 +914,12 @@ class PenugasanAKBandingController extends Controller
             ->whereDoesntHave('asesmen.asesmenKecukupanBanding.asesors')
             ->count();
 
-        $sudahDitugaskan = PengajuanAkreditasi::whereHas('statusLog', function ($q) {
-            $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED,
-                PengajuanAkreditasi::STATUS_AK_BANDING_IN_PROGRESS,
-                PengajuanAkreditasi::STATUS_AK_BANDING_ON_VALIDATION,
-                PengajuanAkreditasi::STATUS_AK_BANDING_SELESAI,
-            ]);
-        })
+        $sudahDitugaskan = PengajuanAkreditasi::whereIn('status', [
+            PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED,
+            PengajuanAkreditasi::STATUS_AK_BANDING_IN_PROGRESS,
+            PengajuanAkreditasi::STATUS_AK_BANDING_ON_VALIDATION,
+            PengajuanAkreditasi::STATUS_AK_BANDING_SELESAI,
+        ])
             ->whereHas('asesmen.asesmenKecukupanBanding')
             ->count();
 

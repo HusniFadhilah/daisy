@@ -140,7 +140,7 @@ class ValidasiDokumenController extends Controller
         $pendingAssignments = \App\Models\AsesmenUserRole::with(['user', 'asesmen.pengajuan.studyProgram'])
             ->where('jenis_asesmen', 'dokumen')
             ->whereIn('status_penawaran', ['accepted', 'pending'])
-            ->whereIn('status_pekerjaan', ['not_started', 'in_progress'])
+            ->whereIn('status_pekerjaan', ['not_started', 'in_progress', 'revision_required'])
             ->get();
         $countPendingAssignments = count($pendingAssignments);
 

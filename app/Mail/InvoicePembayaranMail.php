@@ -37,9 +37,9 @@ class InvoicePembayaranMail extends Mailable implements ShouldQueue
 
         $this->pengajuan = $this->pembayaran->pengajuan;
         $this->templateFormulirPembayaran = $templateFormulirPembayaran;
-        $this->isBanding = $this->pembayaran->jenis_pembayaran === 'banding';
-        $route = $this->isBanding ? 'upps.permohonan-banding.show' : 'upps.validasi-pembayaran.show';
-        $this->actionUrl = route($route, $pembayaran->id);
+        $this->isBanding = $this->pembayaran->jenis_pembayaran == 'banding';
+        $route = $this->isBanding ? 'upps.pelaksanaan-banding.show' : 'upps.validasi-pembayaran.show';
+        $this->actionUrl = route($route, $this->isBanding ? $this->pengajuan->id : $pembayaran->id);
         $this->jenisLabel = $this->isBanding ? 'Banding' : 'Akreditasi';
     }
 

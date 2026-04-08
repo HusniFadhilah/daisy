@@ -4,11 +4,14 @@ namespace App\Http\Controllers\DE;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\SelesaikanMasaSanggahJob;
+use App\Mail\Reminder\ReminderContextMail;
 use App\Models\AsesmenDocument;
 use App\Models\HasilAkreditasi;
 use App\Models\PengajuanAkreditasi;
 use App\Repositories\SyaratAkreditasiRepository;
 use App\Services\HasilAkreditasiService;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +23,8 @@ class PenyampaianHasilAkreditasiController extends Controller
     public function __construct(
         private readonly HasilAkreditasiService      $hasilService,
         private readonly SyaratAkreditasiRepository  $syaratRepo,
+        private readonly RecipientResolverService   $recipientResolver,
+        private readonly MailDeliveryService         $mailDelivery,
     ) {}
 
     // =========================================================
@@ -254,6 +259,8 @@ class PenyampaianHasilAkreditasiController extends Controller
 
             DB::commit();
 
+            $this->notifikasiUPPSHasilDisampaikan($pengajuan, $hasil, $endAt);
+
             return redirect()
                 ->route('de.penyampaian-hasil-akreditasi.show', $id)
                 ->with('success', "Hasil akreditasi berhasil difinalisasi! Masa sanggah akan berakhir pada {$endAt->format('d-m-Y H:i:s')}.");
@@ -265,6 +272,59 @@ class PenyampaianHasilAkreditasiController extends Controller
             ]);
 
             return back()->with('error', 'Gagal finalisasi: ' . $e->getMessage());
+        }
+    }
+
+    private function notifikasiUPPSHasilDisampaikan(
+        PengajuanAkreditasi $pengajuan,
+        HasilAkreditasi $hasil,
+        Carbon $endAt,
+    ): void {
+        try {
+            $pengajuan->loadMissing([
+                'studyProgram.university',
+                'studyProgram.users.activeEmails',
+                'pengaju.activeEmails',
+            ]);
+
+            $namaProdi = $pengajuan->studyProgram->name ?? '-';
+
+            $prodUsers = $pengajuan->studyProgram?->users;
+            $emails    = $prodUsers && $prodUsers->isNotEmpty()
+                ? $this->recipientResolver->emailsForUsers($prodUsers)
+                : $this->recipientResolver->emailsForUser($pengajuan->pengaju);
+
+            if (empty($emails)) {
+                Log::warning('Notifikasi penyampaian hasil tidak dikirim: tidak ada email UPPS.', [
+                    'pengajuan_id' => $pengajuan->id,
+                ]);
+                return;
+            }
+
+            $peringkat       = $hasil->peringkat_akreditasi_hasil ?? '-';
+            $tanggalSanggah  = $endAt->locale('id')->translatedFormat('d F Y H:i');
+
+            $this->mailDelivery->sendToEmails(
+                $emails,
+                new ReminderContextMail(
+                    recipientName: 'Tim Akreditasi Program Studi <strong>' . $namaProdi . '</strong>',
+                    pesanReminder: "Hasil Asesmen Lapangan (AL) untuk program studi Anda telah disampaikan oleh LAMDEPILAR.\n\Status akreditasi program studi: {$peringkat}\n\nMasa sanggah atas hasil ini akan berlangsung hingga:\n{$tanggalSanggah}\n\Program studi dapat mengajukan banding jika memiliki keberatan terhadap hasil akreditasi.",
+                    subject: 'Hasil Asesmen Lapangan Telah Disampaikan',
+                    actionUrl: route('upps.penyampaian-hasil.show', $pengajuan->id),
+                    actionLabel: 'Lihat Hasil Akreditasi',
+                    contextInfo: null,
+                    headerTitle: 'Hasil Asesmen Lapangan Telah Disampaikan',
+                    preheader: "Hasil AL program studi Anda telah disampaikan",
+                ),
+                [],
+                [],
+                true
+            );
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim notifikasi penyampaian hasil ke UPPS', [
+                'pengajuan_id' => $pengajuan->id,
+                'error'        => $e->getMessage(),
+            ]);
         }
     }
 

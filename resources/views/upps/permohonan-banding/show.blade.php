@@ -49,6 +49,9 @@
                 <strong>Permohonan Banding telah diterima oleh LAMDEPILAR</strong>
                 <br>
                 Diterima pada {{ $pengajuan->tanggal_permohonan_banding->locale('id')->translatedFormat('d M Y H:i') }}
+                @if(in_array($pengajuan->pembayaranBanding->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']))
+                <br>Silahkan lakukan upload bukti pembayaran pada <a href="{{ route('upps.pelaksanaan-banding.upload-pembayaran', $pengajuan->id) }}">link berikut</a>
+                @endif
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN)
             <div class="alert alert-warning alert-permanent mb-4">

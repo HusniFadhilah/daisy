@@ -9,6 +9,7 @@ use App\Services\MailDeliveryService;
 use App\Services\RecipientResolverService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 trait HasReminderPelaporan
 {
@@ -131,6 +132,7 @@ trait HasReminderPelaporan
             return back()->with('success', "Pengingat berhasil dikirim ke {$sent} validator.");
         } catch (\Throwable $e) {
             DB::rollBack();
+            Log::error($e);
             return back()->with('error', 'Gagal mengirim pengingat: ' . $e->getMessage());
         }
     }

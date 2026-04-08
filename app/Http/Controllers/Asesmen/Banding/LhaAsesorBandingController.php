@@ -4,11 +4,14 @@
 namespace App\Http\Controllers\Asesmen\Banding;
 
 use App\Http\Controllers\Controller;
+use App\Mail\Reminder\ReminderContextMail;
 use App\Models\Asesmen;
 use App\Models\AsesmenDocument;
 use App\Models\AsesmenUserRole;
 use App\Models\LhaAsesorBanding;
 use App\Models\PenilaianElemenAlBanding;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +22,17 @@ use Illuminate\Support\Str;
 
 class LhaAsesorBandingController extends Controller
 {
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery,
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery      = $mailDelivery;
+    }
+
     /**
      * Show LHS form
      */
@@ -292,6 +306,8 @@ class LhaAsesorBandingController extends Controller
 
             DB::commit();
 
+            $this->notifikasiUPPSLhaFinalized($asesmen, $document);
+
             return response()->json([
                 'success' => true,
                 'message' => 'LHS berhasil difinalisasi dan PDF telah dibuat.'
@@ -304,6 +320,54 @@ class LhaAsesorBandingController extends Controller
                 'success' => false,
                 'message' => 'Gagal finalisasi LHS: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    private function notifikasiUPPSLhaFinalized(Asesmen $asesmen, AsesmenDocument $document): void
+    {
+        try {
+            $asesmen->loadMissing([
+                'pengajuan.studyProgram.university',
+                'pengajuan.studyProgram.users.activeEmails',
+                'pengajuan.pengaju.activeEmails',
+            ]);
+
+            $pengajuan = $asesmen->pengajuan;
+            $namaProdi = $pengajuan->studyProgram->name ?? '-';
+
+            $prodUsers = $pengajuan->studyProgram?->users;
+            $emails    = $prodUsers && $prodUsers->isNotEmpty()
+                ? $this->recipientResolver->emailsForUsers($prodUsers)
+                : $this->recipientResolver->emailsForUser($pengajuan->pengaju);
+
+            if (empty($emails)) {
+                Log::warning('Notifikasi LHS Banding finalized tidak dikirim: tidak ada email UPPS.', [
+                    'asesmen_id' => $asesmen->id,
+                ]);
+                return;
+            }
+
+            $this->mailDelivery->sendToEmails(
+                $emails,
+                new ReminderContextMail(
+                    recipientName: 'Tim Akreditasi Program Studi <strong>' . $namaProdi . '</strong>',
+                    pesanReminder: "Laporan Surveilance Penanganan Banding untuk program studi Anda telah selesai disusun oleh tim asesor dan siap untuk ditinjau.\n\nMohon segera melakukan peninjauan dan memberikan persetujuan atau permintaan revisi melalui sistem.",
+                    subject: 'Laporan Surveilance Banding Siap Ditinjau',
+                    actionUrl: route('upps.pelaksanaan-banding.show', $pengajuan->id),
+                    actionLabel: 'Tinjau Laporan Sekarang',
+                    contextInfo: 'Berikut adalah detail proses penyusunan Laporan Surveilance Banding: ',
+                    headerTitle: 'Laporan Surveilance Banding Siap Ditinjau',
+                    preheader: 'Tim asesor telah menyelesaikan Laporan Surveilance Banding, segera lakukan peninjauan.',
+                ),
+                [],
+                [],
+                true
+            );
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim notifikasi LHS Banding finalized ke UPPS', [
+                'asesmen_id' => $asesmen->id,
+                'error'      => $e->getMessage(),
+            ]);
         }
     }
 

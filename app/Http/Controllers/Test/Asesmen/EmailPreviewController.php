@@ -11,6 +11,7 @@ use App\Mail\PembayaranVerifiedMail;
 use App\Mail\PenawaranAcceptedMail;
 use App\Mail\PenawaranRejectedMail;
 use App\Mail\PenerimaanAkreditasiMail;
+use App\Mail\PenerimaanBandingMail;
 use App\Mail\PengingatAkreditasiMail;
 use App\Mail\Reminder\ReminderContextMail;
 use App\Mail\Reminder\ReminderPelaporanDokumenMail;
@@ -278,7 +279,7 @@ class EmailPreviewController extends Controller
             assignment: $assignment,
             pesanReminder: 'Kami mengingatkan untuk segera mengunggah laporan validasi AK Banding yang menjadi penugasan Anda agar proses banding dapat dilanjutkan.',
             subject: 'Pengingat Pelaporan Validasi AK Banding',
-            actionUrl: route('pelaporan.ak-banding.show', $assignment->id),
+            actionUrl: route('pelaporan.banding.validasiAk.show', $assignment->id),
             headerTitle: 'Pengingat Pelaporan Validasi AK Banding',
             preheader: 'Segera upload laporan validasi AK Banding Anda melalui sistem.',
         );
@@ -475,6 +476,116 @@ class EmailPreviewController extends Controller
             contextInfo: $contextInfo,
             headerTitle: 'Permintaan Revisi Laporan Hasil Asesmen Lapangan (LHA)',
             preheader: "{$namaProdi} meminta revisi pada LHA Anda, segera lakukan perbaikan.",
+        );
+    }
+
+    public function penerimaanBanding(PengajuanAkreditasi $pengajuan)
+    {
+        $pengajuan->loadMissing([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+        ]);
+
+        $dokumen = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+            ->where('jenis_dokumen', 'surat_penerimaan_banding_de')
+            ->where('is_latest', true)
+            ->first();
+
+        // Fallback dummy jika belum ada dokumen
+        if (!$dokumen) {
+            $dokumen = new PengajuanDokumen([
+                'nama_file'         => 'surat_penerimaan_banding_dummy.pdf',
+                'original_filename' => 'Surat Penerimaan Banding (Preview).pdf',
+                'mime_type'         => 'application/pdf',
+                'path_file'         => null,
+            ]);
+        }
+
+        return new PenerimaanBandingMail($pengajuan, $dokumen);
+    }
+
+    public function reminderBeritaAcaraAL(PengajuanAkreditasi $pengajuan)
+    {
+        $pengajuan->loadMissing(['studyProgram.university']);
+
+        $namaProdi = $pengajuan->studyProgram->name ?? '-';
+        $namaUniv  = $pengajuan->studyProgram->university->name ?? '-';
+
+        return new ReminderContextMail(
+            recipientName: 'Tim Asesor AL',
+            pesanReminder: "Kami mengingatkan untuk segera mengunggah Berita Acara Asesmen Lapangan untuk program studi {$namaProdi}.\n\nBerita Acara merupakan dokumen penting yang diperlukan untuk melanjutkan proses pelaporan AL. Mohon segera upload dokumen tersebut melalui sistem.",
+            subject: "Pengingat Upload Berita Acara AL — {$namaProdi}",
+            actionUrl: route('al.berkas', $pengajuan->asesmen->id),
+            actionLabel: 'Upload Berita Acara Sekarang',
+            contextInfo: "{$namaProdi} | {$namaUniv}",
+            headerTitle: 'Pengingat Upload Berita Acara AL',
+            preheader: "Segera upload Berita Acara AL untuk {$namaProdi} melalui sistem.",
+        );
+    }
+
+    public function reminderLhaAsesor(PengajuanAkreditasi $pengajuan)
+    {
+        $pengajuan->loadMissing(['studyProgram.university', 'asesmen']);
+
+        $namaProdi = $pengajuan->studyProgram->name ?? '-';
+        $namaUniv  = $pengajuan->studyProgram->university->name ?? '-';
+
+        return new ReminderContextMail(
+            recipientName: 'Tim Asesor AL',
+            pesanReminder: "Kami mengingatkan untuk segera menyelesaikan dan memfinalisasi Laporan Hasil Asesmen Lapangan (LHA) untuk program studi {$namaProdi}.\n\nLHA yang telah difinalisasi akan dikirimkan ke Program Studi untuk mendapat persetujuan.",
+            subject: "Pengingat Finalisasi LHA — {$namaProdi}",
+            actionUrl: route('al.berkas.lha-asesor.index', $pengajuan->asesmen->id),
+            actionLabel: 'Finalisasi LHA Sekarang',
+            contextInfo: "{$namaProdi} | {$namaUniv}",
+            headerTitle: 'Pengingat Finalisasi LHA',
+            preheader: "Segera finalisasi LHA untuk {$namaProdi}.",
+        );
+    }
+
+    public function notifikasiHasilDisampaikan(PengajuanAkreditasi $pengajuan)
+    {
+        $pengajuan->loadMissing(['studyProgram.university', 'asesmen.hasil']);
+
+        $namaProdi = $pengajuan->studyProgram->name ?? '-';
+        $hasil     = $pengajuan->asesmen->hasil;
+        $peringkat = $hasil->peringkat_akreditasi_hasil ?? '-';
+
+        return new ReminderContextMail(
+            recipientName: 'Tim Akreditasi Program Studi <strong>' . $namaProdi . '</strong>',
+            pesanReminder: "Hasil Asesmen Lapangan (AL) untuk program studi Anda telah difinalisasi dan disampaikan secara resmi.\n\nPeringkat yang diperoleh: {$peringkat}\n\nMasa sanggah atas hasil ini akan berlangsung hingga:\n[Tanggal Masa Sanggah]\n\nJika Anda keberatan atas hasil tersebut, Anda dapat mengajukan sanggahan melalui sistem sebelum masa sanggah berakhir.",
+            subject: 'Hasil Asesmen Lapangan Telah Disampaikan — ' . $namaProdi,
+            actionUrl: route('upps.penyampaian-hasil.show', $pengajuan->id),
+            actionLabel: 'Lihat Hasil Akreditasi',
+            contextInfo: null,
+            headerTitle: 'Hasil Asesmen Lapangan Telah Disampaikan',
+            preheader: "Hasil AL program studi Anda telah difinalisasi. Peringkat: {$peringkat}.",
+        );
+    }
+
+    public function notifikasiHasilDitetapkan(PengajuanAkreditasi $pengajuan)
+    {
+        $pengajuan->loadMissing(['studyProgram.university', 'asesmen.hasil']);
+
+        $namaProdi  = $pengajuan->studyProgram->name ?? '-';
+        $hasil      = $pengajuan->asesmen->hasil;
+        $peringkat  = $hasil->peringkat_akreditasi_final ?? '-';
+        $skor       = $hasil->skor_final ?? '-';
+        $tanggalPenetapan  = $pengajuan->tanggal_penetapan
+            ? \Carbon\Carbon::parse($pengajuan->tanggal_penetapan)->locale('id')->translatedFormat('d F Y')
+            : '[Tanggal Penetapan]';
+        $tanggalKedaluwarsa = $pengajuan->tanggal_kedaluwarsa_akhir
+            ? \Carbon\Carbon::parse($pengajuan->tanggal_kedaluwarsa_akhir)->locale('id')->translatedFormat('d F Y')
+            : '[Tanggal Kedaluwarsa]';
+
+        return new ReminderContextMail(
+            recipientName: 'Tim Akreditasi Program Studi <strong>' . $namaProdi . '</strong>',
+            pesanReminder: "Hasil akreditasi program studi Anda telah resmi ditetapkan oleh LAMDEPILAR.\n\nPeringkat Akreditasi : {$peringkat}\nSkor Final           : {$skor}\nTanggal Penetapan   : {$tanggalPenetapan}\nBerlaku Hingga      : {$tanggalKedaluwarsa}\n\nSertifikat akreditasi akan segera diterbitkan dan disampaikan kepada program studi. Mohon pantau sistem untuk informasi lebih lanjut.",
+            subject: 'Hasil Akreditasi Resmi Ditetapkan — ' . $namaProdi,
+            actionUrl: route('upps.penetapan-hasil-akreditasi.show', $pengajuan->id),
+            actionLabel: 'Lihat Hasil Penetapan',
+            contextInfo: null,
+            headerTitle: 'Hasil Akreditasi Resmi Ditetapkan',
+            preheader: "Selamat! Hasil akreditasi {$namaProdi} telah resmi ditetapkan. Peringkat: {$peringkat}.",
         );
     }
 }

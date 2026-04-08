@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers\DE;
 
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\DE\Concerns\HasReminderLHA;
+use App\Jobs\SendPenawaranAsesmenEmail;
+use App\Models\Asesmen;
+use App\Models\AsesmenLapangan;
+use App\Models\AsesmenUserRole;
+use App\Models\PengajuanAkreditasi;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\Asesmen;
 use Illuminate\Http\Request;
-use App\Models\AsesmenUserRole;
-use App\Models\AsesmenLapangan;
-use Illuminate\Support\Facades\DB;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Jobs\SendPenawaranAsesmenEmail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PelaksanaanALController extends Controller
 {
+    use HasReminderLHA;
+
     /**
      * Dashboard pelaksanaan & monitoring AL
      */

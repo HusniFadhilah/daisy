@@ -52,7 +52,7 @@
                         <tr>
                             <td><strong>Jenis Asesmen</strong></td>
                             <td>
-                                <span class="badge bg-info">{{ strtoupper($assignment->jenis_asesmen) }}</span>
+                                <span class="badge bg-info">{{ $assignment->jenis_asesmen_label }}</span>
                             </td>
                         </tr>
                         <tr>

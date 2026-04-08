@@ -125,7 +125,7 @@ class BorangValidationExcelService
             return [
                 'success' => true,
                 'message' => sprintf(
-                    'Excel validasi berhasil diupload. LED: %d/%d, Suplemen: %d/%d, LKPS: %d/%d',
+                    'Excel validasi berhasil diupload. LED: %d/%d, Suplemen: %d/%d, LKPS: %d/%d. Mohon lengkapi bagian Finalisasi & Kirim di bagian paling bawah halaman ini',
                     $reviewedLed,
                     $validation->total_elemen_led,
                     $reviewedSuplemen,

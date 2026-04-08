@@ -197,6 +197,14 @@ class Asesmen extends Model
             })->where('jenis_asesmen', 'al');
     }
 
+    public function validatorALBanding()
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'validator');
+            })->where('jenis_asesmen', 'al_banding');
+    }
+
     public function users()
     {
         return $this->belongsToMany(

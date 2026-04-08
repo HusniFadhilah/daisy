@@ -4,12 +4,15 @@
 namespace App\Http\Controllers\DE;
 
 use App\Http\Controllers\Controller;
+use App\Mail\Reminder\ReminderContextMail;
 use App\Models\Asesmen;
 use App\Models\AsesmenDocument;
 use App\Models\HasilAkreditasi;
 use App\Models\PengajuanAkreditasi;
 use App\Repositories\SyaratAkreditasiRepository;
 use App\Services\HasilAkreditasiService;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,11 +23,15 @@ class PenetapanHasilAkreditasiController extends Controller
 {
     protected $hasilService;
     protected $syaratRepo;
+    private RecipientResolverService     $recipientResolver;
+    private MailDeliveryService          $mailDelivery;
 
-    public function __construct(HasilAkreditasiService $hasilService, SyaratAkreditasiRepository  $syaratRepo)
+    public function __construct(HasilAkreditasiService $hasilService, SyaratAkreditasiRepository  $syaratRepo, RecipientResolverService $recipientResolver, MailDeliveryService $mailDelivery,)
     {
         $this->hasilService = $hasilService;
         $this->syaratRepo = $syaratRepo;
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery = $mailDelivery;
     }
 
     /**
@@ -272,6 +279,8 @@ class PenetapanHasilAkreditasiController extends Controller
 
             DB::commit();
 
+            $this->notifikasiUPPSHasilDitetapkan($pengajuan, $hasil);
+
             return redirect()
                 ->route('de.penetapan-hasil-akreditasi.show', $id)
                 ->with(
@@ -286,6 +295,64 @@ class PenetapanHasilAkreditasiController extends Controller
                 'error'        => $e->getMessage(),
             ]);
             return back()->with('error', 'Gagal menetapkan hasil: ' . $e->getMessage());
+        }
+    }
+
+    private function notifikasiUPPSHasilDitetapkan(
+        PengajuanAkreditasi $pengajuan,
+        HasilAkreditasi $hasil,
+    ): void {
+        try {
+            $pengajuan->loadMissing([
+                'studyProgram.university',
+                'studyProgram.users.activeEmails',
+                'pengaju.activeEmails',
+            ]);
+
+            $namaProdi = $pengajuan->studyProgram->name ?? '-';
+
+            $prodUsers = $pengajuan->studyProgram?->users;
+            $emails    = $prodUsers && $prodUsers->isNotEmpty()
+                ? $this->recipientResolver->emailsForUsers($prodUsers)
+                : $this->recipientResolver->emailsForUser($pengajuan->pengaju);
+
+            if (empty($emails)) {
+                Log::warning('Notifikasi penetapan hasil tidak dikirim: tidak ada email UPPS.', [
+                    'pengajuan_id' => $pengajuan->id,
+                ]);
+                return;
+            }
+
+            $peringkat         = $hasil->peringkat_akreditasi_final ?? '-';
+            $skor              = $hasil->skor_final ?? '-';
+            $tanggalPenetapan  = $pengajuan->tanggal_penetapan
+                ? \Carbon\Carbon::parse($pengajuan->tanggal_penetapan)->locale('id')->translatedFormat('d F Y')
+                : '-';
+            $tanggalKedaluwarsa = $pengajuan->tanggal_kedaluwarsa_akhir
+                ? \Carbon\Carbon::parse($pengajuan->tanggal_kedaluwarsa_akhir)->locale('id')->translatedFormat('d F Y')
+                : '-';
+
+            $this->mailDelivery->sendToEmails(
+                $emails,
+                new ReminderContextMail(
+                    recipientName: 'Tim Akreditasi Program Studi <strong>' . $namaProdi . '</strong>',
+                    pesanReminder: "Hasil akreditasi program studi Anda telah ditetapkan oleh LAMDEPILAR.\n\Status Akreditasi : {$peringkat}\nTanggal Penetapan   : {$tanggalPenetapan}\n" . ($tanggalKedaluwarsa ? 'Berlaku Hingga      : {$tanggalKedaluwarsa}\n' : '') . "\nSertifikat akreditasi akan segera diterbitkan dan disampaikan kepada program studi. Mohon pantau sistem untuk informasi lebih lanjut.",
+                    subject: 'Hasil Akreditasi Ditetapkan',
+                    actionUrl: route('upps.penetapan-hasil-akreditasi.show', $pengajuan->id),
+                    actionLabel: 'Lihat Hasil Penetapan',
+                    contextInfo: null,
+                    headerTitle: 'Hasil Akreditasi Ditetapkan',
+                    preheader: "Hasil akreditasi {$namaProdi} telah ditetapkan. Status akreditasi: {$peringkat}.",
+                ),
+                [],
+                [],
+                true
+            );
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim notifikasi penetapan hasil ke UPPS', [
+                'pengajuan_id' => $pengajuan->id,
+                'error'        => $e->getMessage(),
+            ]);
         }
     }
 

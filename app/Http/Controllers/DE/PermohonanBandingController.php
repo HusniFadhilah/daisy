@@ -2,19 +2,34 @@
 
 namespace App\Http\Controllers\DE;
 
-use App\Models\University;
-use Illuminate\Http\Request;
-use App\Models\PengajuanDokumen;
-use Illuminate\Support\Facades\DB;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\DE\Concerns\HasReminderPembayaran;
+use App\Mail\PenerimaanBandingMail;
+use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
+use App\Models\University;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class PermohonanBandingController extends Controller
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, HasReminderPembayaran;
+
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery,
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery      = $mailDelivery;
+    }
 
     // ============================================================
     // INDEX
@@ -98,7 +113,10 @@ class PermohonanBandingController extends Controller
         // Untuk modal kirim invoice (jika belum ada invoice banding)
         $sudahAdaInvoice = (bool) $pengajuan->pembayaranBanding;
 
-        return view('de.permohonan-banding.show', compact('pengajuan', 'sudahAdaInvoice'));
+        $pendingValidasi   = $this->getPendingValidasi('banding');
+        $pendingPembayaran = $this->getPendingPembayaran('banding');
+
+        return view('de.permohonan-banding.show', compact('pengajuan', 'sudahAdaInvoice', 'pendingValidasi', 'pendingPembayaran'));
     }
 
     // ============================================================
@@ -190,6 +208,8 @@ class PermohonanBandingController extends Controller
 
             DB::commit();
 
+            $this->sendNotification($pengajuan, $dokumen);
+
             return redirect()
                 ->route('de.permohonan-banding.show', $pengajuan->id)
                 ->with('success', 'Penerimaan Permohonan Banding berhasil dikirim ke program studi.');
@@ -208,6 +228,46 @@ class PermohonanBandingController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Gagal mengirim penerimaan banding: ' . $e->getMessage());
+        }
+    }
+
+    // ============================================================
+    // PRIVATE HELPERS
+    // ============================================================
+
+    private function sendNotification(PengajuanAkreditasi $pengajuan, PengajuanDokumen $dokumen): void
+    {
+        try {
+            $pengajuan->loadMissing([
+                'studyProgram.users.activeEmails',
+                'studyProgram.university',
+                'pengaju.activeEmails',
+            ]);
+
+            $prodUsers = $pengajuan->studyProgram?->users;
+            $emails    = $prodUsers && $prodUsers->isNotEmpty()
+                ? $this->recipientResolver->emailsForUsers($prodUsers)
+                : $this->recipientResolver->emailsForUser($pengajuan->pengaju);
+
+            if (empty($emails)) {
+                Log::warning('Surat penerimaan banding tidak dikirim: recipient kosong.', [
+                    'pengajuan_id'    => $pengajuan->id,
+                    'study_program_id' => $pengajuan->studyProgram->id ?? null,
+                ]);
+                return;
+            }
+
+            $this->mailDelivery->sendToEmails(
+                to: $emails,
+                mailable: new PenerimaanBandingMail($pengajuan, $dokumen),
+                useQueue: true
+            );
+        } catch (\Throwable $e) {
+            // Tidak throw — pengiriman surat sudah berhasil, kegagalan email tidak boleh rollback
+            Log::error('Gagal mengirim notifikasi penerimaan banding', [
+                'pengajuan_id' => $pengajuan->id,
+                'error'        => $e->getMessage(),
+            ]);
         }
     }
 

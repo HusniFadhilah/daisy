@@ -1266,11 +1266,8 @@ class AKBandingController extends Controller
         }
 
         // Update status pekerjaan ke in_progress jika sebelumnya not_started
-        if ($assignmentBanding->status_pekerjaan === 'not_started' && $initialized > 0) {
-            $assignmentBanding->update([
-                'status_pekerjaan' => 'in_progress',
-                'started_at'       => now(),
-            ]);
+        if ($initialized > 0) {
+            $this->updateStatusAK($assignmentBanding); // pastikan status diperbarui sesuai logika AK
         }
 
         DB::commit();  // ← pindah ke sini, selalu dijalankan

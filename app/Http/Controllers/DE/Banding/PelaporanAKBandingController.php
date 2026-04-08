@@ -12,7 +12,7 @@ class PelaporanAKBandingController extends Controller
 {
     use HasReminderPelaporan;
 
-    private const JENIS_ASESMEN  = 'ak';
+    private const JENIS_ASESMEN  = 'ak_banding';
     private const DOCUMENT_TYPE  = 'laporan_ak_banding';
     private const REQUIRED_STATUSES = [
         PengajuanAkreditasi::STATUS_AK_BANDING_SELESAI,
@@ -145,7 +145,7 @@ class PelaporanAKBandingController extends Controller
             jenisAsesmen: self::JENIS_ASESMEN,
             documentType: self::DOCUMENT_TYPE,
             mailSubject: 'Pengingat Pelaporan Validasi AK Banding',
-            actionRouteName: 'pelaporan.ak-banding.show', // sesuaikan nama route validator
+            actionRouteName: 'pelaporan.banding.validasiAk.show', // sesuaikan nama route validator
             requiredStatuses: self::REQUIRED_STATUSES,
             keteranganLog: 'Pengingat pelaporan AK Banding dikirim ke validator',
         );

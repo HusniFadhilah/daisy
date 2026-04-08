@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\DE;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\DE\Concerns\HasReminderPembayaran;
 use App\Mail\InvoicePembayaranMail;
 use App\Models\DegreeLevel;
 use App\Models\PengajuanAkreditasi;
@@ -19,6 +20,8 @@ use Illuminate\Support\Facades\Storage;
 
 class ValidasiPembayaranBandingController extends Controller
 {
+    use HasReminderPembayaran;
+
     // Status pelaksanaan banding yang relevan untuk pembayaran
     private const STATUS_RELEVAN = [
         PengajuanAkreditasi::STATUS_BANDING_DITERIMA,
@@ -124,13 +127,28 @@ class ValidasiPembayaranBandingController extends Controller
             ]);
         }
 
+        $pendingValidasi   = $this->getPendingValidasi('banding');
+        $pendingPembayaran = $this->getPendingPembayaran('banding');
+
         return view('de.validasi-pembayaran-banding.index', compact(
             'pembayarans',
             'stats',
             'universities',
             'degreeLevels',
             'pengajuanBelumInvoice',
+            'pendingValidasi',
+            'pendingPembayaran',
         ));
+    }
+
+    public function kirimReminderKeuangan(Request $request)
+    {
+        return $this->processKirimReminderKeuangan($request, 'banding');
+    }
+
+    public function kirimReminderUPPS(Request $request)
+    {
+        return $this->processKirimReminderUPPS($request, 'banding');
     }
 
     // ============================================================
