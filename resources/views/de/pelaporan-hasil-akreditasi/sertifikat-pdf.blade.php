@@ -1088,6 +1088,53 @@
             text-align: justify;
         }
 
+        .page-3-wrapper .certificate-inner {
+            justify-content: flex-start;
+            gap: 0;
+        }
+
+        .page-3-header {
+            text-align: center;
+            padding: 0.8vh 0 0.5vh 0;
+            margin-bottom: 1vh;
+            border-bottom: 0.2vh solid #932136;
+        }
+
+        .page-3-title {
+            font-size: 2.2vh;
+            font-weight: 700;
+            color: #932136;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .page-3-subtitle {
+            font-size: 1.1vh;
+            color: #333;
+            margin-top: 0.3vh;
+        }
+
+        .lha-section {
+            flex: 1;
+            overflow: hidden;
+            /* potong jika overflow */
+        }
+
+        @media (min-width: 768px) {
+            .page-3-header {
+                padding: 1vmin 0 0.8vmin 0;
+                margin-bottom: 1.5vmin;
+            }
+
+            .page-3-title {
+                font-size: 3vmin;
+            }
+
+            .page-3-subtitle {
+                font-size: 1.5vmin;
+            }
+        }
+
     </style>
     <link rel="stylesheet" href="{{ asset('assets/css/sertifikat/page3.css') }}">
 </head>
@@ -1446,13 +1493,24 @@
                         @php
                         $babTitle = isset($bab['title']) ? strtoupper($bab['title']) : '';
                         $babContent = isset($bab['content']) ? $bab['content'] : '';
+
+                        // Strip HTML tags, lalu potong maksimal 2000 kata
+                        $plainText = strip_tags($babContent);
+                        $words = preg_split('/\s+/u', trim($plainText), -1, PREG_SPLIT_NO_EMPTY);
+                        $maxWords = 2000;
+
+                        if (count($words) > $maxWords) {
+                        $babContent = implode(' ', array_slice($words, 0, $maxWords)) . '&hellip;';
+                        } else {
+                        $babContent = $plainText;
+                        }
                         @endphp
 
                         <div class="lha-bab">
                             <div class="lha-bab-title">{{ $babTitle }}</div>
                             <div class="lha-bab-content">
-                                @if(!empty(trim(strip_tags($babContent))))
-                                {!! $babContent !!}
+                                @if(!empty(trim($babContent)))
+                                {!! nl2br(e($babContent)) !!}
                                 @else
                                 <span style="color:#aaa;font-style:italic;">— belum diisi —</span>
                                 @endif

@@ -52,66 +52,6 @@
 @endpush
 
 
-<div class="accordion mb-3" id="accordionFilterReminder">
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingFilter">
-            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilter" aria-expanded="false" aria-controls="collapseFilter">
-                <i class="bi bi-funnel me-2"></i> Filter Pencarian
-            </button>
-        </h2>
-
-        <div id="collapseFilter" class="accordion-collapse collapse" aria-labelledby="headingFilter" data-bs-parent="#accordionFilterReminder">
-            <div class="accordion-body bg-light">
-                <div class="row g-2">
-                    {{-- Search --}}
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold">
-                            Cari Prodi / Universitas
-                        </label>
-                        <input type="text" class="form-control form-control-sm" id="reminderSearchInput" placeholder="Ketik nama prodi atau universitas...">
-                    </div>
-
-                    {{-- Status akreditasi --}}
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold">
-                            Status Akreditasi
-                        </label>
-                        <select class="form-select form-select-sm select2" id="reminderPeringkatFilter" multiple>
-                            <option value="Unggul">Unggul</option>
-                            <option value="Baik Sekali">Baik Sekali</option>
-                            <option value="Baik">Baik</option>
-                            <option value="C">C</option>
-                        </select>
-                    </div>
-
-                    {{-- Status --}}
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold">
-                            Status Akreditasi
-                        </label>
-                        <select class="form-select form-select-sm select2" id="reminderStatusFilter" multiple>
-                            <option value="Aktif">Aktif</option>
-                            <option value="Kedaluwarsa">Kedaluwarsa</option>
-                            <option value="Belum Terakreditasi">Belum Terakreditasi</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="d-flex gap-2 mt-3">
-                    <button class="btn btn-primary btn-sm" onclick="applyReminderFilters()">
-                        <i class="bi bi-search"></i> Terapkan Filter
-                    </button>
-
-                    <button class="btn btn-secondary btn-sm" onclick="resetReminderFilters()">
-                        <i class="bi bi-x-circle"></i> Reset
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
 <div class="d-flex justify-content-between align-items-center mb-2">
     <div>
         <h6 class="fw-bold mb-0">Program Studi - {{ $label }}</h6>

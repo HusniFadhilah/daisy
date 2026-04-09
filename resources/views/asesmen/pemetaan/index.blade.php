@@ -714,11 +714,14 @@
                                         </span>
                                     </label>
                                     <select name="peringkat[]" id="peringkatFilter" class="form-select" multiple>
-                                        @php $selectedPeringkat = (array)request('peringkat', []); @endphp
-                                        <option value="Unggul" {{ in_array('Unggul', $selectedPeringkat) ? 'selected' : '' }}>Unggul</option>
-                                        <option value="Baik Sekali" {{ in_array('Baik Sekali', $selectedPeringkat) ? 'selected' : '' }}>Baik Sekali</option>
-                                        <option value="Baik" {{ in_array('Baik', $selectedPeringkat) ? 'selected' : '' }}>Baik</option>
-                                        <option value="C" {{ in_array('C', $selectedPeringkat) ? 'selected' : '' }}>C</option>
+                                        @php $selectedPeringkat = (array) request('peringkat', []); @endphp
+                                        @forelse($peringkatList as $peringkat)
+                                        <option value="{{ $peringkat }}" {{ in_array($peringkat, $selectedPeringkat) ? 'selected' : '' }}>
+                                            {{ $peringkat }}
+                                        </option>
+                                        @empty
+                                        <option disabled>Tidak ada data</option>
+                                        @endforelse
                                     </select>
                                 </div>
 
@@ -745,36 +748,134 @@
                         </div>
                     </div>
 
-                    <!-- Peringkat Distribution -->
+                    {{-- ═══════════════════════════════════════════════
+     Card 1: Peringkat Akreditasi
+     Sumber: GROUP BY peringkat_akreditasi (study_programs)
+     ═══════════════════════════════════════════════ --}}
                     <div class="card mt-3">
-                        <div class="card-header bg-light">
-                            <h6 class="mb-0">
-                                <i class="bi bi-bar-chart"></i> Distribusi Status Akreditasi
+                        <div class="card-header bg-light py-2">
+                            <h6 class="mb-0 small fw-bold">
+                                <i class="bi bi-award text-primary me-1"></i>
+                                Distribusi Status Akreditasi
                             </h6>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body py-2">
                             @php
-                            $peringkatData = [
-                            'Unggul' => $stats['by_peringkat']['Unggul'] ?? 0,
-                            'Baik Sekali' => $stats['by_peringkat']['Baik Sekali'] ?? 0,
-                            'Baik' => $stats['by_peringkat']['Baik'] ?? 0,
-                            'C' => $stats['by_peringkat']['C'] ?? 0,
+                            $peringkatCfg = [
+                            'Unggul' => ['color' => '#764ba2', 'icon' => 'bi-trophy-fill'],
+                            'Baik Sekali' => ['color' => '#11998e', 'icon' => 'bi-star-fill'],
+                            'Baik' => ['color' => '#4facfe', 'icon' => 'bi-hand-thumbs-up-fill'],
+                            'C' => ['color' => '#fa709a', 'icon' => 'bi-exclamation-circle-fill'],
+                            '(Tidak Ada)' => ['color' => '#adb5bd', 'icon' => 'bi-dash-circle'],
                             ];
+                            $totalPeringkat = array_sum($stats['by_peringkat'] ?? []);
                             @endphp
 
-                            @foreach($peringkatData as $peringkat => $count)
+                            @forelse($stats['by_peringkat'] ?? [] as $label => $count)
+                            @php
+                            $cfg = $peringkatCfg[$label] ?? ['color' => '#adb5bd', 'icon' => 'bi-circle'];
+                            $pct = $totalPeringkat > 0 ? round(($count / $totalPeringkat) * 100, 1) : 0;
+                            @endphp
                             <div class="mb-2">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <small class="fw-bold">{{ $peringkat }}</small>
-                                    <small class="text-muted">{{ $count }}</small>
-                                </div>
-                                <div class="progress progress-custom">
-                                    <div class="progress-bar progress-bar-custom bg-{{ $peringkat == 'Unggul' ? 'primary' : ($peringkat == 'Baik Sekali' ? 'success' : ($peringkat == 'Baik' ? 'info' : 'warning')) }}" style="width: {{ $stats['total'] > 0 ? ($count / $stats['total']) * 100 : 0 }}%">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="fw-semibold d-flex align-items-center gap-1">
+                                        <i class="bi {{ $cfg['icon'] }}" style="color:{{ $cfg['color'] }};font-size:11px;"></i>
+                                        {{ $label }}
+                                    </small>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <span class="fw-bold" style="font-size:12px;">{{ $count }}</span>
+                                        <small class="text-muted" style="font-size:10px;">({{ $pct }}%)</small>
                                     </div>
+                                </div>
+                                <div class="progress" style="height:6px;border-radius:10px;background:#e9ecef;">
+                                    <div class="progress-bar" style="width:{{ $pct }}%;border-radius:10px;background:{{ $cfg['color'] }};"></div>
+                                </div>
+                            </div>
+                            @empty
+                            <small class="text-muted">Tidak ada data.</small>
+                            @endforelse
+
+                            <div class="d-flex justify-content-between pt-2 mt-1 border-top">
+                                <small class="text-muted">Total</small>
+                                <small class="fw-bold">{{ $totalPeringkat }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- ═══════════════════════════════════════════════
+     Card 2: Status Kedaluwarsa
+     Sumber: GROUP BY status_kedaluwarsa (study_programs)
+     + referensi label/warna dari tabel status_akreditasi
+     ═══════════════════════════════════════════════ --}}
+                    <div class="card mt-3">
+                        <div class="card-header bg-light py-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-0 small fw-bold">
+                                        <i class="bi bi-patch-check text-success me-1"></i>
+                                        Status Akreditasi
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body py-2">
+                            @php
+                            $statusCfg = [
+                            'Aktif' => ['color' => '#28a745', 'bg' => '#d4edda', 'icon' => 'bi-check-circle-fill'],
+                            'Kedaluwarsa' => ['color' => '#dc3545', 'bg' => '#f8d7da', 'icon' => 'bi-x-circle-fill'],
+                            'Belum Terakreditasi' => ['color' => '#6c757d', 'bg' => '#e2e3e5', 'icon' => 'bi-hourglass-split'],
+                            '(Tidak Ada)' => ['color' => '#adb5bd', 'bg' => '#f8f9fa', 'icon' => 'bi-dash-circle'],
+                            ];
+                            $totalStatus = array_sum($stats['by_status_prodi'] ?? []);
+                            @endphp
+
+                            @forelse($stats['by_status_prodi'] ?? [] as $label => $count)
+                            @php
+                            $cfg = $statusCfg[$label] ?? ['color' => '#adb5bd', 'bg' => '#f8f9fa', 'icon' => 'bi-circle'];
+                            $pct = $totalStatus > 0 ? round(($count / $totalStatus) * 100, 1) : 0;
+                            @endphp
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="fw-semibold d-flex align-items-center gap-1">
+                                        <i class="bi {{ $cfg['icon'] }}" style="color:{{ $cfg['color'] }};font-size:11px;"></i>
+                                        {{ $label }}
+                                    </small>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <span class="fw-bold" style="font-size:12px;">{{ $count }}</span>
+                                        <small class="text-muted" style="font-size:10px;">({{ $pct }}%)</small>
+                                    </div>
+                                </div>
+                                <div class="progress" style="height:6px;border-radius:10px;background:#e9ecef;">
+                                    <div class="progress-bar" style="width:{{ $pct }}%;border-radius:10px;background:{{ $cfg['color'] }};"></div>
+                                </div>
+                            </div>
+                            @empty
+                            <small class="text-muted">Tidak ada data.</small>
+                            @endforelse
+
+                            <div class="d-flex justify-content-between pt-2 mt-1 border-top">
+                                <small class="text-muted">Total</small>
+                                <small class="fw-bold">{{ $totalStatus }}</small>
+                            </div>
+                        </div>
+
+                        {{-- ── Referensi tabel status_akreditasi dari DB ─────────── --}}
+                        @if(($stats['status_akreditasi_master'] ?? collect())->isNotEmpty())
+                        <div class="card-footer bg-white pt-2 pb-2">
+                            <div class="text-muted mb-2" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">
+                                <i class="bi bi-info-circle me-1"></i>Referensi Status (LAMDEPILAR)
+                            </div>
+                            @foreach($stats['status_akreditasi_master'] as $master)
+                            <div class="d-flex align-items-start gap-2 mb-2">
+                                <span class="rounded-2 flex-shrink-0 mt-1" style="width:10px;height:10px;background:{{ $master->warna ?: '#adb5bd' }};"></span>
+                                <div style="font-size:10px;line-height:1.3;">
+                                    <span class="fw-semibold">{{ $master->status }}</span>
+                                    <span class="text-muted ms-1">· siklus {{ $master->siklus_tahun }} thn</span>
                                 </div>
                             </div>
                             @endforeach
                         </div>
+                        @endif
                     </div>
                 </div>
 
@@ -881,48 +982,138 @@ Sekretariat LAMDEPILAR</textarea>
 
 <div class="modal fade" id="reminderModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+        <div class="modal-content" style="max-height: 95vh;">
+            <div class="modal-header bg-primary text-white flex-shrink-0">
                 <h5 class="modal-title">
-                    <i class="bi bi-list"></i> Detail Pengingat Masa Akreditasi
+                    <i class="bi bi-bell-fill"></i> Detail Pengingat Masa Akreditasi
+                    <span id="reminderTotalBadge" class="badge bg-light text-primary ms-2">0 PS</span>
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
-            <div class="modal-body">
-                <div class="row g-2 mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Target (bulan dari sekarang)</label>
-                        <select class="form-select" id="reminderTargetMonths">
+            {{-- ✅ FILTER PANEL (permanen, tidak di-replace AJAX) --}}
+            <div class="flex-shrink-0 border-bottom bg-light px-3 pt-3 pb-2">
+
+                {{-- Baris 1: Target & Window --}}
+                <div class="row g-2 mb-2">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold mb-1">Target (bulan dari sekarang)</label>
+                        <select class="form-select form-select-sm" id="reminderTargetMonths">
+                            <option value="">- Pilih -</option>
                             <option value="3">3 bulan</option>
                             <option value="6">6 bulan</option>
                             <option value="7" selected>7 bulan</option>
                             <option value="12">12 bulan</option>
+                            <option value="24">24 bulan</option>
                         </select>
                     </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Window periode (bulan)</label>
-                        <select class="form-select" id="reminderWindowMonths">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold mb-1">Window periode (bulan)</label>
+                        <select class="form-select form-select-sm" id="reminderWindowMonths">
+                            <option value="">- Pilih -</option>
                             <option value="1" selected>1 bulan (hanya bulan target)</option>
                             <option value="3">3 bulan</option>
                             <option value="6">6 bulan</option>
                             <option value="12">12 bulan</option>
                         </select>
                     </div>
-
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button class="btn btn-primary w-100" onclick="loadReminderDetail()">
-                            <i class="bi bi-search"></i> Terapkan
-                        </button>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold mb-1">Dari Tanggal</label>
+                        <input type="date" class="form-control form-control-sm" id="reminderDateStart" placeholder="Dari tanggal">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold mb-1">Sampai Tanggal</label>
+                        <input type="date" class="form-control form-control-sm" id="reminderDateEnd" placeholder="Sampai tanggal">
                     </div>
                 </div>
 
-                <div id="reminderLoading" class="d-none text-center py-4">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <div class="text-muted mt-2">Memuat data...</div>
+                {{-- Baris 2: Filter konten --}}
+                <div class="row g-2 mb-2">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold mb-1"><i class="bi bi-search"></i> Nama Prodi</label>
+                        <input type="text" class="form-control form-control-sm" id="reminderSearchInput" placeholder="Ketik nama prodi...">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold mb-1"><i class="bi bi-building"></i> Universitas</label>
+                        <select class="form-select form-select-sm" id="reminderUniversitasFilter" multiple>
+                            @foreach($universities as $univ)
+                            <option value="{{ $univ->id }}">{{ $univ->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold mb-1"><i class="bi bi-flag"></i> Kategori Data</label>
+                        <select class="form-select form-select-sm" id="reminderIsExampleFilter">
+                            <option value="both" selected>Semua Data</option>
+                            <option value="false">Hanya Data Real</option>
+                            <option value="true">Hanya Data Contoh</option>
+                        </select>
+                    </div>
                 </div>
 
+                {{-- Baris 3: Filter tambahan --}}
+                <div class="row g-2 mb-2">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold mb-1"><i class="bi bi-calendar-month"></i> Bulan Kedaluwarsa</label>
+                        <select class="form-select form-select-sm" id="reminderBulanFilter" multiple>
+                            @php
+                            $namabulan = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',
+                            5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',
+                            9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+                            @endphp
+                            @foreach($namabulan as $num => $nama)
+                            <option value="{{ $num }}">{{ $nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold mb-1"><i class="bi bi-calendar"></i> Tahun Kedaluwarsa</label>
+                        <select class="form-select form-select-sm" id="reminderTahunFilter" multiple>
+                            @php $currentYear = now()->year; @endphp
+                            @for($y = $currentYear; $y <= $currentYear + 10; $y++) <option value="{{ $y }}">{{ $y }}</option>
+                                @endfor
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold mb-1"><i class="bi bi-star"></i> Status Akreditasi</label>
+                        <select class="form-select form-select-sm" id="reminderPeringkatFilter" multiple>
+                            @forelse($peringkatList as $peringkat)
+                            <option value="{{ $peringkat }}">{{ $peringkat }}</option>
+                            @empty
+                            <option disabled>Tidak ada data</option>
+                            @endforelse
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold mb-1"><i class="bi bi-check-circle"></i> Status</label>
+                        <select class="form-select form-select-sm" id="reminderStatusFilter" multiple>
+                            <option value="Aktif">Aktif</option>
+                            <option value="Kedaluwarsa">Kedaluwarsa</option>
+                            <option value="Belum Terakreditasi">Belum Terakreditasi</option>
+                        </select>
+                    </div>
+                </div>
+
+                {{-- Tombol aksi filter --}}
+                <div class="d-flex gap-2 align-items-center">
+                    <button class="btn btn-primary btn-sm" onclick="applyReminderFilters()">
+                        <i class="bi bi-search"></i> Terapkan Filter
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="resetReminderFilters()">
+                        <i class="bi bi-x-circle"></i> Reset
+                    </button>
+                    <span id="reminderActiveFilterBadge" class="badge bg-danger d-none ms-1">
+                        <i class="bi bi-funnel-fill"></i> <span id="reminderActiveFilterCount">0</span> filter aktif
+                    </span>
+                </div>
+            </div>
+
+            {{-- Body: konten AJAX --}}
+            <div class="modal-body" style="overflow-y: auto; flex: 1 1 auto;">
+                <div id="reminderLoading" class="d-none text-center py-5">
+                    <div class="spinner-border text-primary" role="status" style="width:3rem;height:3rem;"></div>
+                    <div class="text-muted mt-3">Memuat data...</div>
+                </div>
                 <div id="reminderDetailContainer"></div>
             </div>
         </div>
@@ -936,6 +1127,7 @@ Sekretariat LAMDEPILAR</textarea>
     let currentFilters = {};
     let dataTable = null;
     let dataTableInitializing = false;
+    let reminderSelect2Initialized = false;
 
     document.addEventListener('DOMContentLoaded', function() {
 
@@ -2065,64 +2257,142 @@ Sekretariat LAMDEPILAR</textarea>
         }, 200);
     }
 
+    // Inisialisasi Select2 di dalam modal (cukup sekali)
+    function initReminderSelect2() {
+        if (reminderSelect2Initialized) return;
+
+        const cfg = {
+            theme: 'bootstrap-5'
+            , dropdownParent: $('#reminderModal')
+            , allowClear: true
+            , width: '100%'
+            , closeOnSelect: false
+            , placeholder: 'Pilih...'
+            , language: {
+                noResults: () => 'Tidak ada hasil'
+                , searching: () => 'Mencari...'
+            }
+        };
+
+        $('#reminderUniversitasFilter').select2({
+            ...cfg
+            , placeholder: 'Cari universitas...'
+        });
+        $('#reminderBulanFilter').select2(cfg);
+        $('#reminderTahunFilter').select2(cfg);
+        $('#reminderPeringkatFilter').select2(cfg);
+        $('#reminderStatusFilter').select2(cfg);
+
+        // Auto-apply saat filter berubah
+        $('#reminderUniversitasFilter, #reminderBulanFilter, #reminderTahunFilter, #reminderPeringkatFilter, #reminderStatusFilter')
+            .on('change', () => {
+                updateReminderActiveFilters();
+                loadReminderDetail(1);
+            });
+
+        $('#reminderIsExampleFilter').on('change', () => {
+            updateReminderActiveFilters();
+            loadReminderDetail(1);
+        });
+
+        // Search dengan debounce
+        let debounce;
+        $('#reminderSearchInput').on('input', function() {
+            clearTimeout(debounce);
+            debounce = setTimeout(() => {
+                updateReminderActiveFilters();
+                loadReminderDetail(1);
+            }, 500);
+        });
+
+        // Date range
+        $('#reminderDateStart, #reminderDateEnd').on('change', () => {
+            updateReminderActiveFilters();
+            loadReminderDetail(1);
+        });
+
+        // Target & Window
+        $('#reminderTargetMonths, #reminderWindowMonths').on('change', () => loadReminderDetail(1));
+
+        reminderSelect2Initialized = true;
+    }
+
     function getReminderFilters() {
         return {
-            search: $('#reminderSearchInput').val() || ''
+            search: ($('#reminderSearchInput').val() || '').trim()
+            , university_id: $('#reminderUniversitasFilter').val() || []
+            , is_example: $('#reminderIsExampleFilter').val() || 'both'
+            , month: $('#reminderBulanFilter').val() || []
+            , year: $('#reminderTahunFilter').val() || []
             , peringkat: $('#reminderPeringkatFilter').val() || []
             , status: $('#reminderStatusFilter').val() || []
-        };
+            , date_start: $('#reminderDateStart').val() || ''
+            , date_end: $('#reminderDateEnd').val() || ''
+        , };
+    }
+
+    // Hitung & tampilkan badge filter aktif
+    function updateReminderActiveFilters() {
+        const f = getReminderFilters();
+        let count = 0;
+        if (f.search) count++;
+        if (f.university_id.length) count++;
+        if (f.is_example !== 'both') count++;
+        if (f.month.length) count++;
+        if (f.year.length) count++;
+        if (f.peringkat.length) count++;
+        if (f.status.length) count++;
+        if (f.date_start || f.date_end) count++;
+
+        const badge = document.getElementById('reminderActiveFilterBadge');
+        document.getElementById('reminderActiveFilterCount').textContent = count;
+        badge.classList.toggle('d-none', count === 0);
     }
 
     function applyReminderFilters() {
+        updateReminderActiveFilters();
         loadReminderDetail(1);
     }
 
     function resetReminderFilters() {
         $('#reminderSearchInput').val('');
-        $('#reminderPeringkatFilter').val(null).trigger('change');
-        $('#reminderStatusFilter').val(null).trigger('change');
+        $('#reminderIsExampleFilter').val('both');
+        $('#reminderDateStart, #reminderDateEnd').val('');
+        $('#reminderUniversitasFilter, #reminderBulanFilter, #reminderTahunFilter, #reminderPeringkatFilter, #reminderStatusFilter')
+            .val(null).trigger('change');
+        updateReminderActiveFilters();
         loadReminderDetail(1);
     }
 
     async function loadReminderDetail(page = 1) {
         const loading = document.getElementById('reminderLoading');
         const container = document.getElementById('reminderDetailContainer');
-        const modalBody = document.querySelector('#reminderModal .modal-body');
 
         const targetMonths = document.getElementById('reminderTargetMonths').value;
         const windowMonths = document.getElementById('reminderWindowMonths').value;
-
-        // Get filters before clearing container
-        const filters = {
-            search: $('#reminderSearchInput').val() || ''
-            , peringkat: $('#reminderPeringkatFilter').val() || []
-            , status: $('#reminderStatusFilter').val() || []
-        };
+        const filters = getReminderFilters();
 
         try {
             loading.classList.remove('d-none');
+            container.style.opacity = '0.4';
 
             const url = new URL('{{ route("de.pemetaan.reminder.detail.ajax") }}', window.location.origin);
             url.searchParams.set('target_months', targetMonths);
             url.searchParams.set('window_months', windowMonths);
             url.searchParams.set('page', page);
 
-            // Add filters
-            if (filters.search) {
-                url.searchParams.set('search', filters.search);
-            }
-
-            if (filters.peringkat.length > 0) {
-                filters.peringkat.forEach(p => {
-                    url.searchParams.append('peringkat[]', p);
-                });
-            }
-
-            if (filters.status.length > 0) {
-                filters.status.forEach(s => {
-                    url.searchParams.append('status[]', s);
-                });
-            }
+            // Append semua filter
+            if (filters.search) url.searchParams.set('search', filters.search);
+            if (filters.is_example !== 'both') url.searchParams.set('is_example', filters.is_example);
+            if (filters.date_start) url.searchParams.set('date_start', filters.date_start);
+            if (filters.date_end) url.searchParams.set('date_end', filters.date_end);
+            filters.university_id.forEach(v => url.searchParams.append('university_id[]', v));
+            filters.month.forEach(v => url.searchParams.append('month[]', v));
+            filters.year.forEach(v => url.searchParams.append('year[]', v));
+            filters.peringkat.forEach(v => url.searchParams.append('peringkat[]', v));
+            filters.status.forEach(v => url.searchParams.append('status[]', v));
+            if (targetMonths !== '') url.searchParams.set('target_months', targetMonths);
+            if (windowMonths !== '') url.searchParams.set('window_months', windowMonths);
 
             const res = await fetch(url.toString(), {
                 headers: {
@@ -2131,71 +2401,37 @@ Sekretariat LAMDEPILAR</textarea>
                 }
             });
 
-            if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
-            }
-
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
+            if (!data.success) throw new Error(data.message || 'Request gagal');
 
-            if (!data.success) {
-                throw new Error(data.message || 'Request gagal');
-            }
-
-            // Save current filter values
-            const savedFilters = {
-                search: filters.search
-                , peringkat: filters.peringkat
-                , status: filters.status
-            };
-
-            // Update content
             container.innerHTML = data.html;
 
-            // ✅ Scroll modal body ke atas setelah konten dimuat
-            if (modalBody) {
-                modalBody.scrollTop = 0;
+            // Update badge total
+            const totalBadge = document.getElementById('reminderTotalBadge');
+            if (totalBadge && data.meta && data.meta.total !== undefined) {
+                totalBadge.textContent = `${data.meta.total} PS`;
             }
-
-            // Reset initialization flag
-            reminderFiltersInitialized = false;
-
-            // Re-initialize filters with saved values
-            setTimeout(() => {
-                initReminderFilters();
-
-                // Restore filter values after re-initialization
-                setTimeout(() => {
-                    if (savedFilters.search) {
-                        $('#reminderSearchInput').val(savedFilters.search);
-                    }
-
-                    if (savedFilters.peringkat.length > 0) {
-                        $('#reminderPeringkatFilter').val(savedFilters.peringkat).trigger('change');
-                    }
-
-                    if (savedFilters.status.length > 0) {
-                        $('#reminderStatusFilter').val(savedFilters.status).trigger('change');
-                    }
-
-                    // ✅ Pastikan modal tetap scrollable setelah re-init
-                    if (modalBody) {
-                        modalBody.style.overflowY = 'auto';
-                        modalBody.style.maxHeight = '70vh';
-                    }
-                }, 100);
-            }, 100);
 
         } catch (err) {
             container.innerHTML = `
-            <div class="alert alert-danger">
+            <div class="alert alert-danger m-3">
                 <i class="bi bi-exclamation-triangle"></i>
-                Gagal memuat detail pengingat: ${err.message}
-            </div>
-        `;
+                Gagal memuat data: ${err.message}
+            </div>`;
         } finally {
             loading.classList.add('d-none');
+            container.style.opacity = '1';
         }
     }
+
+    // Inisialisasi saat modal dibuka
+    document.getElementById('reminderModal').addEventListener('shown.bs.modal', function() {
+        initReminderSelect2();
+        if (!document.getElementById('reminderDetailContainer').innerHTML.trim()) {
+            loadReminderDetail(1);
+        }
+    });
 
     // Auto reload ketika dropdown berubah
     document.addEventListener('DOMContentLoaded', function() {
