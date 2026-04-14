@@ -139,7 +139,7 @@
 
         @if($pembayarans->hasPages())
         <div class="card-footer">
-            {{ $pembayarans->links() }}
+            {{ $pembayarans->onEachSide(1)->links() }}
         </div>
         @endif
     </div>

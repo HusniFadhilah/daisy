@@ -161,7 +161,7 @@
                             Menampilkan {{ $pengajuans->firstItem() }} - {{ $pengajuans->lastItem() }} dari {{ $pengajuans->total() }} data
                         </div>
                         <div>
-                            {{ $pengajuans->links() }}
+                            {{ $pengajuans->onEachSide(1)->links() }}
                         </div>
                     </div>
                 </div>

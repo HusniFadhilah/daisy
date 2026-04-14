@@ -1842,3 +1842,33 @@ button[aria-expanded="true"] .chevron-icon {
     white-space: nowrap !important;
     border: 0 !important;
 }
+
+.card-footer .pagination {
+    margin-bottom: 0;
+}
+
+.card-footer .page-link {
+    border-radius: 8px;
+    padding: 0.5rem 0.85rem;
+    color: var(--primary);
+}
+
+.card-footer .page-item.active .page-link {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.card-footer .page-link:focus {
+    box-shadow: 0 0 0 0.2rem rgba(147, 33, 54, 0.15);
+}
+
+@media (max-width: 576px) {
+    .card-footer {
+        overflow-x: auto;
+    }
+
+    .card-footer .pagination {
+        flex-wrap: nowrap;
+    }
+}

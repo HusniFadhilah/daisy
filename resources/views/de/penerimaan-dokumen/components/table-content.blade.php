@@ -153,7 +153,7 @@
 
     @if($pengajuans->hasPages())
     <div class="card-footer">
-        {{ $pengajuans->links() }}
+        {{ $pengajuans->onEachSide(1)->links() }}
     </div>
     @endif
 </div>

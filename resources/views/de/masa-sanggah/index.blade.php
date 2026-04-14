@@ -117,7 +117,7 @@
 
                     <!-- Pagination -->
                     <div class="card-footer bg-white">
-                        {{ $pengajuans->links() }}
+                        {{ $pengajuans->onEachSide(1)->links() }}
                     </div>
                     @else
                     <div class="text-center py-5">

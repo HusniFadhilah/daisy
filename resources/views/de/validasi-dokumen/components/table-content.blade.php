@@ -106,7 +106,7 @@
 
     @if($assignments->hasPages())
     <div class="card-footer">
-        {{ $assignments->links() }}
+        {{ $assignments->onEachSide(1)->links() }}
     </div>
     @endif
 </div>

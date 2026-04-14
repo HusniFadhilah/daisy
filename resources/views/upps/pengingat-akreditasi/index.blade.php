@@ -226,8 +226,8 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div class="card-footer bg-white">
-                        {{ $pengingatList->links() }}
+                    <div class="card-footer bg-white border-0">
+                        {{ $pengingatList->onEachSide(1)->onEachSide(1)->links() }}
                     </div>
                     @else
                     <div class="text-center py-5">

@@ -180,7 +180,7 @@
             <!-- Pagination -->
             @if($assignments->count() > 1)
             <div class="card-footer bg-white">
-                {{ $assignments->links() }}
+                {{ $assignments->onEachSide(1)->links() }}
             </div>
             @endif
 

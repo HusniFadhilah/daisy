@@ -326,7 +326,7 @@
     <!-- Pagination -->
     @if($pengajuans->hasPages())
     <div class="d-flex justify-content-center">
-        {{ $pengajuans->links() }}
+        {{ $pengajuans->onEachSide(1)->links() }}
     </div>
     @endif
 </div>

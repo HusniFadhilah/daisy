@@ -125,7 +125,7 @@
     <div class="card-footer bg-light">
         <div class="d-flex justify-content-between align-items-center">
             <div>Menampilkan {{ $pengajuans->firstItem() }} - {{ $pengajuans->lastItem() }} dari {{ $pengajuans->total() }} data</div>
-            <div>{{ $pengajuans->links() }}</div>
+            <div>{{ $pengajuans->onEachSide(1)->links() }}</div>
         </div>
     </div>
     @endif

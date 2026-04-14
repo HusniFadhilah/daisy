@@ -157,7 +157,7 @@
         </div>
         @if($asesmens->hasPages())
         <div class="card-footer bg-white">
-            {{ $asesmens->links() }}
+            {{ $asesmens->onEachSide(1)->links() }}
         </div>
         @endif
     </div>

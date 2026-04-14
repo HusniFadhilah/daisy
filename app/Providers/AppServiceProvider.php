@@ -12,6 +12,7 @@ use App\Services\HasilAkreditasiService;
 use App\Services\LkpsDataReaderService;
 use App\View\Components\Akreditasi\StatCard;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 
 class AppServiceProvider extends ServiceProvider
@@ -66,7 +67,7 @@ class AppServiceProvider extends ServiceProvider
                 @mkdir($dir, 0775, true);
             }
         }
-
+        Paginator::useBootstrapFive();
         $this->app->bind(BorangExcelImportService::class, function () {
             return new BorangExcelImportService(
                 new BorangExcelSheetParser(),

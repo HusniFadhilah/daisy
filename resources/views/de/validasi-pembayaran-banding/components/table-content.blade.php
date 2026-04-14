@@ -80,6 +80,6 @@
         </div>
     </div>
     @if($pembayarans->hasPages())
-    <div class="card-footer">{{ $pembayarans->links() }}</div>
+    <div class="card-footer">{{ $pembayarans->onEachSide(1)->links() }}</div>
     @endif
 </div>

@@ -357,7 +357,7 @@
                     Menampilkan {{ $asesmens->firstItem() }} - {{ $asesmens->lastItem() }}
                     dari {{ $asesmens->total() }} asesmen
                 </div>
-                <div>{{ $asesmens->appends(request()->query())->links() }}</div>
+                <div>{{ $asesmens->appends(request()->query())->onEachSide(1)->links() }}</div>
             </div>
         </div>
         @endif
