@@ -159,19 +159,36 @@
     });
 
     async function deleteRecord(id) {
+        console.log('delete id:', id);
+
         if (await swalConfirmSubmit('warning', 'Yakin ingin menghapus pengguna ini?')) {
+
+            var url = "{{ route('users.destroy', ['user' => '__ID__']) }}";
+            url = url.replace('__ID__', id);
+
+            console.log('delete url:', url);
+
             $.ajax({
-                url: "{{ url('users') }}/" + id
-                , type: 'DELETE'
+                url: url
+                , type: 'POST'
                 , data: {
                     _token: '{{ csrf_token() }}'
+                    , _method: 'DELETE'
                 }
                 , success: function(result) {
                     $('#users-table').DataTable().ajax.reload();
                     Swal.fire('Berhasil', 'Pengguna berhasil dihapus', 'success');
                 }
                 , error: function(xhr) {
-                    Swal.fire('Perhatian', 'Error: ' + xhr.responseJSON.message, 'error');
+                    var message = 'Terjadi kesalahan';
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        message = xhr.responseText;
+                    }
+
+                    Swal.fire('Perhatian', 'Error: ' + message, 'error');
                 }
             });
         }

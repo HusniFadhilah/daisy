@@ -14,23 +14,36 @@ class KriteriaController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->ajax()) {
-            $data = Kriteria::select('kriteria.*');
+        // $kriteria = Kriteria::select('kriteria.*');
+        // if ($request->ajax()) {
 
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-                    $btn = '<div class="btn-group" role="group">';
-                    $btn .= '<a href="' . route('kriteria.edit', $row->id_kriteria) . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
-                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord(' . $row->id_kriteria . ')"><i class="bi bi-trash"></i></button>';
-                    $btn .= '</div>';
-                    return $btn;
-                })
-                ->rawColumns(['action'])
-                ->make(true);
+        //     return DataTables::of($kriteria)
+        //         ->addIndexColumn()
+        //         ->addColumn('action', function ($row) {
+        //             $btn = '<div class="btn-group" role="group">';
+        //             $btn .= '<a href="' . route('kriteria.edit', $row->id_kriteria) . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
+        //             $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord(' . $row->id_kriteria . ')"><i class="bi bi-trash"></i></button>';
+        //             $btn .= '</div>';
+        //             return $btn;
+        //         })
+        //         ->rawColumns(['action'])
+        //         ->make(true);
+        // }
+
+        $query = Kriteria::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('kode_kriteria', 'like', "%{$search}%")
+                ->orWhere('nama_kriteria', 'like', "%{$search}%")
+                ->orWhere('keterangan', 'like', "%{$search}%");
         }
 
-        return view('master-data.indikator.kriteria.index');
+        $kriteria = $query->paginate(10)->withQueryString();
+
+        return view('master-data.indikator.kriteria.index', compact('kriteria'));
+
+        // return view('master-data.indikator.kriteria.index');
     }
 
     /**

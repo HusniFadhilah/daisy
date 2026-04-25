@@ -1753,6 +1753,12 @@ class PengajuanAkreditasi extends Model
                     $labelFor(self::STATUS_MASA_SANGGAH_SELESAI) ?? 'Masa Sanggah Selesai'
                 ),
 
+                self::STATUS_BANDING_DIAJUKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_BANDING_DIAJUKAN, 'bg-light'),
+                    $labelFor(self::STATUS_BANDING_DIAJUKAN) ?? 'Banding Diajukan'
+                ),
+
                 default =>
                 $badge('bg-secondary', '-'),
             },

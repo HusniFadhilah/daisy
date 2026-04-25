@@ -4,7 +4,6 @@
 
 @section('content')
 <div class="container-fluid">
-    <!-- Header dengan Tabs -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Manajemen Indikator</h2>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createElemenModal">
@@ -12,7 +11,6 @@
         </button>
     </div>
 
-    <!-- Navigation Tabs -->
     <ul class="nav nav-tabs mb-4" role="tablist">
         <li class="nav-item" role="presentation">
             <a class="nav-link" href="{{ route('kriteria.index') }}">
@@ -31,85 +29,153 @@
         </li>
     </ul>
 
-    <!-- Tabel Elemen Standar -->
     <div class="card">
         <div class="card-body">
+            <form action="{{ route('elemen-standar.index') }}" method="GET" class="mb-3">
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <input type="text" name="search" class="form-control" placeholder="Cari kode elemen, pernyataan, keterangan, atau kriteria..." value="{{ request('search') }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <select name="id_kriteria" class="form-select">
+                            <option value="">-- Semua Kriteria --</option>
+                            @foreach($kriteria as $k)
+                            <option value="{{ $k->id_kriteria }}" {{ request('id_kriteria') == $k->id_kriteria ? 'selected' : '' }}>
+                                {{ $k->kode_kriteria }} - {{ $k->nama_kriteria }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Cari
+                        </button>
+                        <a href="{{ route('elemen-standar.index') }}" class="btn btn-secondary">
+                            Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+
             <div class="table-responsive">
-                <table class="table table-hover align-middle" id="elemenStandarTable">
+                <table class="table table-hover align-middle">
                     <thead>
                         <tr>
-                            <th>No</th>
-                            <th>Kriteria</th>
-                            <th>Kode Elemen</th>
-                            <th>Pernyataan Elemen</th>
-                            <th>Keterangan</th>
-                            <th>Aksi</th>
+                            <th width="5%">No</th>
+                            <th width="20%">Kriteria</th>
+                            <th width="10%">Kode Elemen</th>
+                            <th width="30%">Pernyataan Elemen</th>
+                            <th width="20%">Keterangan</th>
+                            <th width="15%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @forelse($elemenStandar as $item)
+                        <tr>
+                            <td>
+                                {{ $loop->iteration + ($elemenStandar->currentPage() - 1) * $elemenStandar->perPage() }}
+                            </td>
+                            <td>
+                                {{ $item->kriteria ? $item->kriteria->kode_kriteria . ' - ' . $item->kriteria->nama_kriteria : '-' }}
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-dark">
+                                    {{ $item->kode_elemen }}
+                                </span>
+                            </td>
+                            <td>{{ $item->pernyataan_elemen }}</td>
+                            <td>{{ \Illuminate\Support\Str::limit($item->keterangan, 50) ?: '-' }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#showElemenModal{{ $item->id }}" title="Detail">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+
+                                    <a href="{{ route('elemen-standar.edit', $item->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <form id="form-elemen-{{ $item->id }}" action="{{ route('elemen-standar.destroy', $item->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-elemen-{{ $item->id }}" data-text="elemen standar" title="Hapus">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <div class="modal fade" id="showElemenModal{{ $item->id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Detail Elemen Standar</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <dl class="row">
+                                            <dt class="col-sm-3">Kriteria</dt>
+                                            <dd class="col-sm-9">
+                                                {{ $item->kriteria->kode_kriteria ?? '-' }} - {{ $item->kriteria->nama_kriteria ?? '-' }}
+                                            </dd>
+
+                                            <dt class="col-sm-3">Kode Elemen</dt>
+                                            <dd class="col-sm-9">{{ $item->kode_elemen }}</dd>
+
+                                            <dt class="col-sm-3">Pernyataan Elemen</dt>
+                                            <dd class="col-sm-9">{{ $item->pernyataan_elemen }}</dd>
+
+                                            <dt class="col-sm-3">Keterangan</dt>
+                                            <dd class="col-sm-9">{{ $item->keterangan ?? '-' }}</dd>
+
+                                            <dt class="col-sm-3">Pernyataan Standar</dt>
+                                            <dd class="col-sm-9">
+                                                @if($item->pernyataan && $item->pernyataan->count() > 0)
+                                                <ul class="mb-0">
+                                                    @foreach($item->pernyataan as $pernyataan)
+                                                    <li>
+                                                        <strong>{{ $pernyataan->code }}</strong>:
+                                                        {{ $pernyataan->pernyataan }}
+                                                    </li>
+                                                    @endforeach
+                                                </ul>
+                                                @else
+                                                <span class="text-muted">Belum ada pernyataan standar</span>
+                                                @endif
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center">Belum ada data elemen standar</td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
-    <div class="modal fade" id="showElemenModal{{ $item->id_elemen }}" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detail Elemen Standar</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="text-muted">
+                    Menampilkan {{ $elemenStandar->firstItem() ?? 0 }} - {{ $elemenStandar->lastItem() ?? 0 }}
+                    dari {{ $elemenStandar->total() }} data
                 </div>
-                <div class="modal-body">
-                    <dl class="row">
-                        <dt class="col-sm-3">Kriteria</dt>
-                        <dd class="col-sm-9">{{ $item->kriteria->kode_kriteria ?? '-' }} - {{ $item->kriteria->nama_kriteria ?? '-' }}</dd>
-
-                        <dt class="col-sm-3">Kode Elemen</dt>
-                        <dd class="col-sm-9">{{ $item->kode_elemen }}</dd>
-
-                        <dt class="col-sm-3">Pernyataan Elemen</dt>
-                        <dd class="col-sm-9">{{ $item->pernyataan_elemen }}</dd>
-
-                        <dt class="col-sm-3">Keterangan</dt>
-                        <dd class="col-sm-9">{{ $item->keterangan ?? '-' }}</dd>
-
-                        <dt class="col-sm-3">Pernyataan Standar</dt>
-                        <dd class="col-sm-9">
-                            @if($item->pernyataan->count() > 0)
-                            <ul>
-                                @foreach($item->pernyataan as $pernyataan)
-                                <li><strong>{{ $pernyataan->code }}</strong>: {{ $pernyataan->pernyataan }}</li>
-                                @endforeach
-                            </ul>
-                            @else
-                            <span class="text-muted">Belum ada pernyataan standar</span>
-                            @endif
-                        </dd>
-                    </dl>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <div>
+                    {{ $elemenStandar->links('pagination::bootstrap-5') }}
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Pagination -->
-<div class="d-flex justify-content-between align-items-center mt-3">
-    <div class="text-muted">
-        Menampilkan {{ $elemenStandar->firstItem() ?? 0 }} - {{ $elemenStandar->lastItem() ?? 0 }} dari {{ $elemenStandar->total() }} data
-    </div>
-    <div>
-        {{ $elemenStandar->links('pagination::bootstrap-5') }}
-    </div>
-</div>
-</div>
-</div>
-</div>
-</main>
-
-<!-- Modal Create -->
 <div class="modal fade" id="createElemenModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -167,74 +233,4 @@
         </div>
     </div>
 </div>
-
 @endsection
-
-@push('scripts')
-<script>
-    $(document).ready(function() {
-        $('#elemenStandarTable').DataTable({
-            serverSide: true
-            , processing: true
-            , ajax: "{{ route('elemen-standar.index') }}"
-            , columns: [{
-                    data: 'DT_RowIndex'
-                    , name: 'DT_RowIndex'
-                    , orderable: false
-                    , searchable: false
-                }
-                , {
-                    data: 'kriteria_nama'
-                    , name: 'kriteria_nama'
-                }
-                , {
-                    data: 'kode_elemen'
-                    , name: 'kode_elemen'
-                }
-                , {
-                    data: 'pernyataan_elemen'
-                    , name: 'pernyataan_elemen'
-                }
-                , {
-                    data: 'keterangan'
-                    , name: 'keterangan'
-                }
-                , {
-                    data: 'action'
-                    , name: 'action'
-                    , orderable: false
-                    , searchable: false
-                }
-            ]
-            , language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
-            }
-            , pageLength: 25
-            , lengthMenu: [
-                [10, 25, 50, 100, -1]
-                , [10, 25, 50, 100, "Semua"]
-            ]
-        });
-    });
-
-    async function deleteRecord(id) {
-        if (await swalConfirmSubmit('warning', 'Yakin ingin menghapus elemen standar ini?')) {
-            $.ajax({
-                url: '/elemen-standar/' + id
-                , type: 'DELETE'
-                , data: {
-                    _token: '{{ csrf_token() }}'
-                }
-                , success: function(response) {
-                    $('#elemenStandarTable').DataTable().ajax.reload();
-                    Swal.fire('Berhasil', 'Data berhasil dihapus', 'success');
-                }
-                , error: function(xhr) {
-                    Swal.fire('Perhatian', 'Gagal menghapus data', 'error');
-                }
-            });
-        }
-    }
-
-</script>
-@endpush

@@ -1108,7 +1108,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('export', [UserController::class, 'export'])->name('export');
             Route::get('template', [UserController::class, 'downloadTemplate'])->name('template');
             Route::post('import', [UserController::class, 'import'])->name('import');
-            Route::resource('/', UserController::class)->parameters(['' => 'user']);
+
+            Route::get('/', [UserController::class, 'index'])->name('index');
+            Route::get('create', [UserController::class, 'create'])->name('create');
+            Route::post('/', [UserController::class, 'store'])->name('store');
+            Route::get('{user}/edit', [UserController::class, 'edit'])->name('edit');
+            Route::put('{user}', [UserController::class, 'update'])->name('update');
+            Route::delete('{user}', [UserController::class, 'destroy'])->name('destroy');
         });
 
         // Dashboard Overview

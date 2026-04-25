@@ -37,42 +37,36 @@ class PenyampaianTemplateController extends Controller
      */
     public function index(Request $request)
     {
-        // Ambil status terakhir setiap pengajuan
-        $latestStatus = PengajuanStatusLog::select('id_pengajuan', 'status_to')
-            ->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
-                PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-            ])
-            ->orderByDesc('changed_at')
-            ->get()
-            ->unique('id_pengajuan');
+        $allowedStatuses = [
+            PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
+            PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
+        ];
 
-        // Query pengajuan dengan status terakhir sesuai filter
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'pengaju',
-        ])
-            ->whereIn('id', $latestStatus->pluck('id_pengajuan'));
+        ])->whereIn('id', function ($sub) use ($allowedStatuses) {
+            $sub->select('psl.id_pengajuan')
+                ->from('pengajuan_status_log as psl')
+                ->whereIn('psl.status_to', $allowedStatuses)
+                ->groupBy('psl.id_pengajuan');
+        });
 
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by university
         if ($request->filled('university_id')) {
             $query->whereHas('studyProgram', function ($q) use ($request) {
                 $q->where('id_university', $request->university_id);
             });
         }
 
-        // Filter by tahun
         if ($request->filled('tahun')) {
             $query->where('tahun_akreditasi', $request->tahun);
         }
 
-        // Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -84,34 +78,43 @@ class PenyampaianTemplateController extends Controller
             });
         }
 
-        // Sort - prioritas ke tanggal_surat_permohonan_diterima
+        $allowedSortColumns = [
+            'tanggal_surat_permohonan_diterima',
+            'created_at',
+            'updated_at',
+            'tahun_akreditasi',
+            'nomor_pengajuan',
+            'status',
+        ];
+
         $sortBy = $request->get('sort_by', 'tanggal_surat_permohonan_diterima');
-        $sortOrder = $request->get('sort_order', 'desc');
+        $sortOrder = strtolower($request->get('sort_order', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        if (!in_array($sortBy, $allowedSortColumns, true)) {
+            $sortBy = 'tanggal_surat_permohonan_diterima';
+        }
+
         $query->orderBy($sortBy, $sortOrder);
 
         $pengajuans = $query->paginate(20);
 
-        // Calculate statistics
         $stats = $this->calculateStatistics();
 
-        // Get filter data
         $universities = University::nonExample()->orderBy('name')->get();
-        $tahunList = PengajuanAkreditasi::whereIn('status', [
-            PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
-            PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-        ])
+
+        $tahunList = PengajuanAkreditasi::whereIn('status', $allowedStatuses)
             ->distinct()
             ->pluck('tahun_akreditasi')
             ->filter()
             ->sort()
             ->values();
 
-        // Ambil pengajuan yang sudah template_led_dikirim tapi belum ada invoice
-        $pengajuanList = \App\Models\PengajuanAkreditasi::with('studyProgram.degreeLevel', 'studyProgram.university')
-            ->where('status', \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
+        $pengajuanList = PengajuanAkreditasi::with('studyProgram.degreeLevel', 'studyProgram.university')
+            ->where('status', PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
             ->whereDoesntHave('pembayaran')
             ->get();
-        $countPengajuanList = count($pengajuanList);
+
+        $countPengajuanList = $pengajuanList->count();
 
         return view('de.penyampaian-template.index', compact(
             'pengajuans',

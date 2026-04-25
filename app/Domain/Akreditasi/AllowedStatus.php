@@ -382,6 +382,7 @@ final class AllowedStatus
             'masa_sanggah' => [
                 P::STATUS_MASA_SANGGAH_DIMULAI,
                 P::STATUS_MASA_SANGGAH_SELESAI,
+                P::STATUS_BANDING_DIAJUKAN,
             ],
 
             // STEP 17: Permohonan banding (dari diajukan sampai ditugaskan)

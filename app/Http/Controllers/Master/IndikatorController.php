@@ -2,50 +2,99 @@
 
 namespace App\Http\Controllers\Master;
 
-use App\Models\Indikator;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\ElemenStandar;
+use App\Models\Indikator;
+use App\Models\JenisIndikator;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
 class IndikatorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    //     /**
+    //      * Display a listing of the resource.
+    //      */
+    //     public function index(Request $request)
+    //     {
+    //         if ($request->ajax()) {
+    //             $data = Indikator::with(['elemenStandar.kriteria', 'jenisIndikator'])->select('indikator.*');
+
+    //             return DataTables::of($data)
+    //                 ->addIndexColumn()
+    //                 ->addColumn('elemen_nama', function ($row) {
+    //                     if ($row->elemenStandar) {
+    //                         return $row->elemenStandar->kode_elemen . ' - ' . Str::limit($row->elemenStandar->pernyataan_elemen, 50);
+    //                     }
+    //                     return '-';
+    //                 })
+    //                 ->addColumn('kriteria_nama', function ($row) {
+    //                     return $row->elemenStandar && $row->elemenStandar->kriteria ? $row->elemenStandar->kriteria->kode_kriteria : '-';
+    //                 })
+    //                 ->addColumn('jenis_nama', function ($row) {
+    //                     return $row->jenisIndikator ? $row->jenisIndikator->nama_jenis : '-';
+    //                 })
+    //                 ->addColumn('action', function ($row) {
+    //                     $btn = '<div class="btn-group" role="group">';
+    //                     $btn .= '<a href="' . route('indikator.edit', $row->id_indikator) . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
+    //                     $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord(' . $row->id_indikator . ')"><i class="bi bi-trash"></i></button>';
+    //                     $btn .= '</div>';
+    //                     return $btn;
+    //                 })
+    //                 ->rawColumns(['action'])
+    //                 ->make(true);
+    //         }
+
+    //         $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
+    //         $jenisIndikator = \App\Models\JenisIndikator::all();
+    //         return view('master-data.indikator.indikator.index', compact('elemenStandar', 'jenisIndikator'));
+    //     }
+
     public function index(Request $request)
     {
-        if ($request->ajax()) {
-            $data = Indikator::with(['elemenStandar.kriteria', 'jenisIndikator'])->select('indikator.*');
+        $query = Indikator::with(['elemenStandar.kriteria', 'jenisIndikator']);
 
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->addColumn('elemen_nama', function ($row) {
-                    if ($row->elemenStandar) {
-                        return $row->elemenStandar->kode_elemen . ' - ' . Str::limit($row->elemenStandar->pernyataan_elemen, 50);
-                    }
-                    return '-';
-                })
-                ->addColumn('kriteria_nama', function ($row) {
-                    return $row->elemenStandar && $row->elemenStandar->kriteria ? $row->elemenStandar->kriteria->kode_kriteria : '-';
-                })
-                ->addColumn('jenis_nama', function ($row) {
-                    return $row->jenisIndikator ? $row->jenisIndikator->nama_jenis : '-';
-                })
-                ->addColumn('action', function ($row) {
-                    $btn = '<div class="btn-group" role="group">';
-                    $btn .= '<a href="' . route('indikator.edit', $row->id_indikator) . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
-                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord(' . $row->id_indikator . ')"><i class="bi bi-trash"></i></button>';
-                    $btn .= '</div>';
-                    return $btn;
-                })
-                ->rawColumns(['action'])
-                ->make(true);
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('kode_indikator', 'like', "%{$search}%")
+                    ->orWhere('nama_indikator', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%")
+                    ->orWhereHas('elemenStandar', function ($sub) use ($search) {
+                        $sub->where('kode_elemen', 'like', "%{$search}%")
+                            ->orWhere('pernyataan_elemen', 'like', "%{$search}%")
+                            ->orWhereHas('kriteria', function ($qKriteria) use ($search) {
+                                $qKriteria->where('kode_kriteria', 'like', "%{$search}%")
+                                    ->orWhere('nama_kriteria', 'like', "%{$search}%");
+                            });
+                    })
+                    ->orWhereHas('jenisIndikator', function ($sub) use ($search) {
+                        $sub->where('nama_jenis', 'like', "%{$search}%");
+                    });
+            });
         }
 
-        $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
-        $jenisIndikator = \App\Models\JenisIndikator::all();
-        return view('master-data.indikator.indikator.index', compact('elemenStandar', 'jenisIndikator'));
+        if ($request->filled('id_elemen_standar')) {
+            $query->where('id_elemen_standar', $request->id_elemen_standar);
+        }
+
+        if ($request->filled('id_jenis_indikator')) {
+            $query->where('id_jenis_indikator', $request->id_jenis_indikator);
+        }
+
+        $indikator = $query->orderBy('id', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
+        $elemenStandar = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
+        $jenisIndikator = JenisIndikator::orderBy('nama_jenis')->get();
+
+        return view('master-data.indikator.indikator.index', compact(
+            'indikator',
+            'elemenStandar',
+            'jenisIndikator'
+        ));
     }
 
     /**
