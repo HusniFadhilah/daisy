@@ -8,6 +8,7 @@ use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, Pelapo
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, JenjangPenilaianController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController, PenerimaanProdiController};
 use App\Http\Controllers\Profile\{PasswordResetController, ProfileController, ProdiDataController, UserEmailController};
+use App\Http\Controllers\Public\DirektoriProdiController;
 use App\Http\Controllers\Test\Asesmen\EmailPreviewController;
 use App\Http\Controllers\UPPS\{BorangLkpsImportController, BorangLkpsOnlineController, BorangLkpsExportController, LkpsExportController};
 use Illuminate\Support\Facades\Route;
@@ -55,6 +56,17 @@ Route::middleware('guest')->group(function () {
         Route::get('/pemetaan/calendar', [PemetaanAkreditasiController::class, 'getCalendarForTesting'])->name('pemetaan.calendar');
         Route::get('/pemetaan/programs', [PemetaanAkreditasiController::class, 'getProgramsForTesting'])->name('pemetaan.programs');
     });
+});
+
+Route::prefix('direktori')->name('public.')->group(function () {
+
+    // Halaman utama direktori (GET /direktori/program-studi)
+    Route::get('/program-studi', [DirektoriProdiController::class, 'index'])
+        ->name('prodi.index');
+
+    // Endpoint AJAX untuk DataTables (GET /direktori/program-studi/ajax)
+    Route::get('/program-studi/ajax', [DirektoriProdiController::class, 'ajax'])
+        ->name('prodi.ajax');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
