@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\JenjangPenilaian;
 use App\Services\HasilAkreditasiSyncService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
 class JenjangPenilaianController extends Controller
@@ -18,7 +19,39 @@ class JenjangPenilaianController extends Controller
         $this->syncService = $syncService;
     }
 
-    // ... existing CRUD methods ...
+    public function index()
+    {
+        $jenjangPenilaians = JenjangPenilaian::orderBy('skor')->get();
+
+        return view('master-data.jenjang-penilaian.index', compact('jenjangPenilaians'));
+    }
+
+    public function create()
+    {
+        return view('master-data.jenjang-penilaian.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'color' => 'required|string|max:7',
+            'skor' => 'required|integer|min:0|max:4|unique:jenjang_penilaian,skor',
+        ]);
+
+        JenjangPenilaian::create($validated);
+
+        return redirect()
+            ->route('jenjang-penilaian.index')
+            ->with('success', 'Jenjang penilaian berhasil ditambahkan!');
+    }
+
+    public function edit($id)
+    {
+        $jenjang = JenjangPenilaian::findOrFail($id);
+
+        return view('master-data.jenjang-penilaian.edit', compact('jenjang'));
+    }
 
     /**
      * ✅ Update jenjang penilaian
@@ -28,7 +61,13 @@ class JenjangPenilaianController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'color' => 'required|string|max:7',
-            'skor' => 'required|integer|min:0|max:4',
+            'skor' => [
+                'required',
+                'integer',
+                'min:0',
+                'max:4',
+                Rule::unique('jenjang_penilaian', 'skor')->ignore($id),
+            ],
         ]);
 
         DB::beginTransaction();
@@ -46,14 +85,14 @@ class JenjangPenilaianController extends Controller
             // If color or name changed, show option to sync
             if ($colorChanged || $nameChanged) {
                 return redirect()
-                    ->route('master-data.jenjang-penilaian.index')
+                    ->route('jenjang-penilaian.index')
                     ->with('success', 'Jenjang penilaian berhasil diupdate!')
                     ->with('show_sync_option', true)
                     ->with('jenjang_id', $id);
             }
 
             return redirect()
-                ->route('master-data.jenjang-penilaian.index')
+                ->route('jenjang-penilaian.index')
                 ->with('success', 'Jenjang penilaian berhasil diupdate!');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -92,5 +131,15 @@ class JenjangPenilaianController extends Controller
             ->count();
 
         return view('master-data.jenjang-penilaian.sync-confirmation', compact('totalHasil'));
+    }
+
+    public function destroy($id)
+    {
+        $jenjang = JenjangPenilaian::findOrFail($id);
+        $jenjang->delete();
+
+        return redirect()
+            ->route('jenjang-penilaian.index')
+            ->with('success', 'Jenjang penilaian berhasil dihapus!');
     }
 }

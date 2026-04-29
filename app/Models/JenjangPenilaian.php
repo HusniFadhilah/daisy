@@ -12,7 +12,7 @@ class JenjangPenilaian extends Model
     public const TIDAK_MEMENUHI = 'Tidak Memenuhi';
     public const LEMAH = 'Lemah';
     public const MEMENUHI = 'Memenuhi';
-    public const MEMENUHI_STANDAR = 'Memenuhi Standar';
+    public const MEMENUHI_STANDAR = 'Melampaui Standar';
     public const MELAMPAUI_STANDAR = 'Melampaui Standar';
     public const PEMENUHAN_STANDAR = 'Pemenuhan Standar';
     public const PELAMPAUAN_STANDAR = 'Pelampauan Standar';

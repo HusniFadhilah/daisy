@@ -130,7 +130,7 @@ class BorangValidatorController extends Controller
         // Check status penawaran
         if ($assignment->status_penawaran !== 'accepted') {
             return redirect()->route('validator.borang.index')
-                ->with('error', 'Anda harus menerima penawaran terlebih dahulu.');
+                ->with('error', 'Anda harus menerima penawaran terlebih dahulu di <a href="' . route('penawaran') . '">halaman penawaran</a>.');
         }
 
         // Auto-update status to in_progress

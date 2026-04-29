@@ -157,6 +157,141 @@
     </div>
     @endif
 
+    @php
+    $resumeBabs = $resume['bab'] ?? \App\Models\HasilAkreditasi::resumeAsesmenSkeleton()['bab'];
+    $babDefaults = \App\Models\HasilAkreditasi::resumeBabDefaults();
+    $charLimit = \App\Models\HasilAkreditasi::resumeBabCharLimit();
+
+    $metaMasaBerlaku = old('masa_berlaku_tahun', $pengajuan->masa_berlaku_tahun ?? '');
+    $metaNomorSertif = old('nomor_sertifikat', $pengajuan->nomor_sertifikat ?? $pengajuan->generateNomorSertifikat());
+    $tanggalSertifikat = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
+    $metaTanggalSertif = old('tanggal_sertifikat', optional($tanggalSertifikat)->format('Y-m-d'));
+    $metaKeterangan = old('keterangan', '');
+    @endphp
+
+    <div class="card mb-4" id="cardResume">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-file-richtext"></i>
+                Draft Resume Asesmen Akreditasi
+            </h5>
+
+            <span id="resumeStatusBadge">
+                @if($resumeSaved)
+                <span class="badge bg-success">Tersimpan</span>
+                @else
+                <span class="badge bg-warning text-dark">Belum disimpan</span>
+                @endif
+            </span>
+        </div>
+
+        <div class="card-body">
+            <div id="babContainer">
+                @foreach($resumeBabs as $idx => $bab)
+                @php
+                $edId = 'tme_bab_' . $idx;
+                $babTitle = $bab['title'] ?? '';
+                $babContent = !empty(trim(strip_tags($bab['content'] ?? '')))
+                ? $bab['content']
+                : '';
+                @endphp
+
+                <div class="border rounded p-3 mb-3 bab-item">
+                    <label class="form-label small fw-semibold">Judul BAB</label>
+                    <input type="text" class="form-control form-control-sm mb-2 bab-title" value="{{ $babTitle }}" maxlength="120">
+
+                    <label class="form-label small fw-semibold">Isi BAB</label>
+                    <textarea id="{{ $edId }}" class="form-control bab-content" rows="5">{!! $babContent !!}</textarea>
+                </div>
+                @endforeach
+            </div>
+
+            <hr>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label small">Masa Berlaku Sertifikat</label>
+                    <input type="number" id="meta_masa_berlaku_tahun" class="form-control form-control-sm" value="{{ $metaMasaBerlaku }}" min="1" max="10">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label small">Nomor Sertifikat</label>
+                    <input type="text" id="meta_nomor_sertifikat" class="form-control form-control-sm" value="{{ $metaNomorSertif }}">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label small">Tanggal Sertifikat</label>
+                    <input type="date" id="meta_tanggal_sertifikat" class="form-control form-control-sm" value="{{ $metaTanggalSertif }}">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small">Keterangan</label>
+                    <textarea id="meta_keterangan" class="form-control form-control-sm" rows="2">{{ $metaKeterangan }}</textarea>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" id="btnSaveResume" class="btn btn-sm btn-primary">
+                    <i class="bi bi-floppy"></i> Simpan Draft Resume
+                </button>
+                {{-- tombol preview sertifikat sesuai request --}}
+                <a href="{{ route('de.penyampaian-hasil-akreditasi.preview-sertifikat', $pengajuan->id) }}" class="btn btn-sm btn-outline-success" target="_blank">
+                    <i class="bi bi-eye"></i> Preview
+                </a>
+            </div>
+            <span id="saveStatus" class="small text-muted ms-2"></span>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-award"></i>
+                Sertifikat Akreditasi
+            </h5>
+        </div>
+
+        <div class="card-body">
+            @if($sertifikat)
+            <div class="d-flex justify-content-between align-items-center bg-light rounded p-3 mb-3">
+                <div>
+                    <strong>Sertifikat sudah diupload</strong><br>
+                    <small class="text-muted">
+                        {{ $sertifikat->original_filename ?? $sertifikat->nama_file }}
+                    </small>
+                </div>
+
+                <a href="{{ route('de.penyampaian-hasil-akreditasi.download', [$pengajuan->id, 'sertifikat']) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i> Lihat
+                </a>
+            </div>
+            @else
+            <div class="alert alert-warning alert-permanent">
+                Sertifikat belum diupload.
+            </div>
+            @endif
+
+            <form method="POST" action="{{ route('de.penyampaian-hasil-akreditasi.upload-sertifikat', $pengajuan->id) }}" enctype="multipart/form-data">
+                @csrf
+
+                <div class="mb-3">
+                    <label class="form-label small">Upload Sertifikat PDF</label>
+                    <input type="file" name="file_sertifikat" class="form-control form-control-sm" accept=".pdf" {{ !$resumeSaved ? 'disabled' : '' }}>
+
+                    @if(!$resumeSaved)
+                    <small class="text-muted">
+                        Simpan draft resume terlebih dahulu sebelum upload sertifikat.
+                    </small>
+                    @endif
+                </div>
+
+                <button type="submit" class="btn btn-sm btn-secondary" {{ !$resumeSaved ? 'disabled' : '' }}>
+                    <i class="bi bi-upload"></i> Upload Sertifikat
+                </button>
+            </form>
+        </div>
+    </div>
+
     @if(!$hasil->isAlFinalized())
     {{-- Jika Berita Acara belum diupload --}}
     @if(!$beritaAcara)
@@ -962,6 +1097,74 @@ $errorHasTanggalMasaSanggahSelesai = $errors->has('tanggal_masa_sanggah_selesai'
         }
         @endif
     });
+
+    let btnSave = document.getElementById('btnSaveResume');
+
+    if (btnSave) {
+        btnSave.addEventListener('click', async function() {
+            const btn = this;
+            const status = document.getElementById('saveStatus');
+
+            btn.disabled = true;
+            status.innerText = 'Menyimpan...';
+
+            const bab = [];
+
+            document.querySelectorAll('.bab-item').forEach(function(item) {
+                let titleInput = item.querySelector('.bab-title');
+                let textarea = item.querySelector('.bab-content');
+
+                const title = titleInput ? titleInput.value : '';
+
+                bab.push({
+                    title: title
+                    , content: textarea ? textarea.value : ''
+                });
+            });
+
+            let masa = document.getElementById('meta_masa_berlaku_tahun');
+            let nomor = document.getElementById('meta_nomor_sertifikat');
+            let tanggal = document.getElementById('meta_tanggal_sertifikat');
+            let ket = document.getElementById('meta_keterangan');
+
+            const payload = {
+                bab: bab
+                , meta: {
+                    masa_berlaku_tahun: masa ? masa.value : ''
+                    , nomor_sertifikat: nomor ? nomor.value : ''
+                    , tanggal_sertifikat: tanggal ? tanggal.value : ''
+                    , keterangan: ket ? ket.value : ''
+                }
+            };
+
+            try {
+                const response = await fetch("{{ route('de.penyampaian-hasil-akreditasi.save-resume', $pengajuan->id) }}", {
+                    method: 'POST'
+                    , headers: {
+                        'Content-Type': 'application/json'
+                        , 'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        , 'Accept': 'application/json'
+                    }
+                    , body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.ok) {
+                    throw new Error(result.message || 'Gagal menyimpan resume.');
+                }
+
+                status.innerText = result.message;
+
+                setTimeout(function() {
+                    window.location.reload();
+                }, 700);
+            } catch (e) {
+                status.innerText = e.message;
+                btn.disabled = false;
+            }
+        });
+    }
 
 </script>
 @endpush

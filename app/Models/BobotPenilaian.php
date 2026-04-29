@@ -14,6 +14,7 @@ class BobotPenilaian extends Model
     protected $fillable = [
         'id_elemen',
         'id_category',
+        'id_degree_level',
         'bobot',
         'is_active',
     ];
@@ -37,5 +38,10 @@ class BobotPenilaian extends Model
     public function category()
     {
         return $this->belongsTo(StudyProgramCategory::class, 'id_category');
+    }
+
+    public function degreeLevel()
+    {
+        return $this->belongsTo(DegreeLevel::class, 'id_degree_level');
     }
 }

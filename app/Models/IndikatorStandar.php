@@ -10,12 +10,18 @@ class IndikatorStandar extends Model
 
     protected $fillable = [
         'id_elemen',
-        'jenis_indikator',
+        'id_jenis',
+        'kode_indikator',
         'deskripsi_indikator',
     ];
 
     public function elemenStandar()
     {
         return $this->belongsTo(ElemenStandar::class, 'id_elemen');
+    }
+
+    public function jenisIndikator()
+    {
+        return $this->belongsTo(JenisIndikator::class, 'id_jenis');
     }
 }

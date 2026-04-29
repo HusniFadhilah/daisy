@@ -49,6 +49,21 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label">Jenjang <span class="text-danger">*</span></label>
+                    <select name="id_degree_level" class="form-select @error('id_degree_level') is-invalid @enderror" required>
+                        <option value="">-- Pilih Jenjang --</option>
+                        @foreach($degreeLevels as $level)
+                        <option value="{{ $level->id }}" {{ old('id_degree_level', $bobot->id_degree_level) == $level->id ? 'selected' : '' }}>
+                            {{ $level->name ?? $level->code }}
+                        </option>
+                        @endforeach
+                    </select>
+                    @error('id_degree_level')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label">Bobot <span class="text-danger">*</span></label>
                     <input type="number" name="bobot" class="form-control @error('bobot') is-invalid @enderror" value="{{ old('bobot', $bobot->bobot) }}" min="0" max="100" required>
                     <small class="text-muted">Bobot dalam skala 0-100</small>
@@ -90,7 +105,7 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('select[name="id_elemen"], select[name="id_category"]').select2({
+        $('select[name="id_elemen"], select[name="id_category"], select[name="id_degree_level"]').select2({
             theme: 'bootstrap-5'
             , width: '100%'
         });

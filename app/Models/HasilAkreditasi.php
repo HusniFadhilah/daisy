@@ -72,7 +72,8 @@ class HasilAkreditasi extends Model
         'final_memenuhi_syarat_unggul',
         'catatan_validasi',
         'catatan_penetapan',         // ← tambah
-        'resume_asesmen',
+        'draft_resume_asesmen',
+        'final_resume_asesmen',
         'tanggal_finalisasi_penetapan', // ← tambah
         'finalized_penetapan_by',    // ← tambah
         'status',
@@ -94,7 +95,8 @@ class HasilAkreditasi extends Model
         'pelampauan_standar_hasil'   => 'array',
         'pelampauan_standar_final'   => 'array',
         'metadata'                   => 'array',
-        'resume_asesmen' => 'array',
+        'draft_resume_asesmen' => 'array',
+        'final_resume_asesmen' => 'array',
         'tanggal_finalisasi_ak'      => 'datetime',
         'tanggal_finalisasi_al'      => 'datetime',
         'tanggal_finalisasi_ak_banding'      => 'datetime',
@@ -629,11 +631,9 @@ class HasilAkreditasi extends Model
     {
         return [
             'bab' => [
-                ['title' => 'I. Pendahuluan',                    'content' => null],
-                ['title' => 'II. Proses Asesmen Lapangan',       'content' => null],
-                ['title' => 'III. Hasil Asesmen Lapangan',       'content' => null],
-                ['title' => 'IV. Rekomendasi untuk Program Studi', 'content' => null],
-                ['title' => 'V. Rekomendasi untuk LAMDEPILAR',   'content' => null],
+                ['title' => 'I. Proses Asesmen ',                    'content' => null],
+                ['title' => 'II. Hasil Asesmen',       'content' => null],
+                ['title' => 'III. Rekomendasi',       'content' => null],
             ],
             'diisi_oleh' => null,
             'diisi_pada' => null,
@@ -694,16 +694,16 @@ class HasilAkreditasi extends Model
      */
     public function saveResumeAsesmen(array $data, ?int $userId = null): static
     {
-        $existing = $this->resume_asesmen ?? [];
+        $existing = $this->draft_resume_asesmen ?? [];
 
-        // Bab: replace penuh agar urutan & penghapusan tercermin
         $merged = array_merge($existing, $data);
 
-        // Audit trail
-        $merged['diisi_oleh'] = ($userId !== null) ? $userId : (isset($existing['diisi_oleh']) ? $existing['diisi_oleh'] : null);
+        $merged['diisi_oleh'] = $userId ?? ($existing['diisi_oleh'] ?? null);
         $merged['diisi_pada'] = now()->toIso8601String();
 
-        $this->update(['resume_asesmen' => $merged]);
+        $this->update([
+            'draft_resume_asesmen' => $merged,
+        ]);
 
         return $this;
     }
@@ -713,7 +713,15 @@ class HasilAkreditasi extends Model
      */
     public function getResumeAsesmenOrDefault(): array
     {
-        return $this->resume_asesmen ?? static::resumeAsesmenSkeleton();
+        return $this->final_resume_asesmen
+            ?? $this->draft_resume_asesmen
+            ?? static::resumeAsesmenSkeleton();
+    }
+
+    public function getDraftResumeAsesmenOrDefault(): array
+    {
+        return $this->draft_resume_asesmen
+            ?? static::resumeAsesmenSkeleton();
     }
 
     /**
@@ -722,18 +730,34 @@ class HasilAkreditasi extends Model
      */
     public function hasResumeAsesmen(): bool
     {
-        $r = $this->resume_asesmen;
+        $r = $this->draft_resume_asesmen;
+
         if (empty($r) || empty($r['bab'])) {
             return false;
         }
 
         foreach ($r['bab'] as $bab) {
-            $content = isset($bab['content']) ? $bab['content'] : '';
+            $content = $bab['content'] ?? '';
             if (!empty(trim(strip_tags((string) $content)))) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    public function finalizeResumeAsesmen(?int $userId = null): static
+    {
+        $resume = $this->draft_resume_asesmen
+            ?? static::resumeAsesmenSkeleton();
+
+        $resume['finalized_by'] = $userId;
+        $resume['finalized_at'] = now()->toIso8601String();
+
+        $this->update([
+            'final_resume_asesmen' => $resume,
+        ]);
+
+        return $this;
     }
 }

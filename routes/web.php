@@ -628,10 +628,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/{id}/delete-berita-acara', [PenyampaianHasilAkreditasiController::class, 'deleteBeritaAcara'])
                 ->name('.delete-berita-acara');
             Route::get('/{id}/download-summary', [PenyampaianHasilAkreditasiController::class, 'downloadSummary'])->name('.download-summary');
+            Route::post('/{id}/save-resume', [PenyampaianHasilAkreditasiController::class, 'saveResume'])->name('.save-resume');
+            Route::post('/{id}/upload-sertifikat', [PenyampaianHasilAkreditasiController::class, 'uploadSertifikat'])->name('.upload-sertifikat');
+            Route::get('/{id}/download/{jenisDokumen}', [PenyampaianHasilAkreditasiController::class, 'downloadDokumen'])->name('.download');
+            Route::get('/{id}/preview-sertifikat', [PenyampaianHasilAkreditasiController::class, 'previewSertifikat'])->name('.preview-sertifikat');
+            Route::get('/{id}/preview-sertifikat2', [PenyampaianHasilAkreditasiController::class, 'previewSertifikat2'])->name('.preview-sertifikat2');
         });
+
         Route::prefix('masa-sanggah')->name('.masa-sanggah')->group(function () {
             Route::get('/', [MasaSanggahController::class, 'index']);
             Route::get('/{id}', [MasaSanggahController::class, 'show'])->name('.show');
+            Route::put('/{id}', [MasaSanggahController::class, 'update'])->name('.update');
             Route::post('/{id}/start', [MasaSanggahController::class, 'startMasaSanggah'])->name('.start');
             Route::post('/{id}/end', [MasaSanggahController::class, 'endMasaSanggah'])->name('.end');
         });
@@ -1232,6 +1239,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // BOBOT PENILAIAN
         Route::resource('bobot-penilaian', BobotPenilaianController::class);
+        Route::post('/bobot-penilaian/{id}/toggle', [BobotPenilaianController::class, 'toggleActive'])
+            ->name('bobot-penilaian.toggle');
         Route::get('/bobot-penilaian/hitung/{asesmenId}/{categoryId}', [BobotPenilaianController::class, 'calculate'])
             ->name('bobot-penilaian.calculate');
 

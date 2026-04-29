@@ -1224,9 +1224,9 @@
                     <div class="bottom">
                         <div class="bottom-left">
                             <div class="seal-row">
-                                <div class="seal">
+                                {{-- <div class="seal">
                                     CAP /<br> STEMPEL<br> RESMI
-                                </div>
+                                </div> --}}
                                 <div class="qr">
                                     @php
                                     // Generate URL verifikasi sertifikat

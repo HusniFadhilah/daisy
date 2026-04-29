@@ -34,7 +34,7 @@ class MasaSanggahSweepCommand extends Command
             ->chunkById(200, function ($rows) {
                 foreach ($rows as $pengajuan) {
                     // dispatch job immediate agar reuse logic + logging
-                    SelesaikanMasaSanggahJob::dispatch($pengajuan->id, 'sweep');
+                    SelesaikanMasaSanggahJob::dispatchSync($pengajuan->id, 'sweep');
                 }
             });
 

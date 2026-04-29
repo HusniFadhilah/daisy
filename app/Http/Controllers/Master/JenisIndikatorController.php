@@ -16,20 +16,20 @@ class JenisIndikatorController extends Controller
     {
         if ($request->ajax()) {
             $data = JenisIndikator::select('jenis_indikator.*');
-            
+
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function($row){
                     $btn = '<div class="btn-group" role="group">';
-                    $btn .= '<button type="button" class="btn btn-sm btn-warning" onclick="editRecord('.$row->id_jenis.')" data-bs-toggle="modal" data-bs-target="#editModal"><i class="bi bi-pencil"></i></button>';
-                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('.$row->id_jenis.')"><i class="bi bi-trash"></i></button>';
+                    $btn .= '<a href="' . route('jenis-indikator.edit', $row->id) . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
+                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('.$row->id.')"><i class="bi bi-trash"></i></button>';
                     $btn .= '</div>';
                     return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
-        
+
         if ($request->wantsJson()) {
             $jenisIndikator = JenisIndikator::all();
             return response()->json([
@@ -37,8 +37,15 @@ class JenisIndikatorController extends Controller
                 'data' => $jenisIndikator
             ]);
         }
-        
-        return view('indikator.jenis.index');
+
+        $jenisIndikators = JenisIndikator::orderBy('nama_jenis')->get();
+
+        return view('master-data.indikator.jenis.index', compact('jenisIndikators'));
+    }
+
+    public function create()
+    {
+        return view('master-data.indikator.jenis.create');
     }
 
     /**
@@ -52,6 +59,11 @@ class JenisIndikatorController extends Controller
         ]);
 
         $jenisIndikator = JenisIndikator::create($validated);
+
+        if (!$request->wantsJson()) {
+            return redirect()->route('jenis-indikator.index')
+                ->with('success', 'Jenis indikator berhasil ditambahkan.');
+        }
 
         return response()->json([
             'success' => true,
@@ -80,6 +92,13 @@ class JenisIndikatorController extends Controller
         ]);
     }
 
+    public function edit($id)
+    {
+        $jenisIndikator = JenisIndikator::findOrFail($id);
+
+        return view('master-data.indikator.jenis.edit', compact('jenisIndikator'));
+    }
+
     /**
      * Update the specified resource in storage.
      */
@@ -93,13 +112,22 @@ class JenisIndikatorController extends Controller
         $jenisIndikator = JenisIndikator::find($id);
 
         if (!$jenisIndikator) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Jenis Indikator not found'
-            ], 404);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jenis Indikator not found'
+                ], 404);
+            }
+
+            return redirect()->route('jenis-indikator.index')->with('error', 'Jenis indikator tidak ditemukan.');
         }
 
         $jenisIndikator->update($validated);
+
+        if (!$request->wantsJson()) {
+            return redirect()->route('jenis-indikator.index')
+                ->with('success', 'Jenis indikator berhasil diperbarui.');
+        }
 
         return response()->json([
             'success' => true,
@@ -116,13 +144,22 @@ class JenisIndikatorController extends Controller
         $jenisIndikator = JenisIndikator::find($id);
 
         if (!$jenisIndikator) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Jenis Indikator not found'
-            ], 404);
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jenis Indikator not found'
+                ], 404);
+            }
+
+            return redirect()->route('jenis-indikator.index')->with('error', 'Jenis indikator tidak ditemukan.');
         }
 
         $jenisIndikator->delete();
+
+        if (!request()->wantsJson()) {
+            return redirect()->route('jenis-indikator.index')
+                ->with('success', 'Jenis indikator berhasil dihapus.');
+        }
 
         return response()->json([
             'success' => true,

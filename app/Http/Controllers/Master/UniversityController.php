@@ -16,6 +16,7 @@ class UniversityController extends Controller
      */
     public function masterData(Request $request, $tab = 'universities')
     {
+        $tab = $request->query('tab', $tab);
         $universities = University::withCount('studyPrograms')->get();
         $studyPrograms = StudyProgram::with(['university', 'degreeLevel'])->get();
         $degreeLevels = DegreeLevel::all();

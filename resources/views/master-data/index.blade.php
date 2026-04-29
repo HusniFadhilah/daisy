@@ -71,10 +71,10 @@
                                             <a href="{{ route('universities.edit', $university->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form id="form-universitas" action="{{ route('universities.destroy', $university->id) }}" method="POST" class="d-inline">
+                                            <form id="form-universitas-{{ $university->id }}" action="{{ route('universities.destroy', $university->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-universitas" data-text="universitas" title="Hapus">
+                                                <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-universitas-{{ $university->id }}" data-text="universitas" title="Hapus">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
@@ -172,10 +172,10 @@
                                             <a href="{{ route('study-programs.edit', $program->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form id="form-program-studi" action="{{ route('study-programs.destroy', $program->id) }}" method="POST" class="d-inline">
+                                            <form id="form-program-studi-{{ $program->id }}" action="{{ route('study-programs.destroy', $program->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-program-studi" data-text="program studi" title="Hapus">
+                                                <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-program-studi-{{ $program->id }}" data-text="program studi" title="Hapus">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
@@ -184,7 +184,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center">Belum ada data program studi</td>
+                                    <td colspan="9" class="text-center">Belum ada data program studi</td>
                                 </tr>
                                 @endforelse
                             </tbody>

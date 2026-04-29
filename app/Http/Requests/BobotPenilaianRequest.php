@@ -22,27 +22,36 @@ class BobotPenilaianRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'id_elemen' => 'required|exists:elemen_standar,id_elemen',
+            'id_elemen' => 'required|exists:elemen_standar,id',
             'id_category' => 'required|exists:study_program_categories,id',
+            'id_degree_level' => 'required|exists:degree_levels,id',
             'bobot' => 'required|integer|min:0|max:100',
+            'is_active' => 'nullable|boolean',
         ];
 
         // Untuk update, tambahkan exception untuk unique constraint
         if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {
             $rules['id_elemen'] = [
                 'required',
-                'exists:elemen_standar,id_elemen',
-                'unique:bobot_penilaian,id_elemen,' . $this->route('bobot_penilaian') . ',id,id_category,' . $this->input('id_category')
+                'exists:elemen_standar,id',
+                'unique:bobot_penilaian,id_elemen,' . $this->route('bobot_penilaian') . ',id,id_category,' . $this->input('id_category') . ',id_degree_level,' . $this->input('id_degree_level')
             ];
         } else {
             $rules['id_elemen'] = [
                 'required',
-                'exists:elemen_standar,id_elemen',
-                'unique:bobot_penilaian,id_elemen,NULL,id,id_category,' . $this->input('id_category')
+                'exists:elemen_standar,id',
+                'unique:bobot_penilaian,id_elemen,NULL,id,id_category,' . $this->input('id_category') . ',id_degree_level,' . $this->input('id_degree_level')
             ];
         }
 
         return $rules;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'is_active' => $this->boolean('is_active'),
+        ]);
     }
 
     /**
@@ -56,6 +65,8 @@ class BobotPenilaianRequest extends FormRequest
             'id_elemen.unique' => 'Bobot untuk kombinasi elemen dan kategori ini sudah ada',
             'id_category.required' => 'Kategori program studi harus dipilih',
             'id_category.exists' => 'Kategori program studi tidak valid',
+            'id_degree_level.required' => 'Jenjang program studi harus dipilih',
+            'id_degree_level.exists' => 'Jenjang program studi tidak valid',
             'bobot.required' => 'Bobot harus diisi',
             'bobot.integer' => 'Bobot harus berupa angka',
             'bobot.min' => 'Bobot minimal 0',
@@ -63,4 +74,3 @@ class BobotPenilaianRequest extends FormRequest
         ];
     }
 }
-

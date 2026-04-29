@@ -119,14 +119,18 @@ class BobotPenilaianService
      */
     public function getAll($filters = [])
     {
-        $query = BobotPenilaian::with(['elemenStandar.kriteria', 'category']);
+        $query = BobotPenilaian::with(['elemenStandar.kriteria', 'category', 'degreeLevel']);
 
-        if (isset($filters['id_elemen'])) {
+        if (!empty($filters['id_elemen'])) {
             $query->where('id_elemen', $filters['id_elemen']);
         }
 
-        if (isset($filters['id_category'])) {
+        if (!empty($filters['id_category'])) {
             $query->where('id_category', $filters['id_category']);
+        }
+
+        if (!empty($filters['id_degree_level'])) {
+            $query->where('id_degree_level', $filters['id_degree_level']);
         }
 
         return $query->get();

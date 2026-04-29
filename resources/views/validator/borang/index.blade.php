@@ -229,7 +229,7 @@
 • Surat Permohonan PS untuk Akreditasi
 • Surat Balasan DE untuk menyusun LED
 • Bukti Pembayaran Akreditasi
-• Dokumen LED yang telah memenuhi standar untuk dilakukan Penilaian Kecukupan (AK)`
+• Dokumen LED yang telah melampaui standar untuk dilakukan Penilaian Kecukupan (AK)`
         }
     };
 

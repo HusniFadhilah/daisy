@@ -27,8 +27,9 @@ class IndikatorStandarController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_elemen' => 'required|exists:elemen,id',
-            'jenis_indikator' => 'required|string|max:20|in:Kualitatif,Kuantitatif',
+            'id_elemen' => 'required|exists:elemen_standar,id',
+            'id_jenis' => 'required|exists:jenis_indikator,id',
+            'kode_indikator' => 'required|string|max:100',
             'deskripsi_indikator' => 'required|string',
         ]);
 
@@ -68,8 +69,9 @@ class IndikatorStandarController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'id_elemen' => 'required|exists:elemen,id',
-            'jenis_indikator' => 'required|string|max:20|in:Kualitatif,Kuantitatif',
+            'id_elemen' => 'required|exists:elemen_standar,id',
+            'id_jenis' => 'required|exists:jenis_indikator,id',
+            'kode_indikator' => 'required|string|max:100',
             'deskripsi_indikator' => 'required|string',
         ]);
 

@@ -26,7 +26,10 @@ class DegreeLevelController extends Controller
      */
     public function create()
     {
-        return view('jenjang.create');
+        return response()->json([
+            'success' => true,
+            'message' => 'Gunakan endpoint POST untuk membuat jenjang pendidikan.',
+        ]);
     }
 
     /**
@@ -35,9 +38,14 @@ class DegreeLevelController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:10',
+            'code' => 'required|string|max:15',
+            'alias' => 'nullable|string|max:15',
             'name' => 'nullable|string|max:50',
+            'id_category' => 'nullable|exists:study_program_categories,id',
+            'is_active' => 'nullable|boolean',
         ]);
+
+        $validated['alias'] = $validated['alias'] ?? $validated['code'];
 
         $degreeLevel = DegreeLevel::create($validated);
 
@@ -73,7 +81,10 @@ class DegreeLevelController extends Controller
      */
     public function edit(DegreeLevel $degreeLevel)
     {
-        return view('jenjang.edit', compact('degreeLevel'));
+        return response()->json([
+            'success' => true,
+            'data' => $degreeLevel,
+        ]);
     }
 
     /**
@@ -82,9 +93,14 @@ class DegreeLevelController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:10',
+            'code' => 'required|string|max:15',
+            'alias' => 'nullable|string|max:15',
             'name' => 'nullable|string|max:50',
+            'id_category' => 'nullable|exists:study_program_categories,id',
+            'is_active' => 'nullable|boolean',
         ]);
+
+        $validated['alias'] = $validated['alias'] ?? $validated['code'];
 
         $degreeLevel = DegreeLevel::find($id);
 

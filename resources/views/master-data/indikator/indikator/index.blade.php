@@ -34,14 +34,14 @@
             <form action="{{ route('indikator.index') }}" method="GET" class="mb-3">
                 <div class="row g-2">
                     <div class="col-md-4">
-                        <input type="text" name="search" class="form-control" placeholder="Cari kode, nama, keterangan, elemen, kriteria, atau jenis..." value="{{ request('search') }}">
+                        <input type="text" name="search" class="form-control" placeholder="Cari kode, deskripsi, elemen, kriteria, atau jenis..." value="{{ request('search') }}">
                     </div>
 
                     <div class="col-md-3">
-                        <select name="id_elemen_standar" class="form-select">
+                        <select name="id_elemen" class="form-select">
                             <option value="">-- Semua Elemen Standar --</option>
                             @foreach($elemenStandar as $elemen)
-                            <option value="{{ $elemen->id }}" {{ request('id_elemen_standar') == $elemen->id ? 'selected' : '' }}>
+                            <option value="{{ $elemen->id }}" {{ request('id_elemen') == $elemen->id ? 'selected' : '' }}>
                                 {{ $elemen->kode_elemen }} -
                                 {{ \Illuminate\Support\Str::limit($elemen->pernyataan_elemen, 40) }}
                             </option>
@@ -50,10 +50,10 @@
                     </div>
 
                     <div class="col-md-3">
-                        <select name="id_jenis_indikator" class="form-select">
+                        <select name="id_jenis" class="form-select">
                             <option value="">-- Semua Jenis Indikator --</option>
                             @foreach($jenisIndikator as $jenis)
-                            <option value="{{ $jenis->id }}" {{ request('id_jenis_indikator') == $jenis->id ? 'selected' : '' }}>
+                            <option value="{{ $jenis->id }}" {{ request('id_jenis') == $jenis->id ? 'selected' : '' }}>
                                 {{ $jenis->nama_jenis }}
                             </option>
                             @endforeach
@@ -79,9 +79,8 @@
                             <th width="10%">Kode</th>
                             <th width="10%">Kriteria</th>
                             <th width="20%">Elemen Standar</th>
-                            <th width="20%">Nama Indikator</th>
+                            <th width="20%">Deskripsi Indikator</th>
                             <th width="15%">Jenis</th>
-                            <th width="10%">Keterangan</th>
                             <th width="10%">Aksi</th>
                         </tr>
                     </thead>
@@ -111,9 +110,8 @@
                                 -
                                 @endif
                             </td>
-                            <td>{{ $item->nama_indikator }}</td>
+                            <td>{{ $item->deskripsi_indikator }}</td>
                             <td>{{ $item->jenisIndikator->nama_jenis ?? '-' }}</td>
-                            <td>{{ \Illuminate\Support\Str::limit($item->keterangan, 40) ?: '-' }}</td>
                             <td>
                                 <div class="btn-group" role="group">
                                     <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#showIndikatorModal{{ $item->id }}" title="Detail">
@@ -147,8 +145,8 @@
                                             <dt class="col-sm-3">Kode Indikator</dt>
                                             <dd class="col-sm-9">{{ $item->kode_indikator }}</dd>
 
-                                            <dt class="col-sm-3">Nama Indikator</dt>
-                                            <dd class="col-sm-9">{{ $item->nama_indikator }}</dd>
+                                            <dt class="col-sm-3">Deskripsi Indikator</dt>
+                                            <dd class="col-sm-9">{{ $item->deskripsi_indikator }}</dd>
 
                                             <dt class="col-sm-3">Kriteria</dt>
                                             <dd class="col-sm-9">
@@ -170,8 +168,6 @@
                                             <dt class="col-sm-3">Jenis Indikator</dt>
                                             <dd class="col-sm-9">{{ $item->jenisIndikator->nama_jenis ?? '-' }}</dd>
 
-                                            <dt class="col-sm-3">Keterangan</dt>
-                                            <dd class="col-sm-9">{{ $item->keterangan ?? '-' }}</dd>
                                         </dl>
                                     </div>
                                     <div class="modal-footer">
@@ -182,7 +178,7 @@
                         </div>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center">Belum ada data indikator</td>
+                            <td colspan="7" class="text-center">Belum ada data indikator</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -221,52 +217,45 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Nama Indikator <span class="text-danger">*</span></label>
-                        <input type="text" name="nama_indikator" class="form-control @error('nama_indikator') is-invalid @enderror" value="{{ old('nama_indikator') }}" required>
-                        @error('nama_indikator')
+                        <label class="form-label">Deskripsi Indikator <span class="text-danger">*</span></label>
+                        <input type="text" name="deskripsi_indikator" class="form-control @error('deskripsi_indikator') is-invalid @enderror" value="{{ old('deskripsi_indikator') }}" required>
+                        @error('deskripsi_indikator')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Elemen Standar <span class="text-danger">*</span></label>
-                        <select name="id_elemen_standar" class="form-select @error('id_elemen_standar') is-invalid @enderror" required>
+                        <select name="id_elemen" class="form-select @error('id_elemen') is-invalid @enderror" required>
                             <option value="">Pilih Elemen Standar</option>
                             @foreach($elemenStandar as $elemen)
-                            <option value="{{ $elemen->id }}" {{ old('id_elemen_standar') == $elemen->id ? 'selected' : '' }}>
+                            <option value="{{ $elemen->id }}" {{ old('id_elemen') == $elemen->id ? 'selected' : '' }}>
                                 {{ $elemen->kode_elemen }} -
                                 {{ $elemen->kriteria->kode_kriteria ?? '-' }} -
                                 {{ \Illuminate\Support\Str::limit($elemen->pernyataan_elemen, 60) }}
                             </option>
                             @endforeach
                         </select>
-                        @error('id_elemen_standar')
+                        @error('id_elemen')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Jenis Indikator <span class="text-danger">*</span></label>
-                        <select name="id_jenis_indikator" class="form-select @error('id_jenis_indikator') is-invalid @enderror" required>
+                        <select name="id_jenis" class="form-select @error('id_jenis') is-invalid @enderror" required>
                             <option value="">Pilih Jenis Indikator</option>
                             @foreach($jenisIndikator as $jenis)
-                            <option value="{{ $jenis->id }}" {{ old('id_jenis_indikator') == $jenis->id ? 'selected' : '' }}>
+                            <option value="{{ $jenis->id }}" {{ old('id_jenis') == $jenis->id ? 'selected' : '' }}>
                                 {{ $jenis->nama_jenis }}
                             </option>
                             @endforeach
                         </select>
-                        @error('id_jenis_indikator')
+                        @error('id_jenis')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Keterangan</label>
-                        <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="3">{{ old('keterangan') }}</textarea>
-                        @error('keterangan')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>

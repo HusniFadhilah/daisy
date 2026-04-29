@@ -41,7 +41,7 @@
                         <select name="id_kriteria" class="form-select">
                             <option value="">-- Semua Kriteria --</option>
                             @foreach($kriteria as $k)
-                            <option value="{{ $k->id_kriteria }}" {{ request('id_kriteria') == $k->id_kriteria ? 'selected' : '' }}>
+                            <option value="{{ $k->id }}" {{ request('id_kriteria') == $k->id ? 'selected' : '' }}>
                                 {{ $k->kode_kriteria }} - {{ $k->nama_kriteria }}
                             </option>
                             @endforeach
@@ -191,7 +191,7 @@
                         <select name="id_kriteria" class="form-select @error('id_kriteria') is-invalid @enderror" required>
                             <option value="">Pilih Kriteria</option>
                             @foreach($kriteria as $k)
-                            <option value="{{ $k->id_kriteria }}" {{ old('id_kriteria') == $k->id_kriteria ? 'selected' : '' }}>
+                            <option value="{{ $k->id }}" {{ old('id_kriteria') == $k->id ? 'selected' : '' }}>
                                 {{ $k->kode_kriteria }} - {{ $k->nama_kriteria }}
                             </option>
                             @endforeach

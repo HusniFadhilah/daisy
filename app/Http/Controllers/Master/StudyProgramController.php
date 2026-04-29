@@ -86,7 +86,12 @@ class StudyProgramController extends Controller
             'id_degree_level' => 'required|exists:degree_levels,id',
             'bentuk_pt' => 'nullable|in:Universitas,Institut,Sekolah Tinggi,Politeknik,Akademi',
             'email' => 'nullable|email|max:255',
+            'peringkat_akreditasi' => 'nullable|string|max:255',
+            'tanggal_kedaluwarsa' => 'nullable|date',
+            'status_kedaluwarsa' => 'nullable|in:Aktif,Kedaluwarsa,Belum Terakreditasi',
         ]);
+
+        $validated['full_name'] = $request->input('full_name', $validated['name']);
 
         $studyProgram = StudyProgram::create($validated);
         $studyProgram->load(['university', 'degreeLevel']);
@@ -147,6 +152,7 @@ class StudyProgramController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'full_name' => 'nullable|string|max:255',
             'code' => 'required|string|max:255',
             'id_university' => 'required|exists:universities,id',
             'id_degree_level' => 'required|exists:degree_levels,id',
@@ -156,6 +162,8 @@ class StudyProgramController extends Controller
             'tanggal_kedaluwarsa' => 'nullable|date',
             'status_kedaluwarsa' => 'nullable|in:Aktif,Kedaluwarsa,Belum Terakreditasi',
         ]);
+
+        $validated['full_name'] = $validated['full_name'] ?? $validated['name'];
 
         $studyProgram = StudyProgram::find($id);
 

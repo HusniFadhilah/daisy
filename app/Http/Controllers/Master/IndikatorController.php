@@ -59,8 +59,7 @@ class IndikatorController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('kode_indikator', 'like', "%{$search}%")
-                    ->orWhere('nama_indikator', 'like', "%{$search}%")
-                    ->orWhere('keterangan', 'like', "%{$search}%")
+                    ->orWhere('deskripsi_indikator', 'like', "%{$search}%")
                     ->orWhereHas('elemenStandar', function ($sub) use ($search) {
                         $sub->where('kode_elemen', 'like', "%{$search}%")
                             ->orWhere('pernyataan_elemen', 'like', "%{$search}%")
@@ -75,12 +74,12 @@ class IndikatorController extends Controller
             });
         }
 
-        if ($request->filled('id_elemen_standar')) {
-            $query->where('id_elemen_standar', $request->id_elemen_standar);
+        if ($request->filled('id_elemen')) {
+            $query->where('id_elemen', $request->id_elemen);
         }
 
-        if ($request->filled('id_jenis_indikator')) {
-            $query->where('id_jenis_indikator', $request->id_jenis_indikator);
+        if ($request->filled('id_jenis')) {
+            $query->where('id_jenis', $request->id_jenis);
         }
 
         $indikator = $query->orderBy('id', 'desc')

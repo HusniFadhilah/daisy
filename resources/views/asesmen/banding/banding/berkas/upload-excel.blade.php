@@ -665,13 +665,14 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             // ✅ Format errors
             let errHtml = '';
             if (Array.isArray(log.errors)) {
+                console.log(log.errors)
                 errHtml = `<div class="text-start">
-      <p class="mb-2">Proses pembacaan data gagal karena:</p>
-      <ul style="text-align:left; padding-left:18px;">
-        ${log.errors.map(e => `<li>${escapeHtml(e)}</li>`).join('')}
-      </ul>
-      <p class="mt-2">Mohon lakukan pengecekan template excel dan coba upload ulang.</p>
-    </div>`;
+              <p class="mb-2">Proses pembacaan data gagal karena:</p>
+              <ul style="text-align:left; padding-left:18px;">
+                <li>Terjadi kesalahan saat membaca file</li>
+              </ul>
+              <p class="mt-2">Mohon lakukan pengecekan template excel dan coba upload ulang.</p>
+            </div>`;
             } else {
                 errHtml = `<p>${log.errors || 'Terjadi kesalahan saat memproses file'}</p>`;
             }

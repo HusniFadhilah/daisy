@@ -17,7 +17,7 @@
     <div class="card mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('bobot-penilaian.index') }}" class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Filter Kriteria/Elemen</label>
                     <select name="id_elemen" class="form-select" id="filterElemen">
                         <option value="">Semua Elemen</option>
@@ -28,9 +28,9 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Filter Kategori</label>
-                    <select name="id_category" class="form-select">
+                    <select name="id_category" class="form-select" id="filterCategory">
                         <option value="">Semua Kategori</option>
                         @foreach($categories as $category)
                         <option value="{{ $category->id }}" {{ request('id_category') == $category->id ? 'selected' : '' }}>
@@ -39,7 +39,18 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Filter Jenjang</label>
+                    <select name="id_degree_level" class="form-select" id="filterDegreeLevel">
+                        <option value="">Semua Jenjang</option>
+                        @foreach($degreeLevels as $level)
+                        <option value="{{ $level->id }}" {{ request('id_degree_level') == $level->id ? 'selected' : '' }}>
+                            {{ $level->name ?? $level->code }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
                     <button type="submit" class="btn btn-secondary me-2">
                         <i class="bi bi-funnel"></i> Filter
                     </button>
@@ -60,7 +71,7 @@
                         <tr>
                             <th>No</th>
                             <th>Elemen Standar</th>
-                            <th>Kategori</th>
+                            <th>Kategori / Jenjang</th>
                             <th>Asesmen</th>
                             <th>Bobot</th>
                             <th>Status</th>
@@ -136,7 +147,7 @@
                         <select name="id_elemen" class="form-select" id="inputElemen" required>
                             <option value="">-- Pilih Elemen --</option>
                             @foreach($elemens as $elemen)
-                            <option value="{{ $elemen->id_elemen }}">
+                            <option value="{{ $elemen->id }}">
                                 {{ $elemen->kriteria->kode_kriteria ?? '' }}.{{ $elemen->kode_elemen }} - {{ $elemen->pernyataan_elemen }}
                             </option>
                             @endforeach
@@ -148,6 +159,15 @@
                             <option value="">-- Pilih Kategori --</option>
                             @foreach($categories as $category)
                             <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Jenjang <span class="text-danger">*</span></label>
+                        <select name="id_degree_level" class="form-select" id="inputDegreeLevel" required>
+                            <option value="">-- Pilih Jenjang --</option>
+                            @foreach($degreeLevels as $level)
+                            <option value="{{ $level->id }}">{{ $level->name ?? $level->code }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -196,7 +216,7 @@
     // Initialize Select2
     $(document).ready(function() {
         console.log('Document ready - initializing components...');
-        $('#filterElemen, #inputElemen, #inputCategory').select2({
+        $('#filterElemen, #filterCategory, #filterDegreeLevel, #inputElemen, #inputCategory, #inputDegreeLevel').select2({
             theme: 'bootstrap-5'
             , width: '100%'
         });
@@ -209,7 +229,8 @@
                 url: "{{ route('bobot-penilaian.index') }}"
                 , data: function(d) {
                     d.id_elemen = $('#filterElemen').val();
-                    d.id_category = $('[name="id_category"]').val();
+                    d.id_category = $('#filterCategory').val();
+                    d.id_degree_level = $('#filterDegreeLevel').val();
                 }
             }
             , columns: [{
@@ -299,13 +320,14 @@
     }
 
     // Edit Bobot
-    function editBobot(id, elemenId, categoryId, bobot) {
+    function editBobot(id, elemenId, categoryId, degreeLevelId, bobot) {
         $('#modalTitle').text('Edit Bobot Penilaian');
         $('#formMethod').val('PUT');
         $('#formBobot').attr('action', `/bobot-penilaian/${id}`);
         $('#bobotId').val(id);
         $('#inputElemen').val(elemenId).trigger('change');
         $('#inputCategory').val(categoryId).trigger('change');
+        $('#inputDegreeLevel').val(degreeLevelId).trigger('change');
         $('#inputBobot').val(bobot);
         $('#modalBobot').modal('show');
     }
@@ -318,14 +340,15 @@
         $('#formBobot')[0].reset();
         $('#inputElemen').val('').trigger('change');
         $('#inputCategory').val('').trigger('change');
+        $('#inputDegreeLevel').val('').trigger('change');
     });
 
     // Hitung nilai berbobot
     $('#formHitung').on('submit', function(e) {
         e.preventDefault();
 
-        const asesmenId = $('[name="asesmen_id"]').val();
-        const categoryId = $('[name="id_category"]').val();
+        const asesmenId = $(this).find('[name="asesmen_id"]').val();
+        const categoryId = $(this).find('[name="id_category"]').val();
 
         if (!asesmenId || !categoryId) {
             Swal.fire('Perhatian', 'Pilih asesmen dan kategori terlebih dahulu', 'warning');

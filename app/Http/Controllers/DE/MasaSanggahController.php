@@ -4,6 +4,7 @@ namespace App\Http\Controllers\DE;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Jobs\SelesaikanMasaSanggahJob;
 use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -201,6 +202,79 @@ class MasaSanggahController extends Controller
     /**
      * ✅ Akhiri masa sanggah (jika tidak ada banding)
      */
+    /**
+     * Update deadline masa sanggah saat status masih masa sanggah dimulai.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'tanggal_masa_sanggah_selesai' => [
+                'required',
+                'date',
+                (new \Illuminate\Validation\Rules\Date)->after(now()->addMinutes(2)),
+            ],
+        ], [
+            'tanggal_masa_sanggah_selesai.after' => 'Tanggal masa sanggah minimal 2 menit dari waktu server.',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI) {
+                throw new \Exception('Masa sanggah hanya dapat diedit ketika status pengajuan Masa Sanggah Dimulai.');
+            }
+
+            if (!$pengajuan->tanggal_masa_sanggah_mulai) {
+                throw new \Exception('Tanggal mulai masa sanggah belum tersedia.');
+            }
+
+            $tanggalSelesai = Carbon::parse($request->tanggal_masa_sanggah_selesai);
+
+            if ($tanggalSelesai->lte($pengajuan->tanggal_masa_sanggah_mulai)) {
+                throw new \Exception('Tanggal selesai masa sanggah harus setelah tanggal mulai.');
+            }
+
+            $tanggalSelesaiLama = $pengajuan->tanggal_masa_sanggah_selesai
+                ? $pengajuan->tanggal_masa_sanggah_selesai->locale('id')->translatedFormat('d M Y H:i')
+                : '-';
+
+            $pengajuan->update([
+                'tanggal_masa_sanggah_selesai' => $tanggalSelesai,
+            ]);
+
+            $pengajuan->statusLog()->create([
+                'status_from' => PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                'status_to'   => PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                'changed_by'  => auth()->id(),
+                'keterangan'  => sprintf(
+                    'Deadline masa sanggah diubah dari %s menjadi %s.',
+                    $tanggalSelesaiLama,
+                    $tanggalSelesai->locale('id')->translatedFormat('d M Y H:i')
+                ),
+                'changed_at'  => now(),
+            ]);
+
+            if (config('akreditasi.masa_sanggah_mode', 'delay') === 'delay') {
+                SelesaikanMasaSanggahJob::dispatch($pengajuan->id, 'delay')->delay($tanggalSelesai);
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('de.masa-sanggah.show', $id)
+                ->with('success', 'Masa sanggah berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Update masa sanggah failed', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+    }
+
     public function endMasaSanggah($id)
     {
         DB::beginTransaction();

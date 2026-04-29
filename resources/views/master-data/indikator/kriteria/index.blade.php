@@ -60,10 +60,10 @@
                                     <button type="button" class="btn btn-sm btn-warning text-white" data-bs-toggle="modal" data-bs-target="#editKriteriaModal{{ $item->id }}" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <form id="form-kriteria" action="{{ route('kriteria.destroy', $item->id) }}" method="POST" class="d-inline">
+                                    <form id="form-kriteria-{{ $item->id }}" action="{{ route('kriteria.destroy', $item->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-kriteria" data-text="kriteria" title="Hapus">
+                                        <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-kriteria-{{ $item->id }}" data-text="kriteria" title="Hapus">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>

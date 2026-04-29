@@ -248,7 +248,8 @@ return new class extends Migration
             $table->foreignId('finalized_penetapan_by')
                 ->nullable()->constrained('users')->nullOnDelete();
             $table->text('catatan_penetapan')->nullable();
-            $table->json('resume_asesmen')->nullable()->comment('Resume asesmen untuk halaman 3 sertifikat: ' . 'kondisi prodi (metrik kuantitatif + narasi), ' . 'temuan keunggulan, dan temuan area perbaikan.');
+            $table->json('draft_resume_asesmen')->nullable()->comment('Resume asesmen untuk halaman 3 sertifikat penyampaian hasil: ' . 'kondisi prodi (metrik kuantitatif + narasi), ' . 'temuan keunggulan, dan temuan area perbaikan.');
+            $table->json('final_resume_asesmen')->nullable()->comment('Resume asesmen untuk halaman 3 sertifikat pelaporan hasil: ' . 'kondisi prodi (metrik kuantitatif + narasi), ' . 'temuan keunggulan, dan temuan area perbaikan.');
 
             // ── Peringkat ──
             $table->string('peringkat_akreditasi_hasil', 60)->nullable();

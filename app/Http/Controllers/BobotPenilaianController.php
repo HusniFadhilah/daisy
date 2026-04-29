@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asesmen;
+use App\Models\DegreeLevel;
 use Illuminate\Http\Request;
 use App\Models\ElemenStandar;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +27,7 @@ class BobotPenilaianController extends Controller
      */
     public function index(Request $request)
     {
-        $filters = $request->only(['id_elemen', 'id_category']);
+        $filters = $request->only(['id_elemen', 'id_category', 'id_degree_level']);
 
         if ($request->ajax()) {
             $bobots = $this->bobotService->getAll($filters);
@@ -37,7 +38,9 @@ class BobotPenilaianController extends Controller
                     return $row->elemenStandar ? $row->elemenStandar->kode_elemen . ' - ' . $row->elemenStandar->pernyataan_elemen : '-';
                 })
                 ->addColumn('category', function ($row) {
-                    return $row->category ? $row->category->name : '-';
+                    $category = $row->category ? $row->category->name : '-';
+                    $degree = $row->degreeLevel ? $row->degreeLevel->name : '-';
+                    return $category . ' / ' . $degree;
                 })
                 ->addColumn('status', function ($row) {
                     if ($row->is_active) {
@@ -73,9 +76,10 @@ class BobotPenilaianController extends Controller
 
         $elemens = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
         $categories = StudyProgramCategory::all();
+        $degreeLevels = DegreeLevel::orderBy('code')->get();
         $asesmens = Asesmen::all();
 
-        return view('master-data.bobot-penilaian.index', compact('bobots', 'elemens', 'categories', 'asesmens'));
+        return view('master-data.bobot-penilaian.index', compact('bobots', 'elemens', 'categories', 'degreeLevels', 'asesmens'));
     }
 
     /**
@@ -85,8 +89,9 @@ class BobotPenilaianController extends Controller
     {
         $elemens = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
         $categories = StudyProgramCategory::all();
+        $degreeLevels = DegreeLevel::orderBy('code')->get();
 
-        return view('master-data.bobot-penilaian.create', compact('elemens', 'categories'));
+        return view('master-data.bobot-penilaian.create', compact('elemens', 'categories', 'degreeLevels'));
     }
 
     /**
@@ -119,6 +124,25 @@ class BobotPenilaianController extends Controller
     }
 
     /**
+     * Display the specified bobot.
+     */
+    public function show($id)
+    {
+        $bobot = $this->bobotService->find($id);
+
+        if (!$bobot) {
+            return redirect()->route('bobot-penilaian.index')
+                ->with('error', 'Bobot penilaian tidak ditemukan');
+        }
+
+        if (request()->wantsJson() || request()->is('api/*')) {
+            return new BobotPenilaianResource($bobot->load(['elemenStandar.kriteria', 'category']));
+        }
+
+        return redirect()->route('bobot-penilaian.edit', $id);
+    }
+
+    /**
      * Show the form for editing the specified bobot
      */
     public function edit($id)
@@ -132,8 +156,9 @@ class BobotPenilaianController extends Controller
 
         $elemens = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
         $categories = StudyProgramCategory::all();
+        $degreeLevels = DegreeLevel::orderBy('code')->get();
 
-        return view('master-data.bobot-penilaian.edit', compact('bobot', 'elemens', 'categories'));
+        return view('master-data.bobot-penilaian.edit', compact('bobot', 'elemens', 'categories', 'degreeLevels'));
     }
 
     /**
@@ -203,11 +228,12 @@ class BobotPenilaianController extends Controller
         try {
             $hasil = $this->bobotService->calculateTotalScore($asesmenId, $categoryId);
 
-            if ($request->wantsJson() || $request->is('api/*')) {
+            if ($request->wantsJson() || $request->ajax() || $request->is('api/*')) {
                 return response()->json($hasil);
             }
 
-            return view('master-data.bobot-penilaian.hasil', compact('hasil', 'asesmenId', 'categoryId'));
+            return redirect()->route('bobot-penilaian.index')
+                ->with('success', 'Perhitungan bobot berhasil diproses.');
         } catch (\Exception $e) {
             Log::error($e);
             if ($request->wantsJson() || $request->is('api/*')) {

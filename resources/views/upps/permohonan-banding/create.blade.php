@@ -59,7 +59,7 @@
                                     Nama Program Studi <span class="text-danger">*</span>
                                 </label>
                                 @if($prodis->isEmpty())
-                                <div class="alert alert-warning mb-0">
+                                <div class="alert alert-warning alert-permanent mb-0">
                                     <i class="bi bi-exclamation-triangle"></i>
                                     Tidak ada program studi yang sedang dalam masa sanggah.
                                 </div>

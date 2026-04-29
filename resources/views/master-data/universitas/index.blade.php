@@ -45,10 +45,10 @@
                                     <a href="{{ route('universities.edit', $university->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form id="form-universitas" action="{{ route('universities.destroy', $university->id) }}" method="POST" class="d-inline">
+                                    <form id="form-universitas-{{ $university->id }}" action="{{ route('universities.destroy', $university->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-universitas" data-text="universitas" title="Hapus">
+                                        <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-universitas-{{ $university->id }}" data-text="universitas" title="Hapus">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>

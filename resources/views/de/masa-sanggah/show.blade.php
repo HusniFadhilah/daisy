@@ -34,6 +34,12 @@
     $totalDurasi = $pengajuan->tanggal_masa_sanggah_mulai && $pengajuan->tanggal_masa_sanggah_selesai
     ? $pengajuan->tanggal_masa_sanggah_mulai->diffInDays($pengajuan->tanggal_masa_sanggah_selesai)
     : 0;
+    $canEditMasaSanggah = $pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI;
+    $minTanggalSelesai = now()->addMinutes(2)->format('Y-m-d\TH:i');
+    $tanggalSelesaiValue = old(
+        'tanggal_masa_sanggah_selesai',
+        optional($pengajuan->tanggal_masa_sanggah_selesai)->format('Y-m-d\TH:i')
+    );
     @endphp
 
     <div class="row">
@@ -120,6 +126,36 @@
                 @endif
             </p>
         </div>
+
+        @if($canEditMasaSanggah)
+        <div class="col-12">
+            <hr>
+            <form action="{{ route('de.masa-sanggah.update', $pengajuan->id) }}" method="POST" class="row g-3 align-items-end">
+                @csrf
+                @method('PUT')
+                <div class="col-md-7">
+                    <label for="tanggal_masa_sanggah_selesai" class="form-label">Edit Tanggal Selesai Masa Sanggah</label>
+                    <input
+                        type="datetime-local"
+                        name="tanggal_masa_sanggah_selesai"
+                        id="tanggal_masa_sanggah_selesai"
+                        class="form-control @error('tanggal_masa_sanggah_selesai') is-invalid @enderror"
+                        min="{{ $minTanggalSelesai }}"
+                        value="{{ $tanggalSelesaiValue }}"
+                        required>
+                    @error('tanggal_masa_sanggah_selesai')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <div class="form-text">Tanggal selesai harus setelah tanggal mulai dan minimal 2 menit dari waktu server.</div>
+                </div>
+                <div class="col-md-5">
+                    <button type="submit" class="btn btn-warning text-dark">
+                        <i class="bi bi-save"></i> Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+        @endif
 
         {{-- @if($isAktif)
             <div class="col-12">

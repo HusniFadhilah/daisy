@@ -57,10 +57,10 @@
                                             <a href="{{ route('indikator-penilaian.edit', $indikator->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form id="form-indikator" action="{{ route('indikator-penilaian.destroy', $indikator->id) }}" method="POST" class="d-inline">
+                                            <form id="form-indikator-penilaian-{{ $indikator->id }}" action="{{ route('indikator-penilaian.destroy', $indikator->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-indikator" data-text="indikator" title="Hapus">
+                                                <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-indikator-penilaian-{{ $indikator->id }}" data-text="indikator" title="Hapus">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
