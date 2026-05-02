@@ -1,0 +1,651 @@
+@startuml Daisy_ER_User_ProgramStudi
+title Daisy ERD - User, Role, University, Program Studi
+hide circle
+skinparam linetype ortho
+
+entity users {
+  * id : bigint
+  --
+  name : varchar
+  email : varchar
+  password : varchar
+  role : varchar
+  id_university : bigint <<FK>>
+  id_study_program : bigint <<FK>>
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity user_emails {
+  * id : bigint
+  --
+  user_id : bigint <<FK>>
+  email : varchar
+  is_primary : boolean
+  is_active : boolean
+  email_verified_at : timestamp
+}
+
+entity roles {
+  * id : bigint
+  --
+  name : varchar
+  alias : varchar
+}
+
+entity universities {
+  * id : bigint
+  --
+  name : varchar
+  code : varchar
+}
+
+entity study_programs {
+  * id : bigint
+  --
+  id_university : bigint <<FK>>
+  id_degree_level : bigint <<FK>>
+  id_category : bigint <<FK>>
+  name : varchar
+  code : varchar
+  peringkat_akreditasi : varchar
+  tanggal_kedaluwarsa : date
+}
+
+entity study_program_users {
+  * id : bigint
+  --
+  id_user : bigint <<FK>>
+  id_study_program : bigint <<FK>>
+  role : varchar
+  is_active : boolean
+}
+
+entity study_program_categories {
+  * id : bigint
+  --
+  name : varchar
+  code : varchar
+}
+
+entity degree_levels {
+  * id : bigint
+  --
+  id_category : bigint <<FK>>
+  name : varchar
+  code : varchar
+}
+
+universities ||--o{ study_programs : id_university
+study_program_categories ||--o{ study_programs : id_category
+study_program_categories ||--o{ degree_levels : id_category
+degree_levels ||--o{ study_programs : id_degree_level
+users ||--o{ user_emails : user_id
+users ||--o{ study_program_users : id_user
+study_programs ||--o{ study_program_users : id_study_program
+universities ||--o{ users : id_university
+study_programs ||--o{ users : id_study_program
+
+@enduml
+
+@startuml Daisy_ER_Pengajuan
+title Daisy ERD - Pengajuan, Dokumen, Pembayaran, Status
+hide circle
+skinparam linetype ortho
+
+entity pengajuan_akreditasi {
+  * id : bigint
+  --
+  nomor_pengajuan : varchar
+  id_program_studi : bigint <<FK>>
+  id_user_pengaju : bigint <<FK>>
+  id_de_assigned : bigint <<FK>>
+  id_validator_assigned : bigint <<FK>>
+  status : varchar
+  jenis_akreditasi : varchar
+  kelompok_akreditasi : varchar
+  tahun_akreditasi : integer
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity pengajuan_dokumen {
+  * id : bigint
+  --
+  id_pengajuan : bigint <<FK>>
+  uploaded_by : bigint <<FK>>
+  jenis_dokumen : varchar
+  nama_file : varchar
+  file_path : varchar
+  status : varchar
+}
+
+entity pengajuan_pembayaran {
+  * id : bigint
+  --
+  id_pengajuan : bigint <<FK>>
+  verified_by : bigint <<FK>>
+  nomor_invoice : varchar
+  jenis_pembayaran : varchar
+  status_pembayaran : varchar
+  jumlah : decimal
+  bukti_pembayaran : varchar
+  verified_at : timestamp
+}
+
+entity pengajuan_status_log {
+  * id : bigint
+  --
+  id_pengajuan : bigint <<FK>>
+  changed_by : bigint <<FK>>
+  status_from : varchar
+  status_to : varchar
+  note : text
+  created_at : timestamp
+}
+
+entity pengingat_akreditasi {
+  * id : bigint
+  --
+  id_program_studi : bigint <<FK>>
+  id_de_pengirim : bigint <<FK>>
+  id_pengajuan : bigint <<FK>>
+  status : varchar
+  pesan : text
+  sent_at : timestamp
+  responded_at : timestamp
+}
+
+entity users
+entity study_programs
+entity asesmen
+entity borang_data
+entity borang_imports
+entity borang_validations
+
+study_programs ||--o{ pengajuan_akreditasi : id_program_studi
+users ||--o{ pengajuan_akreditasi : id_user_pengaju
+users ||--o{ pengajuan_akreditasi : id_de_assigned
+users ||--o{ pengajuan_akreditasi : id_validator_assigned
+pengajuan_akreditasi ||--o| asesmen : id_pengajuan
+pengajuan_akreditasi ||--o{ pengajuan_dokumen : id_pengajuan
+pengajuan_akreditasi ||--o{ pengajuan_pembayaran : id_pengajuan
+pengajuan_akreditasi ||--o{ pengajuan_status_log : id_pengajuan
+pengajuan_akreditasi ||--o{ borang_data : id_pengajuan
+pengajuan_akreditasi ||--o{ borang_imports : id_pengajuan
+pengajuan_akreditasi ||--o| borang_validations : id_pengajuan
+pengajuan_akreditasi ||--o| pengingat_akreditasi : id_pengajuan
+users ||--o{ pengajuan_dokumen : uploaded_by
+users ||--o{ pengajuan_pembayaran : verified_by
+users ||--o{ pengajuan_status_log : changed_by
+users ||--o{ pengingat_akreditasi : id_de_pengirim
+study_programs ||--o{ pengingat_akreditasi : id_program_studi
+
+@enduml
+
+@startuml Daisy_ER_Asesmen
+title Daisy ERD - Asesmen, Assignment, Penilaian, Hasil
+hide circle
+skinparam linetype ortho
+
+entity asesmen {
+  * id : bigint
+  --
+  id_pengajuan : bigint <<FK>>
+  id_study_program : bigint <<FK>>
+  status : varchar
+  jenis_asesmen : varchar
+}
+
+entity asesmen_user_roles {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  id_user : bigint <<FK>>
+  id_role : bigint <<FK>>
+  id_asesmen_kecukupan : bigint <<FK>>
+  id_asesmen_lapangan : bigint <<FK>>
+  id_asesmen_kecukupan_banding : bigint <<FK>>
+  id_asesmen_lapangan_banding : bigint <<FK>>
+  jenis_asesmen : varchar
+  status : varchar
+  approved_by : bigint <<FK>>
+}
+
+entity asesmen_documents {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  uploaded_by : bigint <<FK>>
+  approved_by_prodi : bigint <<FK>>
+  approved_by_de : bigint <<FK>>
+  type : varchar
+  file_path : varchar
+  status_prodi : varchar
+  status_de : varchar
+}
+
+entity asesmen_kecukupan {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  completed_by : bigint <<FK>>
+  status : varchar
+  completed_at : timestamp
+}
+
+entity asesmen_lapangan {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  id_asesmen_kecukupan : bigint <<FK>>
+  completed_by : bigint <<FK>>
+  status : varchar
+}
+
+entity asesmen_banding {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  status : varchar
+}
+
+entity asesmen_kecukupan_banding {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  completed_by : bigint <<FK>>
+  status : varchar
+}
+
+entity asesmen_lapangan_banding {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  id_asesmen_kecukupan_banding : bigint <<FK>>
+  completed_by : bigint <<FK>>
+  status : varchar
+}
+
+entity hasil_akreditasi {
+  * id : bigint
+  --
+  id_pengajuan : bigint <<FK>>
+  id_asesmen : bigint <<FK>>
+  id_study_program : bigint <<FK>>
+  id_category : bigint <<FK>>
+  id_status_ak : bigint <<FK>>
+  id_status_al : bigint <<FK>>
+  id_status_hasil : bigint <<FK>>
+  id_status_final : bigint <<FK>>
+  skor_ak : decimal
+  skor_al : decimal
+  skor_final : decimal
+}
+
+entity penilaian_elemen_ak {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  id_asesor : bigint <<FK>>
+  validated_by : bigint <<FK>>
+  id_elemen : bigint <<FK>>
+  skor : decimal
+  catatan : text
+}
+
+entity penilaian_elemen_al {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  id_asesor : bigint <<FK>>
+  id_elemen : bigint <<FK>>
+  skor : decimal
+  catatan : text
+}
+
+entity penilaian_elemen_ak_banding {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  id_asesor : bigint <<FK>>
+  validated_by : bigint <<FK>>
+  id_elemen : bigint <<FK>>
+  skor : decimal
+}
+
+entity penilaian_elemen_al_banding {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  id_asesor : bigint <<FK>>
+  id_elemen : bigint <<FK>>
+  skor : decimal
+}
+
+entity lha_asesors {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  created_by : bigint <<FK>>
+  updated_by : bigint <<FK>>
+  status : varchar
+}
+
+entity lha_asesor_banding {
+  * id : bigint
+  --
+  id_asesmen : bigint <<FK>>
+  created_by : bigint <<FK>>
+  updated_by : bigint <<FK>>
+  status : varchar
+}
+
+entity pengajuan_akreditasi
+entity study_programs
+entity users
+entity roles
+entity elemen_standar
+entity status_akreditasi
+entity study_program_categories
+entity borang_validations
+
+pengajuan_akreditasi ||--o| asesmen : id_pengajuan
+study_programs ||--o{ asesmen : id_study_program
+asesmen ||--o{ asesmen_user_roles : id_asesmen
+users ||--o{ asesmen_user_roles : id_user
+roles ||--o{ asesmen_user_roles : id_role
+asesmen_user_roles ||--o| borang_validations : id_assignment
+asesmen ||--o{ asesmen_documents : id_asesmen
+users ||--o{ asesmen_documents : uploaded_by/approver
+asesmen ||--o| asesmen_kecukupan : id_asesmen
+asesmen ||--o| asesmen_lapangan : id_asesmen
+asesmen_kecukupan ||--o| asesmen_lapangan : id_asesmen_kecukupan
+asesmen ||--o| asesmen_banding : id_asesmen
+asesmen ||--o| asesmen_kecukupan_banding : id_asesmen
+asesmen ||--o| asesmen_lapangan_banding : id_asesmen
+asesmen_kecukupan_banding ||--o| asesmen_lapangan_banding : id_asesmen_kecukupan_banding
+users ||--o{ asesmen_kecukupan : completed_by
+users ||--o{ asesmen_lapangan : completed_by
+asesmen ||--o| hasil_akreditasi : id_asesmen
+pengajuan_akreditasi ||--o| hasil_akreditasi : id_pengajuan
+study_programs ||--o{ hasil_akreditasi : id_study_program
+study_program_categories ||--o{ hasil_akreditasi : id_category
+status_akreditasi ||--o{ hasil_akreditasi : status refs
+asesmen ||--o{ penilaian_elemen_ak : id_asesmen
+asesmen ||--o{ penilaian_elemen_al : id_asesmen
+asesmen ||--o{ penilaian_elemen_ak_banding : id_asesmen
+asesmen ||--o{ penilaian_elemen_al_banding : id_asesmen
+elemen_standar ||--o{ penilaian_elemen_ak : id_elemen
+elemen_standar ||--o{ penilaian_elemen_al : id_elemen
+elemen_standar ||--o{ penilaian_elemen_ak_banding : id_elemen
+elemen_standar ||--o{ penilaian_elemen_al_banding : id_elemen
+users ||--o{ penilaian_elemen_ak : asesor/validator
+users ||--o{ penilaian_elemen_al : asesor
+asesmen ||--o| lha_asesors : id_asesmen
+asesmen ||--o| lha_asesor_banding : id_asesmen
+
+@enduml
+
+@startuml Daisy_ER_Borang
+title Daisy ERD - Borang, Dataset, Validasi, Revisi
+hide circle
+skinparam linetype ortho
+
+entity borang_imports {
+  * id : bigint
+  --
+  id_pengajuan : bigint <<FK>>
+  id_dokumen : bigint <<FK>>
+  imported_by : bigint <<FK>>
+  status : varchar
+  total_sections : integer
+  total_tables : integer
+  errors : json
+}
+
+entity borang_sections {
+  * id : bigint
+  --
+  id_import : bigint <<FK>>
+  id_elemen : bigint <<FK>>
+  title : varchar
+  position : integer
+}
+
+entity borang_tables {
+  * id : bigint
+  --
+  id_section : bigint <<FK>>
+  id_dataset : bigint <<FK>>
+  data : json/text
+  position : integer
+}
+
+entity borang_data {
+  * id : bigint
+  --
+  id_pengajuan : bigint <<FK>>
+  id_borang_import : bigint <<FK>>
+  id_dataset_borang : bigint <<FK>>
+  value : longtext/json
+}
+
+entity borang_data_excel {
+  * id : bigint
+  --
+  id_pengajuan : bigint <<FK>>
+  id_borang_import : bigint <<FK>>
+  id_dataset_borang : bigint <<FK>>
+  reviewed_by : bigint <<FK>>
+  sheet_name : varchar
+  raw_data : json
+  parsed_data : json
+}
+
+entity borang_validations {
+  * id : bigint
+  --
+  id_assignment : bigint <<FK>>
+  id_pengajuan : bigint <<FK>>
+  id_validator_assigned : bigint <<FK>>
+  status : varchar
+  review_data : json
+  final_grade : varchar
+}
+
+entity borang_revision_history {
+  * id : bigint
+  --
+  id_pengajuan : bigint <<FK>>
+  id_validation : bigint <<FK>>
+  revised_by : bigint <<FK>>
+  revision_number : integer
+  revised_sections : json
+  notes : text
+}
+
+entity dataset_borang {
+  * id : bigint
+  --
+  id_elemen : bigint <<FK>>
+  id_degree_level : bigint <<FK>>
+  kode : varchar
+  nama : varchar
+  tipe : varchar
+  template_html : longtext
+  is_active : boolean
+  urutan : integer
+}
+
+entity dataset_suplemen {
+  * id : bigint
+  --
+  parent_id : bigint <<FK>>
+  kode : varchar
+  nama : varchar
+  urutan : integer
+}
+
+entity pengajuan_akreditasi
+entity pengajuan_dokumen
+entity users
+entity asesmen_user_roles
+entity elemen_standar
+entity degree_levels
+
+pengajuan_akreditasi ||--o{ borang_imports : id_pengajuan
+pengajuan_dokumen ||--o{ borang_imports : id_dokumen
+users ||--o{ borang_imports : imported_by
+borang_imports ||--o{ borang_sections : id_import
+elemen_standar ||--o{ borang_sections : id_elemen
+borang_sections ||--o{ borang_tables : id_section
+dataset_borang ||--o{ borang_tables : id_dataset
+pengajuan_akreditasi ||--o{ borang_data : id_pengajuan
+borang_imports ||--o{ borang_data : id_borang_import
+dataset_borang ||--o{ borang_data : id_dataset_borang
+pengajuan_akreditasi ||--o{ borang_data_excel : id_pengajuan
+borang_imports ||--o{ borang_data_excel : id_borang_import
+dataset_borang ||--o{ borang_data_excel : id_dataset_borang
+users ||--o{ borang_data_excel : reviewed_by
+asesmen_user_roles ||--o| borang_validations : id_assignment
+pengajuan_akreditasi ||--o| borang_validations : id_pengajuan
+users ||--o{ borang_validations : id_validator_assigned
+pengajuan_akreditasi ||--o{ borang_revision_history : id_pengajuan
+borang_validations ||--o{ borang_revision_history : id_validation
+users ||--o{ borang_revision_history : revised_by
+elemen_standar ||--o{ dataset_borang : id_elemen
+degree_levels ||--o{ dataset_borang : id_degree_level
+dataset_suplemen ||--o{ dataset_suplemen : parent_id
+
+@enduml
+
+@startuml Daisy_ER_Master_Instrumen
+title Daisy ERD - Master Instrumen dan Penilaian
+hide circle
+skinparam linetype ortho
+
+entity standar {
+  * id : bigint
+  --
+  kode : varchar
+  nama : varchar
+}
+
+entity kriteria {
+  * id : bigint
+  --
+  kode : varchar
+  nama : varchar
+}
+
+entity elemen_standar {
+  * id : bigint
+  --
+  id_kriteria : bigint <<FK>>
+  id_standar : bigint <<FK>>
+  kode : varchar
+  nama : varchar
+  deskripsi : text
+}
+
+entity indikator {
+  * id : bigint
+  --
+  id_elemen : bigint <<FK>>
+  id_jenis : bigint <<FK>>
+  kode : varchar
+  nama : varchar
+}
+
+entity jenis_indikator {
+  * id : bigint
+  --
+  nama : varchar
+  kode : varchar
+}
+
+entity jenjang_penilaian {
+  * id : bigint
+  --
+  nama : varchar
+  skor : decimal
+  deskripsi : text
+}
+
+entity indikator_penilaian_elemen {
+  * id : bigint
+  --
+  id_elemen : bigint <<FK>>
+  id_jenjang_penilaian : bigint <<FK>>
+  deskripsi : text
+}
+
+entity bobot_penilaian {
+  * id : bigint
+  --
+  id_elemen : bigint <<FK>>
+  id_category : bigint <<FK>>
+  id_degree_level : bigint <<FK>>
+  bobot : decimal
+}
+
+entity pernyataan {
+  * id : bigint
+  --
+  id_elemen : bigint <<FK>>
+  isi : text
+}
+
+entity status_akreditasi {
+  * id : bigint
+  --
+  kode : varchar
+  label : varchar
+  skor_min : decimal
+  skor_max : decimal
+  persen_min : decimal
+  persen_max : decimal
+}
+
+entity syarat_akreditasi {
+  * id : bigint
+  --
+  id_degree_level : bigint <<FK>>
+  created_by : bigint <<FK>>
+  updated_by : bigint <<FK>>
+  kode : varchar
+  nama : varchar
+  nilai : json
+  aktif : boolean
+}
+
+entity syarat_akreditasi_logs {
+  * id : bigint
+  --
+  id_syarat : bigint <<FK>>
+  changed_by : bigint <<FK>>
+  nilai_lama : json
+  nilai_baru : json
+}
+
+entity study_program_categories
+entity degree_levels
+entity users
+
+standar ||--o{ elemen_standar : id_standar
+kriteria ||--o{ elemen_standar : id_kriteria
+elemen_standar ||--o{ indikator : id_elemen
+jenis_indikator ||--o{ indikator : id_jenis
+elemen_standar ||--o{ indikator_penilaian_elemen : id_elemen
+jenjang_penilaian ||--o{ indikator_penilaian_elemen : id_jenjang_penilaian
+elemen_standar ||--o{ bobot_penilaian : id_elemen
+study_program_categories ||--o{ bobot_penilaian : id_category
+degree_levels ||--o{ bobot_penilaian : id_degree_level
+elemen_standar ||--o{ pernyataan : id_elemen
+degree_levels ||--o{ syarat_akreditasi : id_degree_level
+users ||--o{ syarat_akreditasi : created_by/updated_by
+syarat_akreditasi ||--o{ syarat_akreditasi_logs : id_syarat
+users ||--o{ syarat_akreditasi_logs : changed_by
+
+@enduml

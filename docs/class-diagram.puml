@@ -1,0 +1,657 @@
+@startuml Daisy_User_ProgramStudi
+title Daisy - User, Role, University, Program Studi
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Models" {
+  class User {
+    +id
+    +name
+    +email
+    +role
+    +id_university
+    +id_study_program
+    +hasRole(role)
+    +syncRolesFromAssignments()
+    +switchRole(roleName)
+  }
+
+  class UserEmail {
+    +id
+    +user_id
+    +email
+    +is_primary
+    +is_active
+    +email_verified_at
+  }
+
+  class Role {
+    +id
+    +name
+    +alias
+    +getRoleAlias(roleID)
+  }
+
+  class University {
+    +id
+    +name
+    +code
+  }
+
+  class StudyProgram {
+    +id
+    +id_university
+    +id_degree_level
+    +id_category
+    +name
+    +peringkat_akreditasi
+    +tanggal_kedaluwarsa
+    +getDaysLeftAttribute()
+    +getStatusLabel(daysLeft)
+  }
+
+  class StudyProgramUser {
+    +id
+    +id_user
+    +id_study_program
+    +role
+    +is_active
+  }
+
+  class StudyProgramCategory {
+    +id
+    +name
+    +code
+  }
+
+  class DegreeLevel {
+    +id
+    +id_category
+    +name
+    +code
+  }
+}
+
+User "1" --> "0..*" UserEmail : emails
+User "0..*" --> "0..1" University : university
+User "0..*" --> "0..1" StudyProgram : studyProgram
+User "1" --> "0..*" StudyProgramUser : studyPrograms pivot
+StudyProgramUser "0..*" --> "1" User : user
+StudyProgramUser "0..*" --> "1" StudyProgram : studyProgram
+University "1" --> "0..*" StudyProgram : studyPrograms
+StudyProgram "0..*" --> "1" University : university
+StudyProgram "0..*" --> "1" DegreeLevel : degreeLevel
+StudyProgram "0..*" --> "0..1" StudyProgramCategory : category
+StudyProgramCategory "1" --> "0..*" StudyProgram : studyPrograms
+StudyProgramCategory "1" --> "0..*" DegreeLevel : degreeLevels
+DegreeLevel "0..*" --> "0..1" StudyProgramCategory : category
+
+@enduml
+
+@startuml Daisy_Pengajuan_Akreditasi
+title Daisy - Pengajuan Akreditasi, Dokumen, Pembayaran, Status
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Models" {
+  class PengajuanAkreditasi {
+    +id
+    +nomor_pengajuan
+    +id_program_studi
+    +id_user_pengaju
+    +id_de_assigned
+    +id_validator_assigned
+    +status
+    +jenis_akreditasi
+    +kelompok_akreditasi
+    +generateNomorPengajuan()
+    +updateStatusSafely(newStatus, note)
+    +canTransitionTo(newStatus)
+    +hasBanding()
+  }
+
+  class PengajuanDokumen {
+    +id
+    +id_pengajuan
+    +uploaded_by
+    +jenis_dokumen
+    +file_path
+    +status
+  }
+
+  class PengajuanPembayaran {
+    +id
+    +id_pengajuan
+    +verified_by
+    +nomor_invoice
+    +jenis_pembayaran
+    +status_pembayaran
+    +generateNomorInvoice()
+    +statusConfig()
+  }
+
+  class PengajuanStatusLog {
+    +id
+    +id_pengajuan
+    +changed_by
+    +status_from
+    +status_to
+    +note
+  }
+
+  class PengingatAkreditasi {
+    +id
+    +id_program_studi
+    +id_de_pengirim
+    +id_pengajuan
+    +status
+    +markAsResponded(pengajuan)
+    +markAsExpired()
+  }
+
+  class StudyProgram
+  class User
+  class Asesmen
+  class BorangData
+  class BorangImport
+  class BorangValidation
+}
+
+PengajuanAkreditasi "0..*" --> "1" StudyProgram : studyProgram
+PengajuanAkreditasi "0..*" --> "1" User : pengaju
+PengajuanAkreditasi "0..*" --> "0..1" User : deskEvaluator
+PengajuanAkreditasi "0..*" --> "0..1" User : validator
+PengajuanAkreditasi "1" --> "0..1" Asesmen : asesmen
+PengajuanAkreditasi "1" --> "0..*" PengajuanDokumen : dokumen
+PengajuanAkreditasi "1" --> "0..*" PengajuanPembayaran : pembayaran
+PengajuanAkreditasi "1" --> "0..*" PengajuanStatusLog : statusLog
+PengajuanAkreditasi "1" --> "0..*" BorangData : borangData
+PengajuanAkreditasi "1" --> "0..*" BorangImport : borangImports
+PengajuanAkreditasi "1" --> "0..1" BorangValidation : borangValidation
+PengajuanAkreditasi "1" --> "0..1" PengingatAkreditasi : pengingatAkreditasi
+PengajuanDokumen "0..*" --> "1" User : uploader
+PengajuanPembayaran "0..*" --> "0..1" User : verifier
+PengajuanStatusLog "0..*" --> "0..1" User : changedBy
+PengingatAkreditasi "0..*" --> "1" StudyProgram : studyProgram
+PengingatAkreditasi "0..*" --> "1" User : pengirim
+PengingatAkreditasi "0..*" --> "0..1" PengajuanAkreditasi : pengajuan
+
+@enduml
+
+@startuml Daisy_Asesmen_Hasil
+title Daisy - Asesmen, Assignment, Penilaian, Hasil
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Models" {
+  class Asesmen {
+    +id
+    +id_pengajuan
+    +id_study_program
+    +status
+    +jenis_asesmen
+  }
+
+  class AsesmenUserRole {
+    +id
+    +id_asesmen
+    +id_user
+    +id_role
+    +jenis_asesmen
+    +status
+    +accepted_at
+    +isBorangValidator()
+    +canBeReassigned()
+  }
+
+  class AsesmenDocument {
+    +id
+    +id_asesmen
+    +uploaded_by
+    +type
+    +file_path
+    +status_prodi
+    +status_de
+    +allowedTypes()
+  }
+
+  class AsesmenKecukupan {
+    +id
+    +id_asesmen
+    +completed_by
+    +status
+    +isComplete()
+    +markAsCompleted(userId)
+  }
+
+  class AsesmenLapangan {
+    +id
+    +id_asesmen
+    +id_asesmen_kecukupan
+    +completed_by
+    +status
+    +isComplete()
+  }
+
+  class AsesmenBanding {
+    +id
+    +id_asesmen
+    +status
+  }
+
+  class AsesmenKecukupanBanding
+  class AsesmenLapanganBanding
+
+  class PenilaianElemenAk
+  class PenilaianElemenAl
+  class PenilaianElemenAkBanding
+  class PenilaianElemenAlBanding
+  class PenilaianElemenBanding
+
+  class LhaAsesor {
+    +id
+    +id_asesmen
+    +status
+    +isFinalized()
+    +getCompletionPercentage()
+  }
+
+  class LhaAsesorBanding
+
+  class HasilAkreditasi {
+    +id
+    +id_pengajuan
+    +id_asesmen
+    +id_study_program
+    +id_category
+    +skor_ak
+    +skor_al
+    +skor_final
+    +initializeHasil()
+    +initializeBanding()
+    +getPeringkatFromSkor(skor)
+  }
+
+  class PengajuanAkreditasi
+  class StudyProgram
+  class User
+  class Role
+  class ElemenStandar
+  class StatusAkreditasi
+  class StudyProgramCategory
+  class BorangValidation
+}
+
+Asesmen "0..*" --> "1" PengajuanAkreditasi : pengajuan
+Asesmen "0..*" --> "1" StudyProgram : studyProgram
+Asesmen "1" --> "0..*" AsesmenUserRole : userRoles
+Asesmen "1" --> "0..*" AsesmenDocument : documents
+Asesmen "1" --> "0..1" HasilAkreditasi : hasilAkreditasi
+Asesmen "1" --> "0..1" AsesmenKecukupan : asesmenKecukupan
+Asesmen "1" --> "0..1" AsesmenLapangan : asesmenLapangan
+Asesmen "1" --> "0..1" AsesmenBanding : asesmenBanding
+Asesmen "1" --> "0..1" AsesmenKecukupanBanding : asesmenKecukupanBanding
+Asesmen "1" --> "0..1" AsesmenLapanganBanding : asesmenLapanganBanding
+Asesmen "1" --> "0..*" PenilaianElemenAk : penilaianAK
+Asesmen "1" --> "0..*" PenilaianElemenAl : penilaianAL
+Asesmen "1" --> "0..*" PenilaianElemenAkBanding : penilaianAKBanding
+Asesmen "1" --> "0..*" PenilaianElemenAlBanding : penilaianALBanding
+Asesmen "1" --> "0..*" PenilaianElemenBanding : penilaianBanding
+Asesmen "1" --> "0..1" LhaAsesor : lhaAsesor
+Asesmen "1" --> "0..1" LhaAsesorBanding : lhaAsesorBanding
+AsesmenUserRole "0..*" --> "1" User : user
+AsesmenUserRole "0..*" --> "1" Role : role
+AsesmenUserRole "1" --> "0..1" BorangValidation : borangValidation
+AsesmenDocument "0..*" --> "1" User : uploader/approver
+AsesmenKecukupan "0..*" --> "1" User : completedBy
+AsesmenLapangan "0..*" --> "0..1" AsesmenKecukupan : asesmenKecukupan
+AsesmenLapangan "0..*" --> "1" User : completedBy
+AsesmenBanding "0..*" --> "1" Asesmen : asesmen
+HasilAkreditasi "0..*" --> "1" PengajuanAkreditasi : pengajuan
+HasilAkreditasi "0..*" --> "1" Asesmen : asesmen
+HasilAkreditasi "0..*" --> "1" StudyProgram : studyProgram
+HasilAkreditasi "0..*" --> "0..1" StudyProgramCategory : category
+HasilAkreditasi "0..*" --> "0..1" StatusAkreditasi : statusAK/AL/final
+PenilaianElemenAk "0..*" --> "1" User : asesor/validator
+PenilaianElemenAk "0..*" --> "1" ElemenStandar : elemen
+PenilaianElemenAl "0..*" --> "1" User : asesor
+PenilaianElemenAl "0..*" --> "1" ElemenStandar : elemen
+PenilaianElemenAkBanding "0..*" --> "1" ElemenStandar : elemen
+PenilaianElemenAlBanding "0..*" --> "1" ElemenStandar : elemen
+PenilaianElemenBanding "0..*" --> "1" ElemenStandar : elemen
+
+@enduml
+
+@startuml Daisy_Borang_Dataset
+title Daisy - Borang, Dataset, Validasi, Revisi
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Models" {
+  class BorangImport {
+    +id
+    +id_pengajuan
+    +id_dokumen
+    +imported_by
+    +status
+    +markAsProcessing()
+    +markAsCompleted()
+    +markAsFailed(errors)
+  }
+
+  class BorangSection {
+    +id
+    +id_import
+    +id_elemen
+    +title
+    +position
+  }
+
+  class BorangTable {
+    +id
+    +id_section
+    +id_dataset
+    +data
+    +position
+    +setDataFromArray(data)
+    +setDataFromHtml(html)
+  }
+
+  class BorangData {
+    +id
+    +id_pengajuan
+    +id_borang_import
+    +id_dataset_borang
+    +value
+    +getOrCreateForPengajuan()
+    +bulkUpdateForPengajuan()
+  }
+
+  class BorangDataExcel {
+    +id
+    +id_pengajuan
+    +id_borang_import
+    +id_dataset_borang
+    +sheet_name
+    +reviewed_by
+    +syncToBorangData()
+  }
+
+  class BorangValidation {
+    +id
+    +id_assignment
+    +id_pengajuan
+    +id_validator_assigned
+    +status
+    +getProgressPercentage()
+    +isCompletelyReviewed()
+    +isValidationPassed()
+  }
+
+  class BorangRevisionHistory {
+    +id
+    +id_pengajuan
+    +id_validation
+    +revised_by
+    +revision_number
+    +getNextRevisionNumber()
+    +isLatestRevision()
+  }
+
+  class DatasetBorang {
+    +id
+    +id_elemen
+    +id_degree_level
+    +kode
+    +nama
+    +tipe
+    +template_html
+    +isApplicableFor(degreeLevelId)
+  }
+
+  class DatasetSuplemen {
+    +id
+    +parent_id
+    +kode
+    +nama
+    +urutan
+  }
+
+  class PengajuanAkreditasi
+  class PengajuanDokumen
+  class User
+  class AsesmenUserRole
+  class ElemenStandar
+  class DegreeLevel
+}
+
+BorangImport "0..*" --> "1" PengajuanAkreditasi : pengajuan
+BorangImport "0..*" --> "0..1" PengajuanDokumen : dokumen
+BorangImport "0..*" --> "1" User : importer
+BorangImport "1" --> "0..*" BorangSection : sections
+BorangImport "1" --> "0..*" BorangData : borangData
+BorangSection "0..*" --> "1" ElemenStandar : elemen
+BorangSection "1" --> "0..*" BorangTable : tables
+BorangTable "0..*" --> "1" DatasetBorang : dataset
+BorangData "0..*" --> "1" PengajuanAkreditasi : pengajuan
+BorangData "0..*" --> "0..1" BorangImport : borangImport
+BorangData "0..*" --> "1" DatasetBorang : datasetBorang
+BorangDataExcel "0..*" --> "1" PengajuanAkreditasi : pengajuan
+BorangDataExcel "0..*" --> "0..1" BorangImport : borangImport
+BorangDataExcel "0..*" --> "1" DatasetBorang : datasetBorang
+BorangDataExcel "0..*" --> "0..1" User : reviewer
+BorangValidation "0..*" --> "1" AsesmenUserRole : assignment
+BorangValidation "0..*" --> "1" PengajuanAkreditasi : pengajuan
+BorangValidation "0..*" --> "1" User : validator
+BorangRevisionHistory "0..*" --> "1" PengajuanAkreditasi : pengajuan
+BorangRevisionHistory "0..*" --> "1" BorangValidation : validation
+BorangRevisionHistory "0..*" --> "1" User : revisedBy
+DatasetBorang "0..*" --> "1" ElemenStandar : elemen
+DatasetBorang "0..*" --> "0..1" DegreeLevel : degreeLevel
+DatasetBorang "1" --> "0..*" BorangTable : borangTables
+DatasetBorang "1" --> "0..*" BorangData : borangData
+DatasetSuplemen "0..*" --> "0..1" DatasetSuplemen : parent
+DatasetSuplemen "1" --> "0..*" DatasetSuplemen : children
+
+@enduml
+
+@startuml Daisy_Master_Penilaian
+title Daisy - Master Penilaian dan Instrumen
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Models" {
+  class Standar {
+    +id
+    +kode
+    +nama
+  }
+
+  class Kriteria {
+    +id
+    +kode
+    +nama
+  }
+
+  class ElemenStandar {
+    +id
+    +id_kriteria
+    +id_standar
+    +kode
+    +nama
+  }
+
+  class Indikator {
+    +id
+    +id_elemen
+    +id_jenis
+    +kode
+    +nama
+  }
+
+  class IndikatorStandar {
+    +id
+    +id_elemen
+    +id_jenis
+  }
+
+  class JenisIndikator {
+    +id
+    +nama
+  }
+
+  class JenjangPenilaian {
+    +id
+    +nama
+    +skor
+  }
+
+  class IndikatorPenilaianElemen {
+    +id
+    +id_elemen
+    +id_jenjang_penilaian
+    +deskripsi
+  }
+
+  class BobotPenilaian {
+    +id
+    +id_elemen
+    +id_category
+    +id_degree_level
+    +bobot
+  }
+
+  class Pernyataan
+  class DatasetBorang
+  class StudyProgramCategory
+  class DegreeLevel
+  class PenilaianElemenAk
+  class PenilaianElemenAl
+  class PenilaianElemenAkBanding
+  class PenilaianElemenAlBanding
+}
+
+Standar "1" --> "0..*" ElemenStandar : elemenStandar
+Kriteria "1" --> "0..*" ElemenStandar : elemenStandar
+ElemenStandar "0..*" --> "0..1" Standar : standar
+ElemenStandar "0..*" --> "1" Kriteria : kriteria
+ElemenStandar "1" --> "0..*" Indikator : indikator
+ElemenStandar "1" --> "0..*" Pernyataan : pernyataan
+ElemenStandar "1" --> "0..*" IndikatorPenilaianElemen : indikatorPenilaian
+ElemenStandar "1" --> "0..*" DatasetBorang : datasetBorang
+ElemenStandar "1" --> "0..*" PenilaianElemenAk : penilaianAK
+ElemenStandar "1" --> "0..*" PenilaianElemenAl : penilaianAL
+ElemenStandar "1" --> "0..*" PenilaianElemenAkBanding : penilaianAKBanding
+ElemenStandar "1" --> "0..*" PenilaianElemenAlBanding : penilaianALBanding
+Indikator "0..*" --> "1" ElemenStandar : elemenStandar
+Indikator "0..*" --> "1" JenisIndikator : jenisIndikator
+IndikatorStandar "0..*" --> "1" ElemenStandar : elemen
+IndikatorStandar "0..*" --> "1" JenisIndikator : jenis
+JenisIndikator "1" --> "0..*" Indikator : indikator
+JenjangPenilaian "1" --> "0..*" IndikatorPenilaianElemen : indikatorPenilaian
+IndikatorPenilaianElemen "0..*" --> "1" ElemenStandar : elemen
+IndikatorPenilaianElemen "0..*" --> "1" JenjangPenilaian : jenjangPenilaian
+BobotPenilaian "0..*" --> "1" ElemenStandar : elemenStandar
+BobotPenilaian "0..*" --> "0..1" StudyProgramCategory : category
+BobotPenilaian "0..*" --> "0..1" DegreeLevel : degreeLevel
+
+@enduml
+
+@startuml Daisy_Controller_Service_Job
+title Daisy - Controller, Service, Job Dependency Tingkat Tinggi
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Controllers" {
+  class PengajuanAkreditasiController
+  class AsesmenController
+  class AKController
+  class ALController
+  class HasilAkreditasiController
+  class BorangValidatorController
+  class BobotPenilaianController
+  class UserController
+  class PelaporanController
+  class ValidasiController
+}
+
+package "Services" {
+  class HasilAkreditasiService
+  class HasilAkreditasiSyncService
+  class PenilaianExcelService
+  class ValidasiExcelService
+  class BorangExportService
+  class BorangMergeService
+  class BorangValidationExcelService
+  class BobotPenilaianService
+  class MailDeliveryService
+  class PdfMergeService
+  class RecipientResolverService
+  class LkpsDataReaderService
+  class LkpsExcelExportService
+  class LkpsTemplateExcelExportService
+  class BorangExcelImportService
+  class BorangExcelSheetParser
+  class DatasetIdResolver
+  class LkpsTableDefinitionService
+}
+
+package "Jobs" {
+  class ImportBorangDocxJob
+  class ImportBorangExcelJob
+  class ImportPenilaianExcelJob
+  class MergeBorangFilesJob
+  class MergePdfJob
+  class SendPenawaranAsesmenEmail
+  class SendPenawaranResponseEmail
+  class SelesaikanMasaSanggahJob
+  class SyncHasilAkreditasiSkorKategori
+}
+
+package "Domain\\Akreditasi" {
+  class PengajuanStatus
+  class PengajuanPhase
+  class AllowedStatus
+}
+
+PengajuanAkreditasiController ..> BorangExportService
+PengajuanAkreditasiController ..> BorangExcelImportService
+PengajuanAkreditasiController ..> ImportBorangDocxJob
+PengajuanAkreditasiController ..> ImportBorangExcelJob
+AsesmenController ..> MailDeliveryService
+AsesmenController ..> RecipientResolverService
+AsesmenController ..> SendPenawaranAsesmenEmail
+AKController ..> PenilaianExcelService
+AKController ..> ImportPenilaianExcelJob
+ALController ..> PenilaianExcelService
+ALController ..> PdfMergeService
+ALController ..> ImportPenilaianExcelJob
+ValidasiController ..> ValidasiExcelService
+HasilAkreditasiController ..> HasilAkreditasiService
+HasilAkreditasiController ..> HasilAkreditasiSyncService
+HasilAkreditasiController ..> PengajuanStatus
+BorangValidatorController ..> BorangValidationExcelService
+BorangValidatorController ..> MailDeliveryService
+BobotPenilaianController ..> BobotPenilaianService
+PelaporanController ..> PdfMergeService
+UserController ..> LkpsExcelExportService
+
+ImportBorangExcelJob ..> BorangExcelImportService
+BorangExcelImportService ..> BorangExcelSheetParser
+BorangExcelImportService ..> DatasetIdResolver
+BorangExcelImportService ..> LkpsTableDefinitionService
+MergeBorangFilesJob ..> BorangMergeService
+MergePdfJob ..> PdfMergeService
+SyncHasilAkreditasiSkorKategori ..> HasilAkreditasiSyncService
+SendPenawaranAsesmenEmail ..> MailDeliveryService
+SendPenawaranResponseEmail ..> MailDeliveryService
+
+AllowedStatus ..> PengajuanStatus
+PengajuanPhase ..> PengajuanStatus
+
+note right of UserController
+  User export/import uses maatwebsite/excel classes
+  through UsersExport and UsersImport.
+end note
+
+@enduml

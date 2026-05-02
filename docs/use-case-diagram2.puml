@@ -1,0 +1,131 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' =====================
+' AKTOR
+' =====================
+actor Superadmin
+actor Sekretariat
+actor Prodi
+actor Keuangan
+
+actor Validator
+actor Asesor
+actor "Asesor Banding" as AsesorBanding
+actor Sistem
+
+' =====================
+' SISTEM
+' =====================
+rectangle "Sistem Akreditasi" {
+
+  ' =====================
+  ' KOLOM 1 (KIRI)
+  ' =====================
+  package "Kolom 1" {
+
+    package "Manajemen Akun" {
+      usecase UC_Login as "Login"
+      usecase UC_Logout as "Logout"
+      usecase UC_Reset as "Reset Password"
+    }
+
+    package "Kelola Pengguna" {
+      usecase UC_User as "Kelola User"
+    }
+
+    package "Master Data" {
+      usecase UC_Master as "Kelola Master Data"
+    }
+
+  }
+
+  ' =====================
+  ' KOLOM 2 (TENGAH)
+  ' =====================
+  package "Kolom 2" {
+
+    package "Permohonan Akreditasi" {
+      usecase UC_Permohonan as "Buat Permohonan"
+    }
+
+    package "Pembayaran" {
+      usecase UC_Bayar as "Upload Bukti"
+      usecase UC_ValidBayar as "Validasi Pembayaran"
+    }
+
+    package "Pengiriman Dokumen" {
+      usecase UC_UploadDok as "Upload Dokumen"
+      usecase UC_Final as "Finalisasi"
+    }
+
+    package "Validasi Dokumen" {
+      usecase UC_Validasi as "Validasi"
+      usecase UC_Revisi as "Revisi"
+    }
+
+  }
+
+  ' =====================
+  ' KOLOM 3 (KANAN)
+  ' =====================
+  package "Kolom 3" {
+
+    package "Asesmen" {
+      usecase UC_AK as "Penilaian AK"
+      usecase UC_AL as "Penilaian AL"
+    }
+
+    package "Pelaporan" {
+      usecase UC_Laporan as "Laporan"
+    }
+
+    package "Banding" {
+      usecase UC_Banding as "Pengajuan Banding"
+      usecase UC_BandingProses as "Proses Banding"
+    }
+
+    package "Arsip & Monitoring" {
+      usecase UC_Arsip as "Arsip"
+      usecase UC_Monitor as "Monitoring"
+    }
+
+  }
+
+}
+
+' =====================
+' TRIK SUPAYA JADI 3 KOLOM
+' =====================
+"Kolom 1" -[hidden]-> "Kolom 2"
+"Kolom 2" -[hidden]-> "Kolom 3"
+
+' =====================
+' RELASI AKTOR
+' =====================
+Superadmin --> UC_User
+Superadmin --> UC_Master
+
+Sekretariat --> UC_Permohonan
+Sekretariat --> UC_Laporan
+
+Prodi --> UC_Permohonan
+Prodi --> UC_UploadDok
+Prodi --> UC_Bayar
+Prodi --> UC_Banding
+
+Keuangan --> UC_ValidBayar
+
+Validator --> UC_Validasi
+Validator --> UC_Laporan
+
+Asesor --> UC_AK
+Asesor --> UC_AL
+
+AsesorBanding --> UC_BandingProses
+
+Sistem --> UC_Monitor
+Sistem --> UC_Arsip
+
+@enduml

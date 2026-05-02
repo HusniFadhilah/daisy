@@ -1,0 +1,228 @@
+@startuml Daisy_UC_Lengkap_Satu_Diagram
+title Daisy - Use Case Diagram Lengkap
+
+left to right direction
+scale max 3600x2400
+skinparam dpi 120
+skinparam pageMargin 12
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam defaultFontSize 9
+skinparam usecase {
+  BackgroundColor #E3F2FD
+  BorderColor #1976D2
+}
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor #424242
+}
+
+actor "Semua\nPengguna" as All
+actor "Semua Pengguna\nTerdaftar" as Reg
+actor "Pengguna\nMulti-Role" as Multi
+actor "Superadmin" as SA
+actor "Sekretariat /\nDE" as Sek
+actor "Prodi /\nUPPS" as Prodi
+actor "Keuangan" as Keu
+actor "Validator" as Val
+actor "Asesor" as Asesor
+actor "Asesor\nBanding" as AB
+actor "Sistem" as Sys
+actor "Semua\nAktor" as Semua
+
+rectangle "Sistem Akreditasi Daisy" {
+  package "1. Manajemen Akun" {
+    usecase "Login ke Sistem" as UC01
+    usecase "Logout dari Sistem" as UC02
+    usecase "Reset Kata Sandi" as UC03
+    usecase "Ubah Kata Sandi" as UC04
+    usecase "Lihat & Perbarui Profil" as UC05
+    usecase "Switch Role" as UC06
+  }
+
+  package "2. Kelola Pengguna" {
+    usecase "Kelola Pengguna" as UC07
+  }
+
+  package "3. Master Data" {
+    usecase "Kelola Data Master" as UC08
+  }
+
+  package "4. Pengingat Masa Akreditasi" {
+    usecase "Pengingat Masa\nAkreditasi" as UC09
+  }
+
+  package "5. Permohonan Akreditasi" {
+    usecase "Buat & Kirim\nPermohonan" as UC10
+  }
+
+  package "6. Penerimaan Permohonan" {
+    usecase "Tinjau Permohonan" as UC11
+    usecase "Terima Permohonan" as UC12
+    usecase "Permintaan Upload\nUlang" as UC13
+  }
+
+  package "7. Pembayaran" {
+    usecase "Kirim Invoice\n& Template" as UC14
+    usecase "Upload Bukti\nPembayaran" as UC15
+    usecase "Validasi Pembayaran" as UC16
+  }
+
+  package "8. Pengiriman Dokumen" {
+    usecase "Upload Dokumen\nAkreditasi" as UC17
+    usecase "Finalisasi Dokumen" as UC18
+  }
+
+  package "9. Validasi Dokumen" {
+    usecase "Validasi Dokumen" as UC19
+    usecase "Permintaan Revisi" as UC20
+    usecase "Upload Revisi" as UC21
+  }
+
+  package "10. Pelaporan Validasi" {
+    usecase "Pelaporan Validasi\nDokumen" as UC22
+  }
+
+  package "11. Asesmen Kecukupan (AK)" {
+    usecase "Penilaian AK" as UC23
+    usecase "Deteksi Split\nPenilaian" as UC24
+    usecase "Validasi AK" as UC25
+  }
+
+  package "12. Pelaporan AK" {
+    usecase "Pelaporan AK" as UC26
+  }
+
+  package "13. Asesmen Lapangan (AL)" {
+    usecase "Penilaian AL" as UC27
+    usecase "Berita Acara AL" as UC28
+  }
+
+  package "14. Laporan Hasil Asesmen (LHA)" {
+    usecase "Susun & Finalisasi\nLHA" as UC29
+    usecase "Review & Persetujuan\nLHA" as UC30
+  }
+
+  package "15. Ringkasan Akreditasi" {
+    usecase "Susun Ringkasan" as UC31
+  }
+
+  package "16. Pelaporan AL" {
+    usecase "Pelaporan AL" as UC32
+  }
+
+  package "17. Penyampaian Hasil" {
+    usecase "Penyampaian Hasil" as UC33
+  }
+
+  package "18. Masa Sanggah" {
+    usecase "Masa Sanggah" as UC34
+  }
+
+  package "19. Permohonan Banding" {
+    usecase "Unduh Template" as UC35
+    usecase "Isi & Upload\nBanding" as UC36
+    usecase "Kirim Banding" as UC37
+    usecase "Monitoring Status" as UC38
+  }
+
+  package "20. Pelaksanaan Banding" {
+    usecase "Pembayaran Banding" as UC39
+    usecase "Penugasan Asesor" as UC40
+    usecase "Penilaian AK\nBanding" as UC44
+    usecase "Penilaian AL\nBanding" as UC45
+    usecase "Persetujuan\nLaporan" as UC46
+  }
+
+  package "21. Pelaporan Banding" {
+    usecase "Pelaporan Banding" as UC47
+  }
+
+  package "22. Penetapan Hasil" {
+    usecase "Penetapan Hasil" as UC41
+  }
+
+  package "23. Arsip" {
+    usecase "Pengarsipan\nAkreditasi" as UC43
+  }
+
+  package "24. Monitoring" {
+    usecase "Monitoring Sistem" as UC42
+  }
+}
+
+' Aktor sisi kiri
+All -right-> UC01
+All -right-> UC03
+Reg -right-> UC02
+Reg -right-> UC04
+Reg -right-> UC05
+Multi -right-> UC06
+SA -right-> UC07
+SA -right-> UC08
+Prodi -right-> UC09
+Prodi -right-> UC10
+Prodi -right-> UC15
+Prodi -right-> UC17
+Prodi -right-> UC18
+Prodi -right-> UC21
+Prodi -right-> UC28
+Prodi -right-> UC30
+Prodi -right-> UC33
+Prodi -right-> UC34
+Prodi -right-> UC35
+Prodi -right-> UC36
+Prodi -right-> UC37
+Prodi -right-> UC38
+Prodi -right-> UC39
+Prodi -right-> UC46
+Asesor -right-> UC23
+Asesor -right-> UC27
+Asesor -right-> UC28
+Asesor -right-> UC29
+Asesor -right-> UC31
+
+' Aktor sisi kanan
+Sek -left-> UC09
+Sek -left-> UC11
+Sek -left-> UC12
+Sek -left-> UC13
+Sek -left-> UC14
+Sek -left-> UC33
+Sek -left-> UC34
+Sek -left-> UC40
+Sek -left-> UC41
+Sek -left-> UC43
+Keu -left-> UC16
+Keu -left-> UC39
+Val -left-> UC19
+Val -left-> UC20
+Val -left-> UC22
+Val -left-> UC25
+Val -left-> UC26
+Val -left-> UC32
+Val -left-> UC47
+AB -left-> UC44
+AB -left-> UC45
+Sys -left-> UC24
+Sys -left-> UC43
+Semua -left-> UC42
+
+UC10 ..> UC17 : <<include>>
+UC13 ..> UC10 : <<extend>>
+UC15 ..> UC16 : <<include>>
+UC19 ..> UC20 : <<extend>>
+UC20 ..> UC21 : <<include>>
+UC23 ..> UC24 : <<include>>
+UC25 ..> UC26 : <<include>>
+UC27 ..> UC28 : <<include>>
+UC29 ..> UC30 : <<include>>
+UC33 ..> UC34 : <<include>>
+UC41 ..> UC43 : <<include>>
+UC36 ..> UC35 : <<include>>
+UC37 ..> UC36 : <<include>>
+UC40 ..> UC44 : <<include>>
+UC44 ..> UC45 : <<include>>
+UC45 ..> UC47 : <<include>>
+
+@enduml

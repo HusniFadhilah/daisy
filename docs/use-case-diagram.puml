@@ -1,0 +1,309 @@
+@startuml Daisy_UC_Overview
+title Daisy Use Case - Overview Modul Utama
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Pengunjung" as Guest
+actor "Pengguna\nTerautentikasi" as AuthUser
+actor "Super Admin" as SuperAdmin
+actor "Sekretariat / DE" as DE
+actor "Admin Prodi / UPPS" as Prodi
+actor "Keuangan" as Finance
+actor "Asesor" as Asesor
+actor "Asesor Banding" as AsesorBanding
+actor "Validator" as Validator
+
+rectangle "Sistem DAISY" {
+  usecase "Akses & Profil" as UC_Access
+  usecase "Pengajuan\nAkreditasi" as UC_Application
+  usecase "Pembayaran &\nValidasi Dokumen" as UC_DocumentPayment
+  usecase "Penugasan\nAsesmen" as UC_Assignment
+  usecase "Asesmen\nAK/AL" as UC_Assessment
+  usecase "Banding" as UC_Appeal
+  usecase "Hasil & Arsip" as UC_ResultArchive
+  usecase "Master Data &\nAdministrasi" as UC_Admin
+}
+
+Guest --> UC_Access
+AuthUser --> UC_Access
+Prodi --> UC_Application
+DE --> UC_Application
+Finance --> UC_DocumentPayment
+Validator --> UC_DocumentPayment
+DE --> UC_Assignment
+Asesor --> UC_Assessment
+Validator --> UC_Assessment
+Prodi --> UC_Appeal
+AsesorBanding --> UC_Appeal
+DE --> UC_ResultArchive
+Prodi --> UC_ResultArchive
+SuperAdmin --> UC_Admin
+
+@enduml
+
+@startuml Daisy_UC_Akses_Profil_Admin
+title Daisy Use Case - Akses, Profil, Administrasi
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Pengunjung" as Guest
+actor "Pengguna\nTerautentikasi" as AuthUser
+actor "Super Admin" as SuperAdmin
+actor "Sekretariat / DE" as DE
+
+rectangle "Sistem DAISY" {
+  package "Akses & Profil" {
+    usecase "Login" as UC_Login
+    usecase "Reset Password" as UC_ResetPassword
+    usecase "Pilih / Ganti Role" as UC_SwitchRole
+    usecase "Kelola Profil" as UC_Profile
+    usecase "Kelola Email Profil" as UC_ProfileEmail
+    usecase "Lihat Dashboard" as UC_Dashboard
+    usecase "Lihat Notifikasi" as UC_Notification
+  }
+
+  package "Master Data & Administrasi" {
+    usecase "Kelola User" as UC_ManageUsers
+    usecase "Kelola Universitas" as UC_ManageUniversity
+    usecase "Kelola Program Studi" as UC_ManageStudyProgram
+    usecase "Kelola Instrumen\nPenilaian" as UC_ManageInstrument
+    usecase "Kelola Bobot dan\nSyarat Akreditasi" as UC_ManageWeights
+    usecase "Preview Email\nNotifikasi" as UC_EmailPreview
+  }
+}
+
+Guest --> UC_Login
+Guest --> UC_ResetPassword
+AuthUser --> UC_Dashboard
+AuthUser --> UC_SwitchRole
+AuthUser --> UC_Profile
+AuthUser --> UC_ProfileEmail
+AuthUser --> UC_Notification
+SuperAdmin --> UC_ManageUsers
+SuperAdmin --> UC_ManageUniversity
+SuperAdmin --> UC_ManageStudyProgram
+SuperAdmin --> UC_ManageInstrument
+SuperAdmin --> UC_ManageWeights
+DE --> UC_EmailPreview
+SuperAdmin --> UC_EmailPreview
+
+@enduml
+
+@startuml Daisy_UC_Pengajuan_Validasi_Awal
+title Daisy Use Case - Pengajuan, Borang, Validasi Awal
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Admin Universitas" as AdminUniv
+actor "Admin Prodi / UPPS" as Prodi
+actor "Sekretariat / DE" as DE
+actor "Validator" as Validator
+
+rectangle "Sistem DAISY" {
+  package "Pengajuan Akreditasi" {
+    usecase "Lihat Pemetaan\nAkreditasi" as UC_Mapping
+    usecase "Ajukan Permohonan\nAkreditasi" as UC_SubmitApplication
+    usecase "Unduh Template\nBorang" as UC_DownloadTemplate
+    usecase "Upload Surat / Dokumen\nPermohonan" as UC_UploadApplicationDocs
+    usecase "Upload Draft Borang" as UC_UploadDraftBorang
+    usecase "Isi / Import Borang\nLKPS" as UC_ManageBorang
+    usecase "Kirim Revisi Borang" as UC_ReviseBorang
+    usecase "Lihat Status\nPengajuan" as UC_ViewApplicationStatus
+  }
+
+  package "Validasi Awal" {
+    usecase "Kirim Pengingat\nAkreditasi" as UC_SendReminder
+    usecase "Terima Permohonan" as UC_ReceiveApplication
+    usecase "Kirim Template" as UC_SendTemplate
+    usecase "Review dan Validasi\nDokumen" as UC_ValidateDocs
+    usecase "Minta Revisi\nBorang/Dokumen" as UC_RequestRevision
+    usecase "Setujui Borang\nFinal" as UC_ApproveFinalBorang
+  }
+}
+
+AdminUniv --> UC_Mapping
+AdminUniv --> UC_ViewApplicationStatus
+Prodi --> UC_Mapping
+Prodi --> UC_SubmitApplication
+Prodi --> UC_DownloadTemplate
+Prodi --> UC_UploadApplicationDocs
+Prodi --> UC_UploadDraftBorang
+Prodi --> UC_ManageBorang
+Prodi --> UC_ReviseBorang
+Prodi --> UC_ViewApplicationStatus
+DE --> UC_SendReminder
+DE --> UC_ReceiveApplication
+DE --> UC_SendTemplate
+DE --> UC_RequestRevision
+DE --> UC_ApproveFinalBorang
+Validator --> UC_ValidateDocs
+UC_SubmitApplication ..> UC_DownloadTemplate : <<include>>
+UC_UploadDraftBorang ..> UC_ManageBorang : <<include>>
+UC_ReviseBorang ..> UC_RequestRevision : <<extend>>
+
+@enduml
+
+@startuml Daisy_UC_Pembayaran_Penugasan
+title Daisy Use Case - Pembayaran dan Penugasan Asesmen
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Admin Prodi / UPPS" as Prodi
+actor "Sekretariat / DE" as DE
+actor "Keuangan" as Finance
+actor "Asesor" as Asesor
+actor "Validator" as Validator
+
+rectangle "Sistem DAISY" {
+  package "Pembayaran" {
+    usecase "Kirim Invoice" as UC_SendInvoice
+    usecase "Upload Bukti\nPembayaran" as UC_UploadPayment
+    usecase "Validasi Pembayaran" as UC_ValidatePayment
+    usecase "Kelola Ringkasan\nPembayaran" as UC_PaymentSummary
+  }
+
+  package "Penugasan Asesmen" {
+    usecase "Buat / Kelola\nAsesmen" as UC_ManageAssessment
+    usecase "Tugaskan Asesor\nAK/AL" as UC_AssignAsesor
+    usecase "Tugaskan Validator" as UC_AssignValidator
+    usecase "Kirim Surat Tugas" as UC_SendAssignmentLetter
+    usecase "Terima / Tolak\nPenawaran" as UC_RespondOffer
+    usecase "Lihat Penugasan\nAktif/Riwayat" as UC_ViewAssignments
+  }
+}
+
+DE --> UC_SendInvoice
+Prodi --> UC_UploadPayment
+Finance --> UC_ValidatePayment
+Finance --> UC_PaymentSummary
+DE --> UC_ManageAssessment
+DE --> UC_AssignAsesor
+DE --> UC_AssignValidator
+DE --> UC_SendAssignmentLetter
+Asesor --> UC_RespondOffer
+Validator --> UC_RespondOffer
+Asesor --> UC_ViewAssignments
+Validator --> UC_ViewAssignments
+UC_UploadPayment ..> UC_ValidatePayment : <<include>>
+UC_AssignAsesor ..> UC_SendAssignmentLetter : <<include>>
+UC_AssignValidator ..> UC_SendAssignmentLetter : <<include>>
+
+@enduml
+
+@startuml Daisy_UC_Asesmen_AK_AL
+title Daisy Use Case - Asesmen AK/AL dan Pelaporan
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Asesor" as Asesor
+actor "Validator" as Validator
+actor "Admin Prodi / UPPS" as Prodi
+
+rectangle "Sistem DAISY" {
+  package "Asesmen Kecukupan & Lapangan" {
+    usecase "Unduh Kertas Kerja" as UC_DownloadWorksheet
+    usecase "Input / Import\nNilai AK" as UC_AssessAK
+    usecase "Input / Import\nNilai AL" as UC_AssessAL
+    usecase "Submit Penilaian" as UC_SubmitAssessment
+    usecase "Upload Dokumen AL /\nBerita Acara" as UC_UploadALDocs
+    usecase "Susun LHA Asesor" as UC_LHA
+    usecase "Validasi Penilaian\nAK/AL" as UC_ValidateAssessment
+    usecase "Approve / Minta\nRevisi Penilaian" as UC_ApproveAssessment
+    usecase "Upload dan Finalisasi\nLaporan" as UC_FinalizeReport
+  }
+}
+
+Asesor --> UC_DownloadWorksheet
+Asesor --> UC_AssessAK
+Asesor --> UC_AssessAL
+Asesor --> UC_SubmitAssessment
+Asesor --> UC_UploadALDocs
+Asesor --> UC_LHA
+Asesor --> UC_FinalizeReport
+Prodi --> UC_UploadALDocs
+Validator --> UC_ValidateAssessment
+Validator --> UC_ApproveAssessment
+Validator --> UC_FinalizeReport
+UC_AssessAK ..> UC_DownloadWorksheet : <<include>>
+UC_AssessAL ..> UC_DownloadWorksheet : <<include>>
+UC_ValidateAssessment ..> UC_ApproveAssessment : <<include>>
+
+@enduml
+
+@startuml Daisy_UC_Banding
+title Daisy Use Case - Banding
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Admin Prodi / UPPS" as Prodi
+actor "Sekretariat / DE" as DE
+actor "Asesor Banding" as AsesorBanding
+actor "Validator" as Validator
+
+rectangle "Sistem DAISY" {
+  package "Banding" {
+    usecase "Ajukan Banding" as UC_SubmitAppeal
+    usecase "Terima Permohonan\nBanding" as UC_ReceiveAppeal
+    usecase "Tugaskan Tim\nBanding" as UC_AssignAppealTeam
+    usecase "Laksanakan AK/AL\nBanding" as UC_AppealAssessment
+    usecase "Validasi Hasil\nBanding" as UC_ValidateAppeal
+    usecase "Pelaporan Banding" as UC_AppealReport
+  }
+}
+
+Prodi --> UC_SubmitAppeal
+DE --> UC_ReceiveAppeal
+DE --> UC_AssignAppealTeam
+AsesorBanding --> UC_AppealAssessment
+Validator --> UC_ValidateAppeal
+Validator --> UC_AppealReport
+UC_AppealAssessment ..> UC_AssignAppealTeam : <<include>>
+UC_AppealAssessment ..> UC_ValidateAppeal : <<include>>
+
+@enduml
+
+@startuml Daisy_UC_Hasil_Arsip
+title Daisy Use Case - Hasil, Penetapan, Arsip
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Sekretariat / DE" as DE
+actor "Admin Prodi / UPPS" as Prodi
+actor "Super Admin" as SuperAdmin
+
+rectangle "Sistem DAISY" {
+  package "Hasil, Penetapan, Arsip" {
+    usecase "Hitung Skor\nAkreditasi" as UC_CalculateResult
+    usecase "Finalisasi Hasil\nAK/AL" as UC_FinalizeResult
+    usecase "Sampaikan Hasil\nAkreditasi" as UC_PublishResult
+    usecase "Kelola Masa\nSanggah" as UC_ObjectionPeriod
+    usecase "Tetapkan Hasil\nAkreditasi" as UC_SetResult
+    usecase "Umumkan dan\nLaporkan Hasil" as UC_AnnounceReport
+    usecase "Simpan Arsip\nAkreditasi" as UC_Archive
+  }
+}
+
+DE --> UC_CalculateResult
+DE --> UC_FinalizeResult
+DE --> UC_PublishResult
+DE --> UC_ObjectionPeriod
+DE --> UC_SetResult
+DE --> UC_AnnounceReport
+DE --> UC_Archive
+Prodi --> UC_PublishResult
+Prodi --> UC_ObjectionPeriod
+SuperAdmin --> UC_CalculateResult
+SuperAdmin --> UC_FinalizeResult
+SuperAdmin --> UC_SetResult
+UC_FinalizeResult ..> UC_CalculateResult : <<include>>
+UC_PublishResult ..> UC_ObjectionPeriod : <<include>>
+UC_SetResult ..> UC_Archive : <<include>>
+
+@enduml

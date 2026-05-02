@@ -1,0 +1,429 @@
+@startuml Daisy_Seq_Login
+title Daisy - Login dan Pemilihan Role
+autonumber
+
+actor User
+boundary Browser
+control AuthController
+entity UserModel as "User"
+database DB
+
+User -> Browser : Buka halaman login
+Browser -> AuthController : GET /login
+AuthController --> Browser : Tampilkan form login + captcha
+
+User -> Browser : Isi email, password, captcha
+Browser -> AuthController : POST /login
+AuthController -> DB : Validasi captcha dan kredensial
+DB --> AuthController : Data user
+AuthController -> UserModel : syncRolesFromAssignments()
+UserModel -> DB : Ambil assignment aktif dan role user
+DB --> UserModel : Role tersedia
+UserModel --> AuthController : Role tersinkron
+
+alt User memiliki lebih dari satu role
+  AuthController --> Browser : Redirect ke /select-role
+  User -> Browser : Pilih role aktif
+  Browser -> AuthController : POST /select-role
+  AuthController -> UserModel : switchRole(roleName)
+  UserModel -> DB : Update session/current role
+  AuthController --> Browser : Redirect dashboard sesuai role
+else User hanya punya satu role
+  AuthController --> Browser : Redirect dashboard
+end
+
+@enduml
+
+@startuml Daisy_Seq_Pengajuan_Akreditasi
+title Daisy - Pengajuan Akreditasi Program Studi
+autonumber
+
+actor "Admin Prodi/UPPS" as Prodi
+boundary Browser
+control PengajuanAkreditasiController
+entity PengajuanAkreditasi
+entity PengajuanDokumen
+entity PengajuanStatusLog
+entity StudyProgram
+database DB
+queue ImportBorangDocxJob
+queue ImportBorangExcelJob
+
+Prodi -> Browser : Buka form pengajuan
+Browser -> PengajuanAkreditasiController : GET /permohonan-akreditasi/create
+PengajuanAkreditasiController -> StudyProgram : Ambil data program studi
+StudyProgram -> DB : Query prodi, universitas, jenjang
+DB --> StudyProgram : Data prodi
+PengajuanAkreditasiController --> Browser : Tampilkan form pengajuan
+
+Prodi -> Browser : Isi data + upload dokumen
+Browser -> PengajuanAkreditasiController : POST /permohonan-akreditasi
+PengajuanAkreditasiController -> PengajuanAkreditasi : generateNomorPengajuan()
+PengajuanAkreditasi -> DB : Simpan pengajuan
+DB --> PengajuanAkreditasi : id_pengajuan
+
+loop Untuk setiap dokumen
+  PengajuanAkreditasiController -> PengajuanDokumen : Simpan metadata file
+  PengajuanDokumen -> DB : Insert dokumen
+end
+
+PengajuanAkreditasiController -> PengajuanStatusLog : Catat status awal
+PengajuanStatusLog -> DB : Insert status log
+
+alt Upload borang DOCX
+  PengajuanAkreditasiController -> ImportBorangDocxJob : dispatch(id_pengajuan, dokumen)
+else Upload borang Excel/LKPS
+  PengajuanAkreditasiController -> ImportBorangExcelJob : dispatch(id_pengajuan, dokumen)
+end
+
+PengajuanAkreditasiController --> Browser : Redirect detail pengajuan
+Browser --> Prodi : Status pengajuan tersimpan
+
+@enduml
+
+@startuml Daisy_Seq_Import_Borang
+title Daisy - Import Borang DOCX/Excel ke Dataset
+autonumber
+
+queue ImportBorangDocxJob
+queue ImportBorangExcelJob
+control BorangExcelImportService
+control BorangExcelSheetParser
+control DatasetIdResolver
+control LkpsTableDefinitionService
+entity BorangImport
+entity BorangSection
+entity BorangTable
+entity BorangData
+entity BorangDataExcel
+entity DatasetBorang
+database DB
+
+alt Import DOCX
+  ImportBorangDocxJob -> BorangImport : markAsProcessing()
+  BorangImport -> DB : Update status processing
+  ImportBorangDocxJob -> BorangSection : Parse section dari dokumen
+  BorangSection -> DB : Simpan section
+  ImportBorangDocxJob -> BorangTable : Parse tabel dari dokumen
+  BorangTable -> DB : Simpan tabel
+  ImportBorangDocxJob -> BorangData : Simpan nilai borang
+  BorangData -> DB : Upsert data borang
+else Import Excel
+  ImportBorangExcelJob -> BorangImport : markAsProcessing()
+  BorangImport -> DB : Update status processing
+  ImportBorangExcelJob -> BorangExcelImportService : import(file, pengajuan)
+  BorangExcelImportService -> LkpsTableDefinitionService : Ambil definisi tabel LKPS
+  LkpsTableDefinitionService -> DB : Query definisi dataset
+  DB --> LkpsTableDefinitionService : Definisi tabel
+  BorangExcelImportService -> BorangExcelSheetParser : parse(sheet)
+  BorangExcelSheetParser --> BorangExcelImportService : ParsedTable[]
+  BorangExcelImportService -> DatasetIdResolver : resolve(kode/sheet/elemen)
+  DatasetIdResolver -> DatasetBorang : Cari dataset cocok
+  DatasetBorang -> DB : Query dataset_borang
+  DB --> DatasetBorang : Dataset
+  BorangExcelImportService -> BorangDataExcel : Simpan raw/parsed cells
+  BorangDataExcel -> DB : Insert/update data excel
+  BorangExcelImportService -> BorangData : Sync data penting
+  BorangData -> DB : Upsert data borang
+end
+
+BorangImport -> DB : markAsCompleted()
+DB --> BorangImport : Status completed
+
+@enduml
+
+@startuml Daisy_Seq_Validasi_Borang
+title Daisy - Validasi Borang oleh Validator
+autonumber
+
+actor Validator
+boundary Browser
+control BorangValidatorController
+entity PengajuanAkreditasi
+entity AsesmenUserRole
+entity BorangValidation
+entity BorangRevisionHistory
+control BorangValidationExcelService
+control MailDeliveryService
+database DB
+collections Notifications
+
+Validator -> Browser : Buka daftar validasi borang
+Browser -> BorangValidatorController : GET validasi borang
+BorangValidatorController -> AsesmenUserRole : Cari assignment validator aktif
+AsesmenUserRole -> DB : Query assignment
+DB --> AsesmenUserRole : Assignment
+BorangValidatorController -> BorangValidation : Ambil/proses validasi
+BorangValidation -> DB : Query validasi + pengajuan
+DB --> BorangValidation : Data validasi
+BorangValidatorController --> Browser : Tampilkan checklist dan data borang
+
+Validator -> Browser : Beri catatan dan grade validasi
+Browser -> BorangValidatorController : POST simpan validasi
+BorangValidatorController -> BorangValidation : Update hasil review
+BorangValidation -> DB : Simpan status review
+
+alt Perlu revisi
+  BorangValidatorController -> BorangRevisionHistory : Catat riwayat revisi
+  BorangRevisionHistory -> DB : Insert revision history
+  BorangValidatorController -> MailDeliveryService : Kirim notifikasi revisi
+  MailDeliveryService -> Notifications : Email/notification ke prodi
+else Validasi lolos
+  BorangValidatorController -> BorangValidation : isValidationPassed()
+  BorangValidatorController -> PengajuanAkreditasi : updateStatusSafely(status_lanjut)
+  PengajuanAkreditasi -> DB : Update status pengajuan
+  BorangValidatorController -> MailDeliveryService : Kirim notifikasi approval
+  MailDeliveryService -> Notifications : Email/notification ke prodi/DE
+end
+
+opt Export hasil validasi Excel
+  Browser -> BorangValidatorController : GET export validasi
+  BorangValidatorController -> BorangValidationExcelService : generate(validation)
+  BorangValidationExcelService --> Browser : File Excel
+end
+
+@enduml
+
+@startuml Daisy_Seq_Penugasan_Asesmen
+title Daisy - Penugasan Asesor, Validator, dan Penawaran
+autonumber
+
+actor Sekretariat
+boundary Browser
+control AsesmenController
+entity Asesmen
+entity AsesmenUserRole
+entity User
+entity Role
+control RecipientResolverService
+control MailDeliveryService
+queue SendPenawaranAsesmenEmail
+database DB
+
+Sekretariat -> Browser : Buka dashboard asesmen
+Browser -> AsesmenController : GET /asesmen/dashboard
+AsesmenController -> Asesmen : Ambil asesmen aktif
+Asesmen -> DB : Query asesmen + pengajuan
+DB --> Asesmen : Data asesmen
+AsesmenController --> Browser : Tampilkan daftar asesmen
+
+Sekretariat -> Browser : Assign asesor/validator
+Browser -> AsesmenController : POST /asesmen/{id}/assign-user
+AsesmenController -> User : Validasi user tersedia
+User -> DB : Query user
+DB --> User : Data user
+AsesmenController -> Role : Validasi role
+Role -> DB : Query role
+DB --> Role : Data role
+AsesmenController -> AsesmenUserRole : Buat assignment
+AsesmenUserRole -> DB : Insert assignment
+
+AsesmenController -> RecipientResolverService : Resolve penerima email
+RecipientResolverService --> AsesmenController : Recipient[]
+AsesmenController -> SendPenawaranAsesmenEmail : dispatch(assignment)
+SendPenawaranAsesmenEmail -> MailDeliveryService : Kirim email penawaran
+MailDeliveryService --> User : Email penawaran asesmen
+
+alt Asesor menerima penawaran
+  User -> Browser : Klik accept
+  Browser -> AsesmenController : POST accept token
+  AsesmenController -> AsesmenUserRole : Update status accepted
+  AsesmenUserRole -> DB : Simpan accepted_at
+else Asesor menolak penawaran
+  User -> Browser : Klik reject
+  Browser -> AsesmenController : POST reject token
+  AsesmenController -> AsesmenUserRole : Update status rejected
+  AsesmenUserRole -> DB : Simpan rejected_at
+end
+
+@enduml
+
+@startuml Daisy_Seq_Penilaian_AK_AL
+title Daisy - Penilaian AK/AL dan Validasi Nilai
+autonumber
+
+actor Asesor
+actor Validator
+boundary Browser
+control AKController
+control ALController
+control ValidasiController
+control PenilaianExcelService
+control ValidasiExcelService
+entity Asesmen
+entity PenilaianElemenAk
+entity PenilaianElemenAl
+entity ElemenStandar
+database DB
+queue ImportPenilaianExcelJob
+
+Asesor -> Browser : Buka berkas AK/AL
+Browser -> AKController : GET /ak/berkas/{idAsesmen}
+AKController -> Asesmen : Ambil asesmen
+Asesmen -> DB : Query asesmen, elemen, penilaian
+DB --> Asesmen : Data asesmen
+AKController -> ElemenStandar : Ambil instrumen penilaian
+ElemenStandar -> DB : Query elemen/kriteria/indikator
+DB --> ElemenStandar : Instrumen
+AKController --> Browser : Form penilaian AK
+
+Asesor -> Browser : Simpan nilai per elemen
+Browser -> AKController : POST /ak/berkas/{idAsesmen}/nilai
+AKController -> PenilaianElemenAk : Upsert nilai asesor
+PenilaianElemenAk -> DB : Simpan skor, catatan, status
+AKController --> Browser : Nilai tersimpan
+
+opt Import nilai dari Excel
+  Browser -> AKController : POST import Excel
+  AKController -> ImportPenilaianExcelJob : dispatch(file, asesmen, jenis)
+  ImportPenilaianExcelJob -> PenilaianExcelService : importPenilaian()
+  PenilaianExcelService -> DB : Upsert penilaian elemen
+end
+
+Asesor -> Browser : Submit penilaian
+Browser -> AKController : POST submit
+AKController -> Asesmen : Update readiness/status
+Asesmen -> DB : Simpan status
+
+Validator -> Browser : Buka validasi AK/AL
+Browser -> ValidasiController : GET /ak/validasi/{idAsesmen}
+ValidasiController -> ValidasiExcelService : Build comparison/validasi
+ValidasiExcelService -> DB : Ambil nilai semua asesor
+DB --> ValidasiExcelService : Data perbandingan
+ValidasiController --> Browser : Tampilkan comparison
+
+Validator -> Browser : Approve/validasi elemen
+Browser -> ValidasiController : POST validate elemen
+ValidasiController -> PenilaianElemenAk : Update validated_by/status
+PenilaianElemenAk -> DB : Simpan validasi
+
+note right of ALController
+  Alur AL sama seperti AK, tetapi memakai
+  ALController dan PenilaianElemenAl.
+end note
+
+@enduml
+
+@startuml Daisy_Seq_Pembayaran
+title Daisy - Upload dan Validasi Pembayaran
+autonumber
+
+actor Prodi
+actor Keuangan
+boundary Browser
+control FormulirPembayaranController
+control ValidasiPembayaranController
+entity PengajuanAkreditasi
+entity PengajuanPembayaran
+entity PengajuanDokumen
+control MailDeliveryService
+database DB
+collections Notifications
+
+Prodi -> Browser : Buka formulir pembayaran
+Browser -> FormulirPembayaranController : GET formulir pembayaran
+FormulirPembayaranController -> PengajuanAkreditasi : Ambil pengajuan
+PengajuanAkreditasi -> DB : Query pengajuan + pembayaran
+DB --> PengajuanAkreditasi : Data pembayaran
+FormulirPembayaranController --> Browser : Tampilkan invoice/form
+
+Prodi -> Browser : Upload bukti pembayaran
+Browser -> FormulirPembayaranController : POST upload bukti
+FormulirPembayaranController -> PengajuanPembayaran : generateNomorInvoice()
+PengajuanPembayaran -> DB : Insert/update pembayaran
+FormulirPembayaranController -> PengajuanDokumen : Simpan bukti pembayaran
+PengajuanDokumen -> DB : Insert dokumen bukti
+FormulirPembayaranController --> Browser : Status menunggu validasi
+
+Keuangan -> Browser : Buka validasi pembayaran
+Browser -> ValidasiPembayaranController : GET daftar pembayaran
+ValidasiPembayaranController -> PengajuanPembayaran : Ambil pembayaran pending
+PengajuanPembayaran -> DB : Query pending
+DB --> PengajuanPembayaran : Data pembayaran
+ValidasiPembayaranController --> Browser : Tampilkan daftar validasi
+
+alt Pembayaran valid
+  Keuangan -> Browser : Approve pembayaran
+  Browser -> ValidasiPembayaranController : POST approve
+  ValidasiPembayaranController -> PengajuanPembayaran : Update status lunas
+  PengajuanPembayaran -> DB : Simpan verified_by/status
+  ValidasiPembayaranController -> PengajuanAkreditasi : updateStatusSafely(status_lanjut)
+  PengajuanAkreditasi -> DB : Update status pengajuan
+  ValidasiPembayaranController -> MailDeliveryService : Kirim email verified
+  MailDeliveryService -> Notifications : Pembayaran verified
+else Pembayaran ditolak
+  Keuangan -> Browser : Reject pembayaran
+  Browser -> ValidasiPembayaranController : POST reject
+  ValidasiPembayaranController -> PengajuanPembayaran : Update status ditolak
+  PengajuanPembayaran -> DB : Simpan catatan penolakan
+  ValidasiPembayaranController -> MailDeliveryService : Kirim email upload ulang
+  MailDeliveryService -> Notifications : Pembayaran rejected
+end
+
+@enduml
+
+@startuml Daisy_Seq_Hasil_Banding
+title Daisy - Perhitungan Hasil Akreditasi, Masa Sanggah, Banding
+autonumber
+
+actor Sekretariat
+actor Prodi
+boundary Browser
+control HasilAkreditasiController
+control HasilAkreditasiService
+control HasilAkreditasiSyncService
+entity PengajuanAkreditasi
+entity Asesmen
+entity HasilAkreditasi
+entity StatusAkreditasi
+database DB
+queue SyncHasilAkreditasiSkorKategori
+queue SelesaikanMasaSanggahJob
+
+Sekretariat -> Browser : Buka halaman hasil asesmen
+Browser -> HasilAkreditasiController : GET /hasil-akreditasi/asesmen/{id}
+HasilAkreditasiController -> Asesmen : Ambil asesmen dan penilaian
+Asesmen -> DB : Query asesmen + penilaian AK/AL
+DB --> Asesmen : Data asesmen
+HasilAkreditasiController -> HasilAkreditasi : initializeHasil()
+HasilAkreditasi -> DB : Ambil/buat hasil
+HasilAkreditasiController --> Browser : Tampilkan ringkasan hasil
+
+Sekretariat -> Browser : Hitung AK/AL
+Browser -> HasilAkreditasiController : POST hitung-ak / hitung-al
+HasilAkreditasiController -> HasilAkreditasiService : Hitung skor dan kategori
+HasilAkreditasiService -> DB : Ambil bobot, penilaian, status
+DB --> HasilAkreditasiService : Data perhitungan
+HasilAkreditasiService -> StatusAkreditasi : Tentukan peringkat
+StatusAkreditasi -> DB : Query range status
+DB --> StatusAkreditasi : Status cocok
+HasilAkreditasiService --> HasilAkreditasiController : Skor + peringkat
+HasilAkreditasiController -> HasilAkreditasi : Simpan hasil
+HasilAkreditasi -> DB : Update skor/status
+
+Sekretariat -> Browser : Finalize/publish hasil
+Browser -> HasilAkreditasiController : POST publish/tetapkan
+HasilAkreditasiController -> PengajuanAkreditasi : updateStatusSafely(status_hasil)
+PengajuanAkreditasi -> DB : Update status
+HasilAkreditasiController -> SyncHasilAkreditasiSkorKategori : dispatch()
+SyncHasilAkreditasiSkorKategori -> HasilAkreditasiSyncService : sync()
+
+Sekretariat -> Browser : Mulai masa sanggah
+Browser -> HasilAkreditasiController : POST start-masa-sanggah
+HasilAkreditasiController -> PengajuanAkreditasi : updateStatusSafely(masa_sanggah)
+PengajuanAkreditasi -> DB : Update status
+HasilAkreditasiController -> SelesaikanMasaSanggahJob : dispatch delayed
+
+alt Prodi mengajukan banding
+  Prodi -> Browser : Submit banding
+  Browser -> HasilAkreditasiController : POST submit-banding
+  HasilAkreditasiController -> PengajuanAkreditasi : updateStatusSafely(banding)
+  PengajuanAkreditasi -> DB : Update status banding
+  HasilAkreditasiController -> HasilAkreditasi : initializeBanding()
+  HasilAkreditasi -> DB : Siapkan hasil banding
+else Masa sanggah selesai tanpa banding
+  SelesaikanMasaSanggahJob -> PengajuanAkreditasi : updateStatusSafely(final)
+  PengajuanAkreditasi -> DB : Tetapkan hasil final
+end
+
+@enduml

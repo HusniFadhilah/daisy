@@ -1,0 +1,487 @@
+@startuml Daisy_Activity_Alur_Utama_Akreditasi
+title Daisy - Activity Diagram Alur Utama Akreditasi
+
+start
+
+partition "Prodi / UPPS" {
+  :Login;
+  :Pilih role aktif;
+  :Buka menu permohonan akreditasi;
+  :Isi data pengajuan;
+  :Upload dokumen persyaratan;
+  :Upload borang / LKPS;
+  :Submit pengajuan;
+}
+
+partition "Sistem" {
+  :Generate nomor pengajuan;
+  :Simpan pengajuan;
+  :Simpan dokumen;
+  :Catat status awal;
+  :Dispatch job import borang;
+}
+
+partition "Job Import Borang" {
+  :Parse dokumen DOCX / Excel;
+  :Mapping data ke dataset borang;
+  :Simpan BorangImport, BorangSection,\nBorangTable, BorangData;
+}
+
+partition "Sekretariat / DE" {
+  :Review kelengkapan permohonan;
+}
+
+if (Dokumen lengkap?) then (Ya)
+  partition "Sekretariat / DE" {
+    :Terima permohonan;
+    :Assign validator borang;
+  }
+else (Tidak)
+  partition "Sekretariat / DE" {
+    :Minta revisi / lengkapi dokumen;
+  }
+  partition "Prodi / UPPS" {
+    :Perbaiki dan upload ulang dokumen;
+  }
+  partition "Sistem" {
+    :Update status pengajuan;
+  }
+endif
+
+partition "Validator Borang" {
+  :Review borang dan LKPS;
+  :Beri catatan / grade validasi;
+}
+
+if (Borang valid?) then (Ya)
+  partition "Sistem" {
+    :Update status validasi borang;
+    :Kirim notifikasi validasi lolos;
+  }
+else (Tidak)
+  partition "Validator Borang" {
+    :Tandai perlu revisi;
+  }
+  partition "Sistem" {
+    :Catat BorangRevisionHistory;
+    :Kirim notifikasi revisi;
+  }
+  partition "Prodi / UPPS" {
+    :Revisi borang;
+    :Submit ulang borang;
+  }
+  partition "Sistem" {
+    :Import / sync ulang data borang;
+  }
+endif
+
+partition "Sekretariat / DE" {
+  :Assign asesor AK dan AL;
+  :Kirim penawaran asesmen;
+}
+
+partition "Asesor" {
+  :Terima / tolak penawaran;
+}
+
+if (Penawaran diterima?) then (Ya)
+  partition "Sistem" {
+    :Aktifkan assignment asesor;
+  }
+else (Tidak)
+  partition "Sekretariat / DE" {
+    :Reassign asesor;
+  }
+endif
+
+partition "Asesor" {
+  :Melakukan penilaian AK;
+  :Submit nilai AK;
+  :Melakukan penilaian AL;
+  :Upload dokumen / berita acara AL;
+  :Submit nilai AL;
+}
+
+partition "Validator / Sekretariat" {
+  :Validasi penilaian AK/AL;
+}
+
+if (Nilai perlu koreksi?) then (Ya)
+  partition "Asesor" {
+    :Perbaiki nilai / catatan;
+    :Submit ulang penilaian;
+  }
+else (Tidak)
+  partition "Sistem" {
+    :Tandai penilaian tervalidasi;
+  }
+endif
+
+partition "Sekretariat" {
+  :Hitung hasil AK/AL;
+  :Finalize hasil akreditasi;
+  :Publish / sampaikan hasil;
+}
+
+partition "Sistem" {
+  :Simpan skor dan peringkat;
+  :Mulai masa sanggah;
+  :Kirim notifikasi hasil;
+}
+
+partition "Prodi / UPPS" {
+  :Menerima hasil akreditasi;
+}
+
+if (Mengajukan banding?) then (Ya)
+  partition "Prodi / UPPS" {
+    :Submit permohonan banding;
+    :Upload dokumen banding;
+  }
+  partition "Sekretariat / DE" {
+    :Validasi banding;
+    :Assign asesor banding;
+  }
+  partition "Asesor" {
+    :Melakukan AK/AL banding;
+    :Submit penilaian banding;
+  }
+  partition "Sekretariat" {
+    :Hitung hasil banding;
+    :Tetapkan hasil final;
+  }
+else (Tidak)
+  partition "Sistem" {
+    :Masa sanggah selesai;
+  }
+  partition "Sekretariat" {
+    :Tetapkan hasil final;
+  }
+endif
+
+partition "Sistem" {
+  :Simpan arsip akreditasi;
+  :Update status akhir pengajuan;
+}
+
+stop
+
+@enduml
+
+@startuml Daisy_Activity_Pengajuan_Dan_Borang
+title Daisy - Activity Diagram Pengajuan dan Validasi Borang
+
+start
+
+partition "Prodi / UPPS" {
+  :Buka form pengajuan;
+  :Isi identitas pengajuan;
+  :Upload surat permohonan, LED,\nLKPS, suplemen, pengesahan;
+  :Submit pengajuan;
+}
+
+partition "Sistem" {
+  :Validasi input;
+}
+
+if (Input valid?) then (Ya)
+  partition "Sistem" {
+    :Simpan PengajuanAkreditasi;
+    :Simpan PengajuanDokumen;
+    :Catat PengajuanStatusLog;
+    :Dispatch ImportBorangDocxJob /\nImportBorangExcelJob;
+  }
+else (Tidak)
+  partition "Prodi / UPPS" {
+    :Perbaiki input;
+  }
+  stop
+endif
+
+partition "Job Import" {
+  :Buat BorangImport;
+  :Parse file;
+}
+
+if (Parsing berhasil?) then (Ya)
+  partition "Job Import" {
+    :Simpan section dan tabel;
+    :Mapping dataset borang;
+    :Simpan BorangData / BorangDataExcel;
+    :Tandai import completed;
+  }
+else (Tidak)
+  partition "Job Import" {
+    :Simpan error import;
+    :Tandai import failed;
+  }
+  partition "Prodi / UPPS" {
+    :Upload ulang file borang;
+  }
+  stop
+endif
+
+partition "Sekretariat / DE" {
+  :Assign validator borang;
+}
+
+partition "Validator Borang" {
+  :Buka assignment validasi;
+  :Cek kelengkapan dan kesesuaian borang;
+  :Isi checklist, catatan, dan grade;
+}
+
+if (Semua item valid?) then (Ya)
+  partition "Validator Borang" {
+    :Approve validasi;
+  }
+  partition "Sistem" {
+    :Update BorangValidation;
+    :Update status pengajuan;
+    :Kirim notifikasi approval;
+  }
+else (Tidak)
+  partition "Validator Borang" {
+    :Request revision;
+  }
+  partition "Sistem" {
+    :Simpan BorangRevisionHistory;
+    :Kirim notifikasi revisi;
+  }
+  partition "Prodi / UPPS" {
+    :Revisi borang;
+    :Submit ulang;
+  }
+endif
+
+stop
+
+@enduml
+
+@startuml Daisy_Activity_Asesmen_AK_AL
+title Daisy - Activity Diagram Asesmen AK dan AL
+
+start
+
+partition "Sekretariat / DE" {
+  :Buka dashboard asesmen;
+  :Pilih pengajuan siap asesmen;
+  :Assign asesor dan validator;
+}
+
+partition "Sistem" {
+  :Buat AsesmenUserRole;
+  :Generate token penawaran;
+  :Kirim email penawaran;
+}
+
+partition "Asesor" {
+  :Buka penawaran;
+}
+
+if (Menerima penawaran?) then (Ya)
+  partition "Sistem" {
+    :Update assignment accepted;
+  }
+else (Tidak)
+  partition "Sistem" {
+    :Update assignment rejected;
+  }
+  partition "Sekretariat / DE" {
+    :Cari asesor pengganti;
+  }
+  stop
+endif
+
+partition "Asesor" {
+  :Buka berkas AK;
+  :Input / import nilai AK;
+  :Submit penilaian AK;
+}
+
+partition "Validator" {
+  :Review perbandingan nilai AK;
+}
+
+if (AK valid?) then (Ya)
+  partition "Sistem" {
+    :Tandai AK tervalidasi;
+  }
+else (Tidak)
+  partition "Asesor" {
+    :Revisi nilai AK;
+  }
+endif
+
+partition "Asesor" {
+  :Buka berkas AL;
+  :Input / import nilai AL;
+  :Upload berita acara / dokumen AL;
+  :Isi LHA asesor;
+  :Finalize LHA;
+  :Submit penilaian AL;
+}
+
+partition "Validator / Sekretariat" {
+  :Review nilai AL dan dokumen AL;
+}
+
+if (AL valid?) then (Ya)
+  partition "Sistem" {
+    :Tandai AL tervalidasi;
+    :Pengajuan siap dihitung hasilnya;
+  }
+else (Tidak)
+  partition "Asesor" {
+    :Revisi nilai / dokumen AL;
+  }
+endif
+
+stop
+
+@enduml
+
+@startuml Daisy_Activity_Pembayaran
+title Daisy - Activity Diagram Pembayaran
+
+start
+
+partition "Prodi / UPPS" {
+  :Buka formulir pembayaran;
+}
+
+partition "Sistem" {
+  :Ambil data invoice / pengajuan;
+}
+
+partition "Prodi / UPPS" {
+  :Upload bukti pembayaran;
+  :Submit pembayaran;
+}
+
+partition "Sistem" {
+  :Generate nomor invoice jika perlu;
+  :Simpan PengajuanPembayaran;
+  :Simpan dokumen bukti pembayaran;
+  :Set status menunggu validasi;
+}
+
+partition "Keuangan" {
+  :Buka daftar pembayaran pending;
+  :Review bukti pembayaran;
+}
+
+if (Pembayaran valid?) then (Ya)
+  partition "Keuangan" {
+    :Approve pembayaran;
+  }
+  partition "Sistem" {
+    :Update status pembayaran lunas;
+    :Simpan verifier dan waktu validasi;
+    :Update status pengajuan;
+    :Kirim email pembayaran verified;
+  }
+else (Tidak)
+  partition "Keuangan" {
+    :Tolak pembayaran;
+    :Isi alasan penolakan;
+  }
+  partition "Sistem" {
+    :Update status pembayaran ditolak;
+    :Kirim email upload ulang bukti;
+  }
+  partition "Prodi / UPPS" {
+    :Upload ulang bukti pembayaran;
+  }
+endif
+
+stop
+
+@enduml
+
+@startuml Daisy_Activity_Hasil_Banding
+title Daisy - Activity Diagram Hasil Akreditasi, Masa Sanggah, Banding
+
+start
+
+partition "Sekretariat" {
+  :Buka halaman hasil akreditasi;
+  :Hitung skor AK;
+}
+
+partition "Sistem" {
+  :Ambil penilaian AK tervalidasi;
+  :Hitung skor berdasarkan bobot;
+  :Tentukan status AK;
+}
+
+partition "Sekretariat" {
+  :Finalize AK;
+  :Hitung skor AL;
+}
+
+partition "Sistem" {
+  :Ambil penilaian AL tervalidasi;
+  :Hitung skor berdasarkan bobot;
+  :Tentukan status AL;
+  :Hitung status hasil;
+}
+
+partition "Sekretariat" {
+  :Review ringkasan hasil;
+}
+
+if (Hasil siap dipublish?) then (Ya)
+  partition "Sekretariat" {
+    :Publish / sampaikan hasil;
+  }
+  partition "Sistem" {
+    :Update status pengajuan;
+    :Kirim notifikasi hasil;
+    :Mulai masa sanggah;
+  }
+else (Tidak)
+  partition "Sekretariat" {
+    :Perbaiki data / override sesuai kewenangan;
+  }
+  stop
+endif
+
+partition "Prodi / UPPS" {
+  :Review hasil akreditasi;
+}
+
+if (Ajukan banding?) then (Ya)
+  partition "Prodi / UPPS" {
+    :Submit banding;
+    :Upload dokumen banding;
+  }
+  partition "Sekretariat / DE" {
+    :Validasi banding;
+    :Assign asesor banding;
+  }
+  partition "Asesor Banding" {
+    :Lakukan penilaian AK/AL banding;
+    :Submit hasil banding;
+  }
+  partition "Sekretariat" {
+    :Hitung hasil banding;
+    :Tetapkan hasil final banding;
+  }
+else (Tidak)
+  partition "Sistem" {
+    :Tunggu masa sanggah selesai;
+  }
+  partition "Sekretariat" {
+    :Tetapkan hasil final tanpa banding;
+  }
+endif
+
+partition "Sistem" {
+  :Simpan arsip;
+  :Update status akhir;
+}
+
+stop
+
+@enduml
