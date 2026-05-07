@@ -298,13 +298,9 @@ class MasaSanggahController extends Controller
 
             // Proceed to penetapan hasil (skip banding)
             $pengajuan->updateStatusSafely(
-                PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-                'Masa sanggah selesai tanpa banding. Hasil ditetapkan.'
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
+                'Masa sanggah selesai tanpa banding'
             );
-
-            $pengajuan->update([
-                'tanggal_penetapan' => now(),
-            ]);
 
             DB::commit();
 

@@ -240,7 +240,6 @@ class PenyampaianHasilAkreditasiController extends Controller
 
             if (!empty($meta['tanggal_sertifikat'])) {
                 $updateData['tanggal_sertifikat'] = $meta['tanggal_sertifikat'];
-                $updateData['tanggal_penetapan'] = $meta['tanggal_sertifikat'];
             }
 
             if (!empty($meta['keterangan'])) {
