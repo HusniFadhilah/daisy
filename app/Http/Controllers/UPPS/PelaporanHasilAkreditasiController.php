@@ -5,6 +5,7 @@ namespace App\Http\Controllers\UPPS;
 
 use App\Http\Controllers\Controller;
 use App\Models\PengajuanAkreditasi;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -93,6 +94,125 @@ class PelaporanHasilAkreditasiController extends Controller
         $peringkat = $hasil->peringkat_akreditasi_final ?? null;
 
         return view('upps.pelaporan-hasil-akreditasi.show', compact('pengajuan', 'hasil', 'peringkat'));
+    }
+
+    public function previewSertifikat($id)
+    {
+        $pengajuan = PengajuanAkreditasi::with([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+            'asesmen.hasil.statusFinal',
+            'asesmen.hasil.statusAl',
+            'asesmen.hasil.statusAk',
+        ])->findOrFail($id);
+
+        $user = Auth::user();
+        if (!$user->studyPrograms()->pluck('study_programs.id')->contains($pengajuan->id_program_studi)) {
+            abort(403);
+        }
+
+        $hasil = $pengajuan->asesmen->hasil;
+        $tanggalPenetapan = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
+        $masaBerlakuTahun = $pengajuan->masa_berlaku_tahun
+            ?? $hasil?->statusFinal?->siklus_tahun
+            ?? $hasil?->statusAl?->siklus_tahun
+            ?? $hasil?->statusAk?->siklus_tahun
+            ?? 1;
+
+        $tanggalMulai    = \Carbon\Carbon::parse($tanggalPenetapan);
+        $tanggalBerakhir = $tanggalMulai->copy()->addYears($masaBerlakuTahun);
+        $masaBerlaku     = [
+            'tahun'            => $masaBerlakuTahun,
+            'tanggal_mulai'    => $tanggalMulai,
+            'tanggal_berakhir' => $tanggalBerakhir,
+        ];
+
+        $elemenList = ($hasil?->detail_skor_al ?? [])['elemen'] ?? [];
+
+        $resumeRaw = $hasil
+            ? $hasil->getResumeAsesmenOrDefault()
+            : \App\Models\HasilAkreditasi::resumeAsesmenSkeleton();
+
+        $resume = $resumeRaw;
+        if (!isset($resume['bab']) || !is_array($resume['bab'])) {
+            $resume['bab'] = [];
+        }
+
+        return view('de.pelaporan-hasil-akreditasi.sertifikat-pdf', [
+            'pengajuan'        => $pengajuan,
+            'hasil'            => $hasil,
+            'studyProgram'     => $pengajuan->studyProgram,
+            'university'       => $pengajuan->studyProgram->university,
+            'nomorSertifikat'  => $pengajuan->nomor_sertifikat ?? $pengajuan->generateNomorSertifikat(),
+            'tanggalPenetapan' => $tanggalPenetapan,
+            'masaBerlaku'      => $masaBerlaku,
+            'elemenList'       => $elemenList,
+            'resume'           => $resume,
+            'forPdf'           => false,
+            'downloadUrl'      => route('upps.pelaporan-hasil-akreditasi.download-sertifikat', $id),
+        ]);
+    }
+
+    public function downloadSertifikat($id)
+    {
+        $pengajuan = PengajuanAkreditasi::with([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+            'asesmen.hasil.statusFinal',
+            'asesmen.hasil.statusAl',
+            'asesmen.hasil.statusAk',
+        ])->findOrFail($id);
+
+        $user = Auth::user();
+        if (!$user->studyPrograms()->pluck('study_programs.id')->contains($pengajuan->id_program_studi)) {
+            abort(403);
+        }
+
+        $hasil = $pengajuan->asesmen->hasil;
+        $tanggalPenetapan = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
+        $masaBerlakuTahun = $pengajuan->masa_berlaku_tahun
+            ?? $hasil?->statusFinal?->siklus_tahun
+            ?? $hasil?->statusAl?->siklus_tahun
+            ?? $hasil?->statusAk?->siklus_tahun
+            ?? 1;
+
+        $tanggalMulai    = \Carbon\Carbon::parse($tanggalPenetapan);
+        $tanggalBerakhir = $tanggalMulai->copy()->addYears($masaBerlakuTahun);
+        $masaBerlaku     = [
+            'tahun'            => $masaBerlakuTahun,
+            'tanggal_mulai'    => $tanggalMulai,
+            'tanggal_berakhir' => $tanggalBerakhir,
+        ];
+
+        $elemenList = ($hasil?->detail_skor_al ?? [])['elemen'] ?? [];
+
+        $resumeRaw = $hasil
+            ? $hasil->getResumeAsesmenOrDefault()
+            : \App\Models\HasilAkreditasi::resumeAsesmenSkeleton();
+
+        $resume = $resumeRaw;
+        if (!isset($resume['bab']) || !is_array($resume['bab'])) {
+            $resume['bab'] = [];
+        }
+
+        $nomorSertifikat = $pengajuan->nomor_sertifikat ?? $pengajuan->generateNomorSertifikat();
+
+        $pdf = Pdf::loadView('de.pelaporan-hasil-akreditasi.sertifikat-pdf', [
+            'pengajuan'        => $pengajuan,
+            'hasil'            => $hasil,
+            'studyProgram'     => $pengajuan->studyProgram,
+            'university'       => $pengajuan->studyProgram->university,
+            'nomorSertifikat'  => $nomorSertifikat,
+            'tanggalPenetapan' => $tanggalPenetapan,
+            'masaBerlaku'      => $masaBerlaku,
+            'elemenList'       => $elemenList,
+            'resume'           => $resume,
+            'forPdf'           => true,
+            'downloadUrl'      => null,
+        ])->setPaper('A4', 'landscape');
+
+        $fileName = 'Sertifikat_Akreditasi_' . str_replace(' ', '_', $pengajuan->studyProgram->name) . '.pdf';
+        return $pdf->download($fileName);
     }
 
     /**

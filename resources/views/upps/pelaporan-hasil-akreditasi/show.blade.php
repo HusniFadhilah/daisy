@@ -23,9 +23,16 @@
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
-        <a href="{{ route('upps.pelaporan-hasil-akreditasi') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Kembali
-        </a>
+        <div class="d-flex gap-2">
+            @if($pengajuan->nomor_sertifikat)
+            <a href="{{ route('upps.pelaporan-hasil-akreditasi.preview-sertifikat', $pengajuan->id) }}" class="btn btn-outline-dark" target="_blank">
+                <i class="bi bi-patch-check"></i> Lihat Sertifikat
+            </a>
+            @endif
+            <a href="{{ route('upps.pelaporan-hasil-akreditasi') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Kembali
+            </a>
+        </div>
     </div>
 
     @php

@@ -69,6 +69,11 @@ Route::prefix('direktori')->name('public.')->group(function () {
         ->name('prodi.ajax');
 });
 
+// Verifikasi sertifikat akreditasi (publik, tanpa login)
+Route::get('/verifikasi-sertifikat/{nomorSertifikat}', [\App\Http\Controllers\Public\VerifikasiSertifikatController::class, 'show'])
+    ->name('public.verifikasi-sertifikat')
+    ->where('nomorSertifikat', '.*');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -884,6 +889,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('penyampaian-hasil-akreditasi')->name('.penyampaian-hasil-akreditasi')->group(function () {
             Route::get('/', [\App\Http\Controllers\UPPS\PenyampaianHasilAkreditasiController::class, 'index']);
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PenyampaianHasilAkreditasiController::class, 'show'])->name('.show');
+            Route::get('/{id}/preview-sertifikat', [\App\Http\Controllers\UPPS\PenyampaianHasilAkreditasiController::class, 'previewSertifikat'])->name('.preview-sertifikat');
+            Route::get('/{id}/download-sertifikat', [\App\Http\Controllers\UPPS\PenyampaianHasilAkreditasiController::class, 'downloadSertifikat'])->name('.download-sertifikat');
             Route::get('/{id}/download-berita-acara', [PenyampaianHasilAkreditasiController::class, 'downloadBeritaAcara'])
                 ->name('.download-berita-acara');
         });
@@ -954,6 +961,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('pelaporan-hasil-akreditasi')->name('.pelaporan-hasil-akreditasi')->group(function () {
             Route::get('/', [\App\Http\Controllers\UPPS\PelaporanHasilAkreditasiController::class, 'index']);
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PelaporanHasilAkreditasiController::class, 'show'])->name('.show');
+            Route::get('/{id}/preview-sertifikat', [\App\Http\Controllers\UPPS\PelaporanHasilAkreditasiController::class, 'previewSertifikat'])->name('.preview-sertifikat');
+            Route::get('/{id}/download-sertifikat', [\App\Http\Controllers\UPPS\PelaporanHasilAkreditasiController::class, 'downloadSertifikat'])->name('.download-sertifikat');
         });
 
         Route::prefix('penyimpanan-arsip-akreditasi')->name('.penyimpanan-arsip-akreditasi')->group(function () {

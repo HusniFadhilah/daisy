@@ -926,50 +926,73 @@
 
         /* ===== PRINT ===== */
         @media print {
-
-            html,
-            body {
-                overflow: visible;
-                position: static;
-                background: white;
-                height: auto;
-            }
-
-            .scaler-wrap {
-                position: static;
-                display: block;
-            }
-
-            .scaler {
-                transform: none !important;
-                width: 297mm;
-                height: 210mm;
-                position: static;
-            }
-
-            .page {
-                display: flex !important;
-                position: static;
-                width: 297mm;
-                height: 210mm;
-                page-break-after: always;
-                break-after: page;
-            }
-
-            .page:last-of-type {
-                page-break-after: auto;
-                break-after: auto;
-            }
-
-            .cert-nav {
-                display: none !important;
-            }
-
             @page {
                 size: A4 landscape;
                 margin: 0;
             }
+
+            html,
+            body {
+                overflow: visible !important;
+                position: static !important;
+                background: white !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .cert-loading,
+            .cert-nav {
+                display: none !important;
+            }
+
+            .scaler-wrap {
+                position: static !important;
+                display: block !important;
+            }
+
+            .scaler {
+                transform: none !important;
+                position: static !important;
+                width: 297mm !important;
+                height: auto !important;
+                /* ← key fix: biarkan tumbuh sesuai 3 halaman */
+                left: auto !important;
+                top: auto !important;
+            }
+
+            .page {
+                display: flex !important;
+                /* ← tampilkan semua, bukan hanya .active */
+                position: static !important;
+                width: 297mm !important;
+                height: 210mm !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                align-items: center !important;
+                justify-content: center !important;
+                overflow: hidden !important;
+            }
+
+            .page:last-of-type {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+
+            .cert-wrap {
+                zoom: 1.038 !important;
+            }
         }
+
+        /* ===== PDF MODE ===== */
+        @if($forPdf ?? false)
+        html, body { overflow: visible !important; position: static !important; background: white !important; height: auto !important; }
+        .scaler-wrap { position: static !important; display: block !important; }
+        .scaler { transform: none !important; width: 1122px !important; height: 794px !important; position: static !important; }
+        .page { display: flex !important; position: static !important; width: 1122px !important; height: 794px !important; page-break-after: always; break-after: page; }
+        .page:last-of-type { page-break-after: auto !important; break-after: auto !important; }
+        .cert-nav, .cert-loading { display: none !important; }
+        @endif
 
         /* ===== LOADING OVERLAY ===== */
         .cert-loading {
@@ -1239,6 +1262,7 @@
     @php
     $peringkatFinal = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0));
     $verifikasiUrl = url("/verifikasi-sertifikat/{$nomorSertifikat}");
+    $verifikasiUrlShort = parse_url($verifikasiUrl, PHP_URL_HOST) . '/verifikasi-sertifikat';
     $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" . urlencode($verifikasiUrl);
     $tglPenetapan = \App\Libraries\Date::tglIndo($tanggalPenetapan);
     $tglMulai = \App\Libraries\Date::tglIndo($masaBerlaku['tanggal_mulai']);
@@ -1396,7 +1420,7 @@
                         <div class="cert-bottom">
                             <div class="qr-section">
                                 <div class="qr-frame"><img src="{{ $qrCodeUrl }}" alt="QR"></div>
-                                <div class="qr-text">Verifikasi sertifikat melalui<br><strong>lamdepilar.or.id/verify</strong></div>
+                                <div class="qr-text">Verifikasi sertifikat melalui<br><strong>{{ $verifikasiUrlShort }}</strong></div>
                             </div>
                             <div class="sig-section">
                                 <div class="sig-city">Jakarta, {{ $tglPenetapan }}</div>
@@ -1684,8 +1708,14 @@
         <button id="btnPrev" onclick="goPage(currentPage - 1)" disabled>&#9664; Sebelumnya</button>
         <span class="pg-info" id="pgInfo">1 / 3</span>
         <button id="btnNext" onclick="goPage(currentPage + 1)">Berikutnya &#9654;</button>
+        @if(isset($downloadUrl) && $downloadUrl)
+        <button onclick="window.location.href='{{ $downloadUrl }}'" style="background:#C18A2A;">&#11015; Download PDF</button>
+        @else
+        <button onclick="window.print()" style="background:#C18A2A;">&#11015; Download PDF</button>
+        @endif
     </div>
 
+    @unless($forPdf ?? false)
     <script>
         let currentPage = 1;
         const totalPages = 3;
@@ -1751,6 +1781,7 @@
         });
 
     </script>
+    @endunless
 
 </body>
 </html>

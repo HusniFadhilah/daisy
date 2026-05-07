@@ -169,11 +169,11 @@
 
     $isBaru = $pengajuan->jenis_akreditasi === \App\Models\PengajuanAkreditasi::AKREDITASI_BARU;
     $metaMasaBerlaku = old('masa_berlaku_tahun', $pengajuan->masa_berlaku_tahun ?? (
-        $isBaru ? 5 : (
-            $hasil && $hasil->statusFinal ? $hasil->statusFinal->siklus_tahun : (
-                $hasil && $hasil->statusAl ? $hasil->statusAl->siklus_tahun : ''
-            )
-        )
+    $isBaru ? 5 : (
+    $hasil && $hasil->statusFinal ? $hasil->statusFinal->siklus_tahun : (
+    $hasil && $hasil->statusAl ? $hasil->statusAl->siklus_tahun : ''
+    )
+    )
     ));
     $metaNomorSertif = old('nomor_sertifikat', $pengajuan->nomor_sertifikat ?? $pengajuan->generateNomorSertifikat());
     $tanggalSertifikat = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
@@ -1055,7 +1055,7 @@
 
                 <div class="modal-body">
                     <div class="alert alert-light alert-permanent mb-3">
-                        Pilih tanggal & waktu berakhir masa sanggah. Default: <strong>7 hari</strong> dari sekarang.
+                        Pilih tanggal & waktu berakhir masa sanggah. Default: <strong>14 hari</strong> dari sekarang.
                     </div>
 
                     <div class="mb-3">
@@ -1063,7 +1063,7 @@
                         @php
                         $minEnd = now()->addMinute()->format('Y-m-d\TH:i'); // minimal 1 menit dari server
                         //$defaultEnd = now()->addMinute(3)->format('Y-m-d\TH:i'); // default 7 hari
-                        $defaultEnd = now()->addDays(7)->format('Y-m-d\TH:i'); // default 7 hari
+                        $defaultEnd = now()->addDays(14)->format('Y-m-d\TH:i'); // default 7 hari
                         @endphp
                         <input type="datetime-local" name="tanggal_masa_sanggah_selesai" class="form-control" min="{{ $minEnd }}" value="{{ old('tanggal_masa_sanggah_selesai', $defaultEnd) }}" required>
 
