@@ -20,9 +20,9 @@ class JenjangPenilaian extends Model
     public const LABEL_SKOR_1 = self::TIDAK_MEMENUHI;
     public const LABEL_SKOR_2 = self::LEMAH;
     public const LABEL_SKOR_3 = self::MEMENUHI;
-    public const LABEL_SKOR_4 = self::MEMENUHI_STANDAR;
-    public const LABEL_SYARAT_UNGGUL_MEMENUHI = self::MEMENUHI_STANDAR;
-    public const LABEL_SYARAT_UNGGUL_MELAMPAUI = self::MEMENUHI_STANDAR;
+    public const LABEL_SKOR_4 = self::MELAMPAUI_STANDAR;
+    public const LABEL_SYARAT_UNGGUL_MEMENUHI = self::MELAMPAUI_STANDAR;
+    public const LABEL_SYARAT_UNGGUL_MELAMPAUI = self::MELAMPAUI_STANDAR;
     public const COLOR_SKOR_0 = '#f5c6cb';
     public const COLOR_SKOR_1 = '#ffe0b2';
     public const COLOR_SKOR_2 = '#fff9c4';

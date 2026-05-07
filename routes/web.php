@@ -633,6 +633,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/download/{jenisDokumen}', [PenyampaianHasilAkreditasiController::class, 'downloadDokumen'])->name('.download');
             Route::get('/{id}/preview-sertifikat', [PenyampaianHasilAkreditasiController::class, 'previewSertifikat'])->name('.preview-sertifikat');
             Route::get('/{id}/preview-sertifikat2', [PenyampaianHasilAkreditasiController::class, 'previewSertifikat2'])->name('.preview-sertifikat2');
+            Route::get('/{id}/preview-sertifikat3', [PenyampaianHasilAkreditasiController::class, 'previewSertifikat3'])->name('.preview-sertifikat3');
+            Route::get('/{id}/preview-sertifikat4', [PenyampaianHasilAkreditasiController::class, 'previewSertifikat4'])->name('.preview-sertifikat4');
         });
 
         Route::prefix('masa-sanggah')->name('.masa-sanggah')->group(function () {

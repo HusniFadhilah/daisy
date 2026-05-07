@@ -1,0 +1,61 @@
+@startuml
+title Arsitektur Sistem DAISY\nDEPILAR Accreditation Information System
+
+top to bottom direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "User" as User
+
+package "Presentation Layer" {
+  node "Browser" as Browser {
+    component "HTML5" as HTML
+    component "CSS3 + Bootstrap" as CSS
+    component "JavaScript" as JS
+    component "Blade Template\n(Laravel View)" as Blade
+  }
+}
+
+package "Business Logic Layer" {
+  node "Web Server / Application Server" as Server {
+    component "Laravel Framework\n(PHP)" as Laravel
+    component "Controller" as Controller
+    component "Model" as Model
+    component "View" as View
+    component "Authentication &\nAuthorization" as Auth
+    component "Workflow Engine\nAkreditasi" as Workflow
+    component "Eloquent ORM" as ORM
+  }
+}
+
+package "Data Layer" {
+  database "MySQL Database" as MySQL
+  folder "File Storage\nDokumen Akreditasi" as Storage
+  cloud "Email Server\nNotifikasi" as Email
+  database "Cache System" as Cache
+}
+
+User --> Browser : akses sistem
+Browser --> Laravel : HTTP / HTTPS Request
+Laravel --> Browser : HTTP / HTTPS Response
+
+Laravel --> Controller : routing request
+Controller --> Auth : validasi akses
+Controller --> Workflow : proses workflow
+Controller --> Model : proses data
+Model --> ORM : query object-relational
+ORM --> MySQL : read / write data
+
+Laravel --> Blade : render halaman
+Blade --> View : tampilkan UI
+View --> Browser : HTML response
+
+Laravel --> Storage : upload / download dokumen
+Laravel --> Email : kirim notifikasi
+Laravel --> Cache : simpan / ambil cache
+
+Cache --> Laravel : data cache
+Storage --> Laravel : file dokumen
+Email --> Laravel : status pengiriman
+
+@enduml

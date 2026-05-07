@@ -261,7 +261,7 @@
 
                                     <td class="text-center">
                                         <span class="badge text-wrap py-2 px-3" style="background-color: {{ $kategori['color'] }}; color: #222; width: 220px; font-size: 0.85rem;">
-                                            {{ $kategori['label'] }}
+                                            {{ $kategori['label'] === 'Melampaui Standar' ? 'Melampaui' : $kategori['label'] }}
                                         </span>
                                     </td>
                                 </tr>

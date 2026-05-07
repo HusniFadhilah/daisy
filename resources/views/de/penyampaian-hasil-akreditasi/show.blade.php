@@ -49,7 +49,12 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h6 class="text-muted mb-2">Status Akreditasi (yang disampaikan ke PS)</h6>
-                    @if($hasil->peringkat_akreditasi_hasil)
+                    @if($pengajuan->jenis_akreditasi === \App\Models\PengajuanAkreditasi::AKREDITASI_BARU)
+                    <span class="badge p-2 px-3 my-3 fs-6" style="background-color: #b8daff; color:#222">
+                        Terakreditasi Pertama
+                    </span>
+                    <div><small class="text-muted">5 Tahun</small></div>
+                    @elseif($hasil->peringkat_akreditasi_hasil)
                     <span class="badge p-2 px-3 my-3 fs-6" style="background-color: {{ $hasil->getPeringkatColor() }}; color:#222">
                         {{ $hasil->peringkat_akreditasi_hasil }}
                     </span>
@@ -162,7 +167,14 @@
     $babDefaults = \App\Models\HasilAkreditasi::resumeBabDefaults();
     $charLimit = \App\Models\HasilAkreditasi::resumeBabCharLimit();
 
-    $metaMasaBerlaku = old('masa_berlaku_tahun', $pengajuan->masa_berlaku_tahun ?? '');
+    $isBaru = $pengajuan->jenis_akreditasi === \App\Models\PengajuanAkreditasi::AKREDITASI_BARU;
+    $metaMasaBerlaku = old('masa_berlaku_tahun', $pengajuan->masa_berlaku_tahun ?? (
+        $isBaru ? 5 : (
+            $hasil && $hasil->statusFinal ? $hasil->statusFinal->siklus_tahun : (
+                $hasil && $hasil->statusAl ? $hasil->statusAl->siklus_tahun : ''
+            )
+        )
+    ));
     $metaNomorSertif = old('nomor_sertifikat', $pengajuan->nomor_sertifikat ?? $pengajuan->generateNomorSertifikat());
     $tanggalSertifikat = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
     $metaTanggalSertif = old('tanggal_sertifikat', optional($tanggalSertifikat)->format('Y-m-d'));
@@ -881,7 +893,7 @@
                             {{-- Kategori --}}
                             <td class="text-center">
                                 <span class="badge text-wrap" style="width: 15rem; background-color: {{ $kategori['color'] }}; color: #222;">
-                                    {{ $kategori['label'] }}
+                                    {{ $kategori['label'] === 'Melampaui Standar' ? 'Melampaui' : $kategori['label'] }}
                                 </span>
                                 <div class="mt-1">
                                     <small class="text-muted">

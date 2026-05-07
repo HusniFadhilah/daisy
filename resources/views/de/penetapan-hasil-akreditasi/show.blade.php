@@ -639,7 +639,7 @@
                         {{-- Kategori --}}
                         <td class="text-center">
                             <span class="badge text-wrap" style="width: 15rem; background-color: {{ $kategori['color'] }}; color: #222;">
-                                {{ $kategori['label'] }}
+                                {{ $kategori['label'] === 'Melampaui Standar' ? 'Melampaui' : $kategori['label'] }}
                             </span>
                             <div class="mt-1">
                                 <small class="text-muted">
