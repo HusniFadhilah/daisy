@@ -233,12 +233,12 @@
      LANGKAH 2 — UPLOAD FILE (sama seperti sebelumnya)
      ================================================================ --}}
 
-                    @if($canUpload && (!$hasLaporan && !$hasSertifikat))
+                    @if($canUpload && (!$hasLaporan || !$hasSertifikat))
                     <div class="card mb-4" id="cardUpload">
                         <div class="card-header d-flex justify-content-between align-items-center bg-secondary text-white">
                             <h6 class="mb-0">
                                 <span class="badge rounded-pill bg-light text-dark me-2" style="font-size:.75rem;">2</span>
-                                <i class="bi bi-upload"></i> Upload Laporan &amp; Sertifikat
+                                <i class="bi bi-upload"></i> Upload Laporan {{ !$hasSertifikat ? 'dan Sertifikat' : '' }}
                             </h6>
                             @if(!$resumeSaved)
                             <span class="badge bg-warning text-dark small">
@@ -268,12 +268,14 @@
                                         <div class="form-text">PDF, DOC, DOCX · maks 10 MB</div>
                                         @error('file_laporan')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
+                                    @if(!$hasSertifikat)
                                     <div class="col-md-6">
                                         <label class="form-label small">File Sertifikat</label>
                                         <input type="file" name="file_sertifikat" class="form-control form-control-sm @error('file_sertifikat') is-invalid @enderror" accept=".pdf" {{ !$resumeSaved ? 'disabled' : '' }}>
                                         <div class="form-text">PDF · maks 5 MB</div>
                                         @error('file_sertifikat')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
+                                    @endif
                                     <div class="col-12">
                                         <button type="submit" id="btnUpload" class="btn btn-secondary btn-sm w-100" {{ !$resumeSaved ? 'disabled' : '' }}>
                                             <i class="bi bi-upload"></i> Upload Dokumen

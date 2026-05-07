@@ -166,19 +166,22 @@ class PenetapanHasilAkreditasiController extends Controller
             }
 
             // 🚨 Jika proses banding sedang berjalan tapi AL banding belum ada
-            $statusBanding = [
-                PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                PengajuanAkreditasi::STATUS_AK_BANDING_DILAPORKAN,
-                PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
-            ];
-            $log = $pengajuan->latestRelevantStatusLog($statusBanding);
-            $sedangBanding = in_array($log->status_to, $statusBanding);
+            $log = $pengajuan->latestRelevantStatusLog([PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI]);
+            if (!$log) {
+                $statusBanding = [
+                    PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
+                    PengajuanAkreditasi::STATUS_AK_BANDING_DILAPORKAN,
+                    PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
+                ];
+                $log = $pengajuan->latestRelevantStatusLog($statusBanding);
+                $sedangBanding = $log && in_array($log->status_to, $statusBanding);
 
-            $alBandingBelumAda = is_null($hasil->skor_al_banding);
+                $alBandingBelumAda = is_null($hasil->skor_al_banding);
 
-            // kondisi utama
-            if ($sedangBanding && $alBandingBelumAda) {
-                return back()->with('warning', 'Penetapan belum dapat dilakukan karena proses banding masih berjalan.');
+                // kondisi utama
+                if ($sedangBanding && $alBandingBelumAda) {
+                    return back()->with('warning', 'Penetapan belum dapat dilakukan karena proses banding masih berjalan.');
+                }
             }
 
             $hasil->load([
