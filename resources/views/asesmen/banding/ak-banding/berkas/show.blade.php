@@ -972,7 +972,7 @@
         <div class="modal-content">
             <div class="modal-header bg-success text-white" id="resultModalHeader">
                 <h5 class="modal-title">
-                    <i class="bi bi-check-circle"></i> Upload Excel Berhasil
+                    <i class="bi bi-check-circle"></i> Upload Excel Diproses
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>

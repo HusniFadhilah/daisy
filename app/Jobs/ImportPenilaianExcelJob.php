@@ -248,7 +248,9 @@ class ImportPenilaianExcelJob implements ShouldQueue
                 'completed_at'  => now(),
             ]);
 
-            Storage::delete($this->filePath);
+            if (empty($errors) && empty($errorsMessage)) {
+                Storage::delete($this->filePath);
+            }
 
             // Log::info("Import completed: {$importedRows}/{$totalRows} rows imported");
 
@@ -264,7 +266,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
 
             Log::error($e);
 
-            Storage::delete($this->filePath);
+            //Storage::delete($this->filePath);
 
             throw $e;
         }

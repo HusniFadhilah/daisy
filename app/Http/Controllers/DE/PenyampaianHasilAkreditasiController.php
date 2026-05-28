@@ -725,7 +725,7 @@ class PenyampaianHasilAkreditasiController extends Controller
                     recipientName: 'Tim Akreditasi Program Studi <strong>' . $namaProdi . '</strong>',
                     pesanReminder: "Hasil Asesmen Lapangan (AL) untuk program studi Anda telah disampaikan oleh LAMDEPILAR.\n\Status akreditasi program studi: {$peringkat}\n\nMasa sanggah atas hasil ini akan berlangsung hingga:\n{$tanggalSanggah}\n\Program studi dapat mengajukan banding jika memiliki keberatan terhadap hasil akreditasi.",
                     subject: 'Hasil Asesmen Lapangan Telah Disampaikan',
-                    actionUrl: route('upps.penyampaian-hasil.show', $pengajuan->id),
+                    actionUrl: route('upps.penyampaian-hasil-akreditasi.show', $pengajuan->id),
                     actionLabel: 'Lihat Hasil Akreditasi',
                     contextInfo: null,
                     headerTitle: 'Hasil Asesmen Lapangan Telah Disampaikan',

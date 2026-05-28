@@ -554,7 +554,7 @@ class EmailPreviewController extends Controller
             recipientName: 'Tim Akreditasi Program Studi <strong>' . $namaProdi . '</strong>',
             pesanReminder: "Hasil Asesmen Lapangan (AL) untuk program studi Anda telah difinalisasi dan disampaikan secara resmi.\n\nPeringkat yang diperoleh: {$peringkat}\n\nMasa sanggah atas hasil ini akan berlangsung hingga:\n[Tanggal Masa Sanggah]\n\nJika Anda keberatan atas hasil tersebut, Anda dapat mengajukan sanggahan melalui sistem sebelum masa sanggah berakhir.",
             subject: 'Hasil Asesmen Lapangan Telah Disampaikan — ' . $namaProdi,
-            actionUrl: route('upps.penyampaian-hasil.show', $pengajuan->id),
+            actionUrl: route('upps.penyampaian-hasil-akreditasi.show', $pengajuan->id),
             actionLabel: 'Lihat Hasil Akreditasi',
             contextInfo: null,
             headerTitle: 'Hasil Asesmen Lapangan Telah Disampaikan',
