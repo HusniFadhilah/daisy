@@ -339,7 +339,7 @@ class PenetapanHasilAkreditasiController extends Controller
                 $emails,
                 new ReminderContextMail(
                     recipientName: 'Tim Akreditasi Program Studi <strong>' . $namaProdi . '</strong>',
-                    pesanReminder: "Hasil akreditasi program studi Anda telah ditetapkan oleh LAMDEPILAR.\n\Status Akreditasi : {$peringkat}\nTanggal Penetapan   : {$tanggalPenetapan}\n" . ($tanggalKedaluwarsa ? 'Berlaku Hingga      : {$tanggalKedaluwarsa}\n' : '') . "\nSertifikat akreditasi akan segera diterbitkan dan disampaikan kepada program studi. Mohon pantau sistem untuk informasi lebih lanjut.",
+                    pesanReminder: "Hasil akreditasi program studi Anda telah ditetapkan oleh LAMDEPILAR.\nStatus Akreditasi : {$peringkat}\nTanggal Penetapan   : {$tanggalPenetapan}\n" . ($tanggalKedaluwarsa ? "Berlaku Hingga      : {$tanggalKedaluwarsa}\n" : '') . "\nSertifikat akreditasi akan segera diterbitkan dan disampaikan kepada program studi. Mohon pantau sistem untuk informasi lebih lanjut.",
                     subject: 'Hasil Akreditasi Ditetapkan',
                     actionUrl: route('upps.penetapan-hasil-akreditasi.show', $pengajuan->id),
                     actionLabel: 'Lihat Hasil Penetapan',
