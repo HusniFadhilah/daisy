@@ -306,13 +306,8 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold">Pilih User:</label>
-                                <select id="userId" class="form-select" required>
+                                <select id="userId" class="form-select" required data-no-select2>
                                     <option value="">-- Pilih User --</option>
-                                    @foreach($availableUsers as $user)
-                                    <option value="{{ $user->id }}">
-                                        {{ $user->name }} ({{ $user->email }})
-                                    </option>
-                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -499,14 +494,9 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Pilih Multiple Users:</label>
-                        <select id="bulkUserIds" class="form-select" multiple size="10" required>
-                            @foreach($availableUsers as $user)
-                            <option value="{{ $user->id }}">
-                                {{ $user->name }} ({{ $user->email }})
-                            </option>
-                            @endforeach
+                        <select id="bulkUserIds" class="form-select" multiple required data-no-select2>
                         </select>
-                        <small class="text-muted">Hold Ctrl (Cmd di Mac) untuk pilih multiple users</small>
+                        <small class="text-muted">Ketik untuk mencari, klik untuk memilih beberapa user</small>
                     </div>
 
                     <div class="mb-3">
@@ -693,6 +683,39 @@
 
 @push('scripts')
 <script>
+    $(document).ready(function () {
+        var userAjaxConfig = {
+            url: '{{ route("ajax.users.search") }}',
+            dataType: 'json',
+            delay: 250,
+            cache: true,
+            data: function (params) {
+                return { q: params.term, page: params.page || 1 };
+            },
+            processResults: function (data, params) {
+                params.page = params.page || 1;
+                return { results: data.results, pagination: data.pagination };
+            },
+        };
+
+        $('#userId').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Pilih User --',
+            allowClear: true,
+            ajax: userAjaxConfig,
+        });
+
+        $('#bulkUserIds').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Cari dan pilih users --',
+            allowClear: true,
+            dropdownParent: $('#bulkAssignModal'),
+            ajax: userAjaxConfig,
+        });
+    });
+
     const idAsesmen = "{{ $asesmen->id }}";
     const csrfToken = '{{ csrf_token() }}';
 

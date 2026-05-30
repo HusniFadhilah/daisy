@@ -203,16 +203,13 @@
                     <label class="form-label fw-bold">
                         Pilih Validator <span class="text-danger">*</span>
                     </label>
-                    <select name="id_validator" id="id_validator" class="form-select" required>
+                    <select name="id_validator" id="id_validator" class="form-select" required data-no-select2>
                         <option value="">-- Pilih Validator --</option>
-                        @forelse($validators as $validator)
-                        <option value="{{ $validator->id }}" data-email="{{ $validator->email }}" {{ $currentAssignment && $currentAssignment->id_user == $validator->id ? 'disabled' : '' }}>
-                            {{ $validator->name }} ({{ $validator->email }})
-                            {{ $currentAssignment && $currentAssignment->id_user == $validator->id ? '- CURRENT' : '' }}
+                        @if($currentAssignment)
+                        <option value="{{ $currentAssignment->id_user }}" disabled>
+                            {{ $currentAssignment->user->name }} ({{ $currentAssignment->user->email }}) - CURRENT
                         </option>
-                        @empty
-                        <option value="" disabled>Tidak ada validator tersedia</option>
-                        @endforelse
+                        @endif
                     </select>
                     <small class="text-muted">
                         Pilih validator yang akan melakukan validasi dokumen
@@ -301,6 +298,39 @@
 
 @push('scripts')
 <script>
+    $(document).ready(function () {
+        $('#id_validator').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Pilih Validator --',
+            allowClear: true,
+            ajax: {
+                url: '{{ route("ajax.users.search") }}',
+                dataType: 'json',
+                delay: 250,
+                cache: true,
+                data: function (params) {
+                    return { q: params.term, page: params.page || 1, role: 'validator' };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return { results: data.results, pagination: data.pagination };
+                },
+            },
+        });
+
+        $('#id_validator').on('select2:select', function (e) {
+            var data = e.params.data;
+            document.getElementById('previewName').textContent = data.text.split(' (')[0];
+            document.getElementById('previewEmail').textContent = data.text.match(/\(([^)]+)\)/)?.[1] || '';
+            document.getElementById('validatorPreview').style.display = 'block';
+        });
+
+        $('#id_validator').on('select2:clear', function () {
+            document.getElementById('validatorPreview').style.display = 'none';
+        });
+    });
+
     let fileSuratTugas = document.getElementById('file_surat_tugas')
     if (fileSuratTugas) fileSuratTugas.addEventListener('change', function(e) {
         const preview = document.getElementById('suratTugasPreview');

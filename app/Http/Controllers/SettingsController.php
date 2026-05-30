@@ -2,28 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
+use App\Support\PanduanLinks;
 use Illuminate\Http\Request;
 
 class SettingsController extends Controller
 {
     public function index()
     {
-        // Tampilkan halaman settings
-        return view('admin.settings');
+        abort_unless(auth()->user()?->role_selected === 'super_admin', 403);
+
+        return view('admin.settings', [
+            'panduanLinks' => PanduanLinks::all(),
+        ]);
     }
 
     public function update(Request $request)
     {
-        // Contoh: simpan pengaturan
-        $request->validate([
-            'site_name' => 'required|string|max:255',
-            'email_notifications' => 'nullable|boolean',
-        ]);
+        abort_unless(auth()->user()?->role_selected === 'super_admin', 403);
 
-        // Simulasi update settings (bisa diganti sesuai kebutuhan)
-        // Misal simpan ke DB atau config
-        // Setting::updateOrCreate(...)
+        $rules = collect(config('panduan.roles', []))
+            ->keys()
+            ->mapWithKeys(fn (string $key) => ["panduan_links.{$key}" => ['required', 'url', 'max:2048']])
+            ->all();
 
-        return back()->with('success', 'Pengaturan berhasil disimpan!');
+        $validated = $request->validate($rules);
+
+        foreach ($validated['panduan_links'] as $key => $url) {
+            AppSetting::updateOrCreate(
+                ['key' => PanduanLinks::settingKey($key)],
+                ['value' => $url]
+            );
+        }
+
+        return back()->with('success', 'Link panduan berhasil disimpan.');
     }
 }

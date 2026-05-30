@@ -438,6 +438,8 @@ class PemetaanAkreditasiController extends Controller
         $page = (int) $request->get('page', 1);
         $perPage = 20;
 
+        $universityId = $request->get('university_id');
+
         $query = StudyProgram::withExample()->with(['degreeLevel', 'university']);
 
         if ($q !== '') {
@@ -445,6 +447,10 @@ class PemetaanAkreditasiController extends Controller
                 $sub->where('name', 'like', "%{$q}%")
                     ->orWhere('code', 'like', "%{$q}%");
             });
+        }
+
+        if ($universityId) {
+            $query->where('id_university', $universityId);
         }
 
         $paginator = $query->orderBy('name')

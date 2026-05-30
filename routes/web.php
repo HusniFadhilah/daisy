@@ -89,6 +89,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/tinymce/{folder}/{id}/image-upload', [TinyMceImageController::class, 'upload'])->name('tinymce.image.upload');
     Route::delete('/tinymce/{folder}/{id}/image-delete', [TinyMceImageController::class, 'delete'])->name('tinymce.image.delete');
 
+    // Global AJAX Select2 search endpoints (accessible to all authenticated users)
+    Route::get('/ajax/prodi/search', [\App\Http\Controllers\Prodi\PemetaanAkreditasiController::class, 'searchProdiAjax'])->name('ajax.prodi.search');
+    Route::get('/ajax/users/search', [\App\Http\Controllers\UserController::class, 'searchForSelect2'])->name('ajax.users.search');
+
     // PENAWARAN ASESMEN
     Route::prefix('penawaran')->name('penawaran')->group(function () {
         Route::get('/', [PenawaranController::class, 'index']);
@@ -1167,53 +1171,53 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::middleware('under.dev')->group(function () {
-        // PEDOMAN AK
-        Route::prefix('pedoman')->group(function () {
-            Route::get('/', [PedomanController::class, 'index'])->name('pedoman.index');
-            Route::get('/', [PedomanController::class, 'index'])->name('pedoman'); // alias
-            Route::get('/{kategori}', [PedomanController::class, 'kategori'])->name('pedoman.kategori');
-            Route::get('/{kategori}/{id}/download', [PedomanController::class, 'download'])->name('pedoman.download');
-        });
-
-        // DOKUMEN ADMINISTRASI AL
-        Route::prefix('dokumen')->name('dokumen.')->group(function () {
-            Route::get('/panduan', [DokumenController::class, 'panduan'])->name('panduan');
-            Route::get('/panduan/{id}/download', [DokumenController::class, 'downloadPanduan'])->name('panduan.download');
-
-            Route::get('/instrumen', [DokumenController::class, 'instrumen'])->name('instrumen');
-            Route::get('/instrumen/{id}/download', [DokumenController::class, 'downloadInstrumen'])->name('instrumen.download');
-
-            Route::get('/template', [DokumenController::class, 'template'])->name('template');
-            Route::get('/template/{id}/download', [DokumenController::class, 'downloadTemplate'])->name('template.download');
-
-            Route::get('/surat', [DokumenController::class, 'surat'])->name('surat');
-            Route::get('/surat/{id}/download', [DokumenController::class, 'downloadSurat'])->name('surat.download');
-        });
-
-        // PANDUAN PENGGUNAAN DAISY
-        Route::prefix('panduan')->group(function () {
-            Route::get('/', [PanduanController::class, 'index'])->name('panduan.index');
-            Route::get('/', [PanduanController::class, 'index'])->name('panduan'); // alias
-            Route::get('/{slug}', [PanduanController::class, 'show'])->name('panduan.show');
-        });
-
-        // BANTUAN LAYANAN
-        Route::prefix('bantuan')->group(function () {
-            Route::get('/', [BantuanController::class, 'index'])->name('bantuan.index');
-            Route::get('/', [BantuanController::class, 'index'])->name('bantuan'); // alias
-            Route::post('/tiket', [BantuanController::class, 'createTicket'])->name('bantuan.tiket.create');
-            Route::get('/tiket/{id}', [BantuanController::class, 'showTicket'])->name('bantuan.tiket.show');
-            Route::post('/tiket/{id}/reply', [BantuanController::class, 'replyTicket'])->name('bantuan.tiket.reply');
-        });
-
-        Route::prefix('settings')->group(function () {
-            Route::get('/', [SettingsController::class, 'index'])->name('settings.index');
-            Route::get('/', [SettingsController::class, 'index'])->name('settings'); // alias
-            Route::put('/', [SettingsController::class, 'update'])->name('settings.update');
-            Route::post('/notification', [SettingsController::class, 'updateNotification'])->name('settings.notification');
-        });
+    // Route::middleware('under.dev')->group(function () {
+    // PEDOMAN AK
+    Route::prefix('pedoman')->group(function () {
+        Route::get('/', [PedomanController::class, 'index'])->name('pedoman.index');
+        Route::get('/', [PedomanController::class, 'index'])->name('pedoman'); // alias
+        Route::get('/{kategori}', [PedomanController::class, 'kategori'])->name('pedoman.kategori');
+        Route::get('/{kategori}/{id}/download', [PedomanController::class, 'download'])->name('pedoman.download');
     });
+
+    // DOKUMEN ADMINISTRASI AL
+    Route::prefix('dokumen')->name('dokumen.')->group(function () {
+        Route::get('/panduan', [DokumenController::class, 'panduan'])->name('panduan');
+        Route::get('/panduan/{id}/download', [DokumenController::class, 'downloadPanduan'])->name('panduan.download');
+
+        Route::get('/instrumen', [DokumenController::class, 'instrumen'])->name('instrumen');
+        Route::get('/instrumen/{id}/download', [DokumenController::class, 'downloadInstrumen'])->name('instrumen.download');
+
+        Route::get('/template', [DokumenController::class, 'template'])->name('template');
+        Route::get('/template/{id}/download', [DokumenController::class, 'downloadTemplate'])->name('template.download');
+
+        Route::get('/surat', [DokumenController::class, 'surat'])->name('surat');
+        Route::get('/surat/{id}/download', [DokumenController::class, 'downloadSurat'])->name('surat.download');
+    });
+
+    // PANDUAN PENGGUNAAN DAISY
+    Route::prefix('panduan')->group(function () {
+        Route::get('/', [PanduanController::class, 'index'])->name('panduan.index');
+        Route::get('/', [PanduanController::class, 'index'])->name('panduan'); // alias
+        Route::get('/{slug}', [PanduanController::class, 'show'])->name('panduan.show');
+    });
+
+    // BANTUAN LAYANAN
+    Route::prefix('bantuan')->group(function () {
+        Route::get('/', [BantuanController::class, 'index'])->name('bantuan.index');
+        Route::get('/', [BantuanController::class, 'index'])->name('bantuan'); // alias
+        Route::post('/tiket', [BantuanController::class, 'createTicket'])->name('bantuan.tiket.create');
+        Route::get('/tiket/{id}', [BantuanController::class, 'showTicket'])->name('bantuan.tiket.show');
+        Route::post('/tiket/{id}/reply', [BantuanController::class, 'replyTicket'])->name('bantuan.tiket.reply');
+    });
+
+    Route::prefix('settings')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('settings.index');
+        Route::get('/', [SettingsController::class, 'index'])->name('settings'); // alias
+        Route::put('/', [SettingsController::class, 'update'])->name('settings.update');
+        Route::post('/notification', [SettingsController::class, 'updateNotification'])->name('settings.notification');
+    });
+    // });
 
     // PROFIL & PENGATURAN
     Route::prefix('profile')->name('profile')->group(function () {
@@ -1353,11 +1357,30 @@ Route::prefix('preview/email')
 // Route::get('/preview/email/penawaran/{assignment}', function (\App\Models\AsesmenUserRole $assignment) {
 //     return new \App\Mail\PenawaranAsesmenMail($assignment);
 // })->name('email.preview.penawaran');
-Route::get('/lkps/test', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'test']);
-Route::get('/lkps/test2', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'test2']);
-Route::get('/lkps/model', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'model']);
-Route::post('/lkps/cells', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'updateCells']);
+// Route::get('/lkps/test', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'test']);
+// Route::get('/lkps/test2', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'test2']);
+// Route::get('/lkps/model', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'model']);
+// Route::post('/lkps/cells', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'updateCells']);
 
+
+// ── Monitoring BAN-PT (super_admin, sekretariat) ──────────────────────────────
+Route::prefix('admin/monitoring-banpt')
+    ->name('admin.monitoring-banpt.')
+    ->middleware(['auth', 'verified', 'role:super_admin,sekretariat'])
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\BanptMonitoringController::class, 'index'])
+            ->name('index');
+        Route::get('/{change}', [\App\Http\Controllers\Admin\BanptMonitoringController::class, 'show'])
+            ->name('show');
+        Route::post('/{change}/apply', [\App\Http\Controllers\Admin\BanptMonitoringController::class, 'apply'])
+            ->name('apply');
+        Route::post('/{change}/ignore', [\App\Http\Controllers\Admin\BanptMonitoringController::class, 'ignore'])
+            ->name('ignore');
+        Route::post('/{change}/conflict', [\App\Http\Controllers\Admin\BanptMonitoringController::class, 'conflict'])
+            ->name('conflict');
+        Route::post('/sync-now', [\App\Http\Controllers\Admin\BanptMonitoringController::class, 'syncNow'])
+            ->name('sync-now');
+    });
 
 Route::get('clearcache', function () {
     Illuminate\Support\Facades\Artisan::call('cache:clear');
@@ -1367,9 +1390,11 @@ Route::get('clearcache', function () {
     Illuminate\Support\Facades\Artisan::call('config:cache');
 });
 
-Route::get('migrateseed', function () {
-    Illuminate\Support\Facades\Artisan::call('migrate:fresh');
-    Illuminate\Support\Facades\Artisan::call('db:seed');
-});
+// Route::get('migrateseed', function () {
+//     Illuminate\Support\Facades\Artisan::call('migrate:fresh');
+//     Illuminate\Support\Facades\Artisan::call('db:seed');
+// });
 
 Route::get('/debug/dataset-borang', [\App\Http\Controllers\DatasetBorangController::class, 'index'])->name('debug.dataset-borang.index');
+
+Route::get('/panduan', [PanduanController::class, 'index'])->name('panduan');

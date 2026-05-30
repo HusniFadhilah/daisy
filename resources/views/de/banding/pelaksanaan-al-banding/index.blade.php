@@ -129,6 +129,7 @@
 
             if (data.success) {
                 tableContainer.innerHTML = data.html;
+                if (typeof initSelect2All === 'function') initSelect2All(tableContainer);
 
                 // Update URL
                 const newUrl = new URL(window.location);

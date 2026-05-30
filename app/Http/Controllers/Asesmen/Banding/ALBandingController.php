@@ -1247,8 +1247,10 @@ class ALBandingController extends Controller
 
             // Store file temporarily
             $file = $request->file('file');
-            $filename = 'import_' . $asesmen->code . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs('temp/imports', $filename);
+            $safeCode = str_replace(['/', '\\'], '-', $asesmen->code);
+
+            $filename = 'import_' . $safeCode . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('', $filename);
 
             // Create import log
             $importLog = PenilaianImportLog::create([

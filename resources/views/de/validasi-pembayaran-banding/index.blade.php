@@ -252,7 +252,10 @@
                 }
             });
             const data = await res.json();
-            if (data.success) container.innerHTML = data.html;
+            if (data.success) {
+                container.innerHTML = data.html;
+                if (typeof initSelect2All === 'function') initSelect2All(container);
+            }
         } catch (e) {
             console.error(e);
         } finally {

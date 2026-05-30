@@ -134,11 +134,8 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Pilih Asesor: <span class="text-danger">*</span></label>
-                                <select id="userId" class="form-select" required>
+                                <select id="userId" class="form-select" required data-no-select2>
                                     <option value="">-- Pilih Asesor --</option>
-                                    @foreach($availableUsers as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
-                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -532,6 +529,28 @@ $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
 @include('layouts.template.kirim-reminder')
 @push('scripts')
 <script>
+    $(document).ready(function () {
+        $('#userId').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Pilih Asesor --',
+            allowClear: true,
+            ajax: {
+                url: '{{ route("ajax.users.search") }}',
+                dataType: 'json',
+                delay: 250,
+                cache: true,
+                data: function (params) {
+                    return { q: params.term, page: params.page || 1 };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return { results: data.results, pagination: data.pagination };
+                },
+            },
+        });
+    });
+
     const csrfToken = '{{ csrf_token() }}';
     let currentPengajuanId = null;
 

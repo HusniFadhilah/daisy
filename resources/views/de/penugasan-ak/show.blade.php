@@ -141,11 +141,8 @@
                         <div class="row g-3 mt-2" id="userSelectionContainer">
                             <div class="col-md-8">
                                 <label class="form-label fw-bold">Pilih User: <span class="text-danger">*</span></label>
-                                <select id="userId" class="form-select" required>
+                                <select id="userId" class="form-select" required data-no-select2>
                                     <option value="">-- Pilih User --</option>
-                                    @foreach($availableUsers as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
-                                    @endforeach
                                 </select>
                             </div>
 
@@ -631,6 +628,28 @@
 
 @push('scripts')
 <script>
+    $(document).ready(function () {
+        $('#userId').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Pilih User --',
+            allowClear: true,
+            ajax: {
+                url: '{{ route("ajax.users.search") }}',
+                dataType: 'json',
+                delay: 250,
+                cache: true,
+                data: function (params) {
+                    return { q: params.term, page: params.page || 1 };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return { results: data.results, pagination: data.pagination };
+                },
+            },
+        });
+    });
+
     const csrfToken = '{{ csrf_token() }}';
     const pengajuanId = "{{ $pengajuan->id }}";
     let currentPengajuanId = pengajuanId;

@@ -199,9 +199,10 @@ class UserController extends Controller
     public function downloadTemplate()
     {
         $template = [
-            ['nama', 'email', 'password', 'role', 'role_aktif', 'semua_roles', 'no_telepon', 'alamat', 'institusi', 'id_universitas', 'id_program_studi', 'jabatan'],
-            ['John Doe', 'john@example.com', 'password123', 'user', 'sekretariat', 'sekretariat,asesor', '081234567890', 'Jl. Contoh No. 123', 'Universitas Contoh', '1', '1', 'Dosen'],
-            ['Jane Smith', 'jane@example.com', 'password123', 'admin', 'admin_univ', 'admin_univ,validator', '081234567891', 'Jl. Contoh No. 456', 'Universitas Contoh', '1', '2', 'Kaprodi'],
+            ['nama', 'email', 'email_universitas', 'password', 'role', 'role_aktif', 'semua_roles', 'no_telepon', 'alamat', 'institusi', 'id_universitas', 'id_program_studi', 'id_program_studi_list', 'email_prodi_list', 'jabatan'],
+            ['John Doe', 'john@example.com', '', 'password123', 'user', 'sekretariat', 'sekretariat,asesor', '081234567890', 'Jl. Contoh No. 123', 'Universitas Contoh', '', '', '', '', 'Dosen'],
+            ['Admin Universitas Contoh', '', 'info@universitascontoh.ac.id', 'password123', 'user', 'admin_univ', 'admin_univ,admin_prodi', '081234567891', 'Jl. Contoh No. 456', 'Universitas Contoh', '1', '', '', '', 'Admin Universitas'],
+            ['Admin Prodi Contoh', '', 'info@universitascontoh.ac.id', 'password123', 'user', 'admin_prodi', 'admin_prodi', '081234567892', 'Jl. Contoh No. 789', 'Universitas Contoh', '1', '', '1,2,3', 'arsitektur@contoh.ac.id;dkv@contoh.ac.id', 'Admin Prodi'],
         ];
 
         return Excel::download(new class($template) implements FromArray, WithHeadings {
@@ -255,5 +256,38 @@ class UserController extends Controller
             return redirect()->route('users.index')
                 ->with('error', 'Gagal mengimport data: ' . $e->getMessage());
         }
+    }
+
+    public function searchForSelect2(Request $request)
+    {
+        $q      = trim($request->get('q', ''));
+        $page   = max(1, (int) $request->get('page', 1));
+        $role   = $request->get('role');
+        $perPage = 20;
+
+        $query = User::notAdmin()->orderBy('name');
+
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
+            });
+        }
+
+        if ($role) {
+            $query->whereJsonContains('roles', $role);
+        }
+
+        $paginator = $query->paginate($perPage, ['id', 'name', 'email'], 'page', $page);
+
+        $results = $paginator->getCollection()->map(fn ($u) => [
+            'id'   => $u->id,
+            'text' => $u->name . ' (' . $u->email . ')',
+        ]);
+
+        return response()->json([
+            'results'    => $results,
+            'pagination' => ['more' => $paginator->hasMorePages()],
+        ]);
     }
 }

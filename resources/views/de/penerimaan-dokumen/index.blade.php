@@ -251,6 +251,7 @@
 
             if (data.success) {
                 tableContainer.innerHTML = data.html;
+                if (typeof initSelect2All === 'function') initSelect2All(tableContainer);
             }
         } catch (error) {
             console.error('Error:', error);

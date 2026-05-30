@@ -39,6 +39,12 @@ class Kernel extends ConsoleKernel
         |--------------------------------------------------------------------------
         */
 
+        // BAN-PT sync harian jam 02:00
+        $schedule->command('banpt:sync-accreditation')
+            ->dailyAt('02:00')
+            ->withoutOverlapping()
+            ->onOneServer();
+
         if (config('akreditasi.masa_sanggah_mode') === 'sweep') {
 
             $schedule->call(function () {

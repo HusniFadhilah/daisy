@@ -77,19 +77,19 @@
 @endif --}}
 
 <!-- Pedoman AK -->
-@if(Route::has('pedoman'))
+{{-- @if(Route::has('pedoman'))
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
-    <span class="menu-icon"><i class="bi bi-question-circle"></i></span>
-    <span>Pedoman AK</span>
+<span class="menu-icon"><i class="bi bi-question-circle"></i></span>
+<span>Pedoman AK</span>
 </a>
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
     <span class="menu-icon"><i class="bi bi-question-diamond"></i></span>
     <span>Pedoman AL</span>
 </a>
-@endif
+@endif --}}
 
 <!-- Dokumen Adm. AL -->
-@if(Route::has('dokumen.panduan') || Route::has('dokumen.instrumen'))
+{{-- @if(Route::has('dokumen.panduan') || Route::has('dokumen.instrumen'))
 <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'dokumen-submenu')">
     <span class="menu-icon"><i class="bi bi-journal-text"></i></span>
     <span>Dokumen Adm. AL</span>
@@ -98,30 +98,30 @@
     @if(Route::has('dokumen.panduan'))
     <li>
         <a href="{{ route('dokumen.panduan') }}" class="nav-link">
-            Panduan Asesmen
-        </a>
-    </li>
-    @endif
-    @if(Route::has('dokumen.instrumen'))
-    <li>
-        <a href="{{ route('dokumen.instrumen') }}" class="nav-link">
-            Instrumen Akreditasi
-        </a>
-    </li>
-    @endif
-    @if(Route::has('dokumen.template'))
-    <li>
-        <a href="{{ route('dokumen.template') }}" class="nav-link">
-            Templat Penilaian
-        </a>
-    </li>
-    @endif
-    @if(Route::has('dokumen.surat'))
-    <li>
-        <a href="{{ route('dokumen.surat') }}" class="nav-link">
-            Surat Tugas
-        </a>
-    </li>
-    @endif
-</ul>
+Panduan Asesmen
+</a>
+</li>
 @endif
+@if(Route::has('dokumen.instrumen'))
+<li>
+    <a href="{{ route('dokumen.instrumen') }}" class="nav-link">
+        Instrumen Akreditasi
+    </a>
+</li>
+@endif
+@if(Route::has('dokumen.template'))
+<li>
+    <a href="{{ route('dokumen.template') }}" class="nav-link">
+        Templat Penilaian
+    </a>
+</li>
+@endif
+@if(Route::has('dokumen.surat'))
+<li>
+    <a href="{{ route('dokumen.surat') }}" class="nav-link">
+        Surat Tugas
+    </a>
+</li>
+@endif
+</ul>
+@endif --}}

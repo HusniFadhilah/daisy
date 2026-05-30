@@ -1153,7 +1153,9 @@ class BandingController extends Controller
 
             // Store file temporarily
             $file = $request->file('file');
-            $filename = 'import_' . $asesmen->code . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $safeCode = str_replace(['/', '\\'], '-', $asesmen->code);
+
+            $filename = 'import_' . $safeCode . '_' . time() . '.' . $file->getClientOriginalExtension();
             $filePath = $file->storeAs('temp/imports', $filename);
 
             // Create import log

@@ -38,14 +38,14 @@ $authUser = Auth::user();
         @endauth
 
         <!-- Panduan Penggunaan DAISY -->
-        <a href="{{ route('panduan') }}" class="nav-link {{ request()->routeIs('panduan') ? 'active' : '' }}">
+        <a href="{{ route('panduan') }}" target="_blank" rel="noopener" class="nav-link {{ request()->routeIs('panduan') ? 'active' : '' }}">
             <span class="menu-icon">💬</span>
             <span>Panduan Penggunaan DAISY</span>
         </a>
 
         <!-- Bantuan Layanan -->
         @if(in_array($authUser->role_selected,['super_admin','validator','asesor']))
-        <a href="{{ route('bantuan') }}" class="nav-link {{ request()->routeIs('bantuan') ? 'active' : '' }}">
+        <a href="mailto:sekretariat@lamdepilar.or.id" class="nav-link {{ request()->routeIs('bantuan') ? 'active' : '' }}">
             <span class="menu-icon">🚨</span>
             <span>Kontak Sekretariat</span>
         </a>

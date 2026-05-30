@@ -91,6 +91,7 @@
             const data = await response.json();
             if (data.success) {
                 container.innerHTML = data.html;
+                if (typeof initSelect2All === 'function') initSelect2All(container);
                 const newUrl = new URL(window.location);
                 Object.keys(params).forEach(k => params[k] ?
                     newUrl.searchParams.set(k, params[k]) :

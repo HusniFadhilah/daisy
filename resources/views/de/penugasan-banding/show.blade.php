@@ -66,11 +66,8 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Asesor Banding <span class="text-danger">*</span></label>
-                                <select id="userId" class="form-select" required>
+                                <select id="userId" class="form-select" required data-no-select2>
                                     <option value="">-- Pilih User --</option>
-                                    @foreach($availableUsers as $u)
-                                    <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
-                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -353,6 +350,28 @@
 
 @push('scripts')
 <script>
+    $(document).ready(function () {
+        $('#userId').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Pilih User --',
+            allowClear: true,
+            ajax: {
+                url: '{{ route("ajax.users.search") }}',
+                dataType: 'json',
+                delay: 250,
+                cache: true,
+                data: function (params) {
+                    return { q: params.term, page: params.page || 1 };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return { results: data.results, pagination: data.pagination };
+                },
+            },
+        });
+    });
+
     const csrfToken = '{{ csrf_token() }}';
     const pengajuanId = '{{ $pengajuan->id }}';
 

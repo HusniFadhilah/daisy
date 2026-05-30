@@ -160,16 +160,8 @@
 
                     <div class="col-md-6 mb-3">
                         <label for="id_study_program" class="form-label">Program Studi</label>
-                        <select class="form-select @error('id_study_program') is-invalid @enderror" id="id_study_program" name="id_study_program">
+                        <select class="form-select @error('id_study_program') is-invalid @enderror" id="id_study_program" name="id_study_program" data-no-select2>
                             <option value="">Pilih Program Studi</option>
-                            @foreach($studyPrograms as $prodi)
-                            <option value="{{ $prodi->id }}" data-university="{{ $prodi->id_university }}" {{ old('id_study_program') == $prodi->id ? 'selected' : '' }}>
-                                {{ $prodi->name }}
-                                @if($prodi->degreeLevel)
-                                ({{ $prodi->degreeLevel->name }})
-                                @endif
-                            </option>
-                            @endforeach
                         </select>
                         @error('id_study_program')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -204,32 +196,40 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        // Filter program studi based on selected university
-        $('#id_university').on('change', function() {
-            const selectedUnivId = $(this).val();
-            const prodiSelect = $('#id_study_program');
-
-            if (!selectedUnivId) {
-                prodiSelect.find('option').show();
-                prodiSelect.val('');
-                return;
-            }
-
-            // Hide all prodi options except the first (empty)
-            prodiSelect.find('option:not(:first)').hide();
-
-            // Show only prodi for selected university
-            prodiSelect.find('option[data-university="' + selectedUnivId + '"]').show();
-
-            // Reset selection
-            prodiSelect.val('');
+        $('#id_university').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Pilih Universitas',
+            allowClear: true,
         });
 
-        // Trigger filter on page load if university is already selected
-        if ($('#id_university').val()) {
-            $('#id_university').trigger('change');
-        }
-    });
+        $('#id_study_program').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Pilih Program Studi',
+            allowClear: true,
+            ajax: {
+                url: '{{ route("ajax.prodi.search") }}',
+                dataType: 'json',
+                delay: 250,
+                cache: true,
+                data: function (params) {
+                    return {
+                        q: params.term,
+                        page: params.page || 1,
+                        university_id: $('#id_university').val(),
+                    };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return { results: data.results, pagination: data.pagination };
+                },
+            },
+        });
 
+        $('#id_university').on('change', function () {
+            $('#id_study_program').val(null).trigger('change');
+        });
+    });
 </script>
 @endpush

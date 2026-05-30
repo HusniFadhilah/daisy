@@ -234,6 +234,18 @@ request()->routeIs('de.permohonan-banding*')
         @endforeach
 </ul>
 
+@if(in_array($authUser->role_selected,['super_admin','sekretariat']))
+<!-- Monitoring BAN-PT -->
+<a href="{{ route('admin.monitoring-banpt.index') }}" class="nav-link {{ request()->routeIs('admin.monitoring-banpt*') ? 'active' : '' }}">
+    <span class="menu-icon"><i class="bi bi-radar"></i></span>
+    <span>Monitoring BAN-PT</span>
+    @php $banptPendingCount = \App\Models\BanptAccreditationChange::where('status', 'pending')->count(); @endphp
+    @if($banptPendingCount > 0)
+        <span class="badge bg-warning text-dark menu-badge">{{ $banptPendingCount }}</span>
+    @endif
+</a>
+@endif
+
 @if(in_array($authUser->role_selected,['super_admin']))
 <!-- Pedoman AK -->
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">

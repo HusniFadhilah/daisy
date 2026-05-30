@@ -305,6 +305,46 @@ class UserSeeder extends Seeder
             ],
         ];
 
+        $trainingPassword = 'Pelatihan290526';
+        $rumpunAkunPelatihan = [
+            'desain' => 'Desain',
+            'perencanaan' => 'Perencanaan',
+            'lingkungan' => 'Lingkungan',
+            'arsitektur' => 'Arsitektur',
+        ];
+        $roleAkunPelatihan = [
+            [
+                'name_prefix' => 'Asesor',
+                'email_prefix' => 'asesor',
+                'role_selected' => 'asesor',
+            ],
+            [
+                'name_prefix' => 'Validator',
+                'email_prefix' => 'validator',
+                'role_selected' => 'validator',
+            ],
+            [
+                'name_prefix' => 'Asesor Banding',
+                'email_prefix' => 'asesor.banding',
+                'role_selected' => 'asesor_banding',
+            ],
+        ];
+
+        foreach ($roleAkunPelatihan as $roleConfig) {
+            foreach ($rumpunAkunPelatihan as $rumpunSlug => $rumpunLabel) {
+                for ($index = 1; $index <= 4; $index++) {
+                    $users[] = [
+                        'name' => "{$roleConfig['name_prefix']} {$rumpunLabel} {$index}",
+                        'email' => "{$roleConfig['email_prefix']}.{$rumpunSlug}.{$index}@daisy.lamdepilar.or.id",
+                        'password' => Hash::make($trainingPassword),
+                        'role' => 'user',
+                        'role_selected' => $roleConfig['role_selected'],
+                        'roles' => [$roleConfig['role_selected']],
+                    ];
+                }
+            }
+        }
+
         foreach ($users as $user) {
             User::updateOrCreate(
                 ['email' => $user['email']],

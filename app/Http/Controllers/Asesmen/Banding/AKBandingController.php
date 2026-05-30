@@ -679,8 +679,10 @@ class AKBandingController extends Controller
             })->findOrFail($idAsesmen);
 
             $file     = $request->file('file');
-            $filename = 'import_' . $asesmen->code . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs('temp/imports', $filename);
+            $safeCode = str_replace(['/', '\\'], '-', $asesmen->code);
+
+            $filename = 'import_' . $safeCode . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('', $filename);
 
             $importLog = PenilaianImportLog::create([
                 'id_asesmen' => $asesmen->id,

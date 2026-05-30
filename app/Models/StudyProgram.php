@@ -30,11 +30,19 @@ class StudyProgram extends Model
         'akreditasi_email',
         'city',
         'is_active',
-        'is_example'
+        'is_example',
+        'akreditasi_source',
+        'akreditasi_locked_at',
+        'akreditasi_locked_reason',
+        'last_banpt_checked_at',
+        'last_banpt_payload',
     ];
 
     protected $casts = [
-        'tanggal_kedaluwarsa' => 'date',
+        'tanggal_kedaluwarsa'   => 'date',
+        'akreditasi_locked_at'  => 'datetime',
+        'last_banpt_checked_at' => 'datetime',
+        'last_banpt_payload'    => 'array',
     ];
 
     public function university()

@@ -3,10 +3,6 @@
 @section('title', 'Profil Saya - DAISY LAMDEPILAR')
 
 @push('styles')
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
-
 <style>
     .page-header-compact {
         margin-bottom: 1.5rem;
@@ -464,17 +460,15 @@
                     </div>
                     @elseif($canEditProdi)
                     {{-- Super Admin: Bisa pilih prodi --}}
-                    <select class="form-select select2 @error('id_study_program') is-invalid @enderror" id="id_study_program" name="id_study_program">
+                    <select class="form-select @error('id_study_program') is-invalid @enderror" id="id_study_program" name="id_study_program" data-no-select2>
                         <option value="">-- Pilih Program Studi --</option>
-                        @foreach($studyPrograms as $prodi)
-                        <option value="{{ $prodi->id }}" data-university="{{ $prodi->id_university }}" {{ old('id_study_program', $user->id_study_program) == $prodi->id ? 'selected' : '' }}>
-                            {{ $prodi->name }}
-                            @if($prodi->degreeLevel)
-                            ({{ $prodi->degreeLevel->alias }})
-                            @endif
-                            - {{ $prodi->university->name ?? '' }}
+                        @if($user->id_study_program && $user->studyProgram)
+                        <option value="{{ $user->studyProgram->id }}" selected>
+                            {{ $user->studyProgram->name }}
+                            {{ $user->studyProgram->degreeLevel ? '('.$user->studyProgram->degreeLevel->alias.')' : '' }}
+                            - {{ $user->studyProgram->university->name ?? '' }}
                         </option>
-                        @endforeach
+                        @endif
                     </select>
                     @error('id_study_program')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -570,20 +564,38 @@
 @endsection
 
 @push('scripts')
-<!-- Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
 <script>
-    // Initialize Select2
     $(document).ready(function() {
-        $('.select2').select2({
-            theme: 'bootstrap-5'
-            , width: '100%'
-            , placeholder: function() {
-                $(this).data('placeholder');
-            }
-            , allowClear: true
+        // Initialize Select2 for university (static options)
+        $('#id_university').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Pilih Universitas --',
+            allowClear: true,
         });
+
+        @if($canEditProdi)
+        // Initialize Select2 AJAX for prodi
+        $('#id_study_program').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Pilih Program Studi --',
+            allowClear: true,
+            ajax: {
+                url: '{{ route("ajax.prodi.search") }}',
+                dataType: 'json',
+                delay: 250,
+                cache: true,
+                data: function (params) {
+                    return { q: params.term, page: params.page || 1 };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return { results: data.results, pagination: data.pagination };
+                },
+            },
+        });
+        @endif
     });
 
     // Preview dan Upload Avatar

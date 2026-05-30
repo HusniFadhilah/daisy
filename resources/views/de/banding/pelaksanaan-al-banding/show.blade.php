@@ -587,11 +587,8 @@
                         <label class="form-label fw-bold">
                             Pilih Validator <span class="text-danger">*</span>
                         </label>
-                        <select id="validatorUserId" class="form-select" required>
+                        <select id="validatorUserId" class="form-select" required data-no-select2>
                             <option value="">-- Pilih Validator --</option>
-                            @foreach($availableValidators as $validator)
-                            <option value="{{ $validator->id }}">{{ $validator->name }}</option>
-                            @endforeach
                         </select>
                     </div>
                 </div>
@@ -610,13 +607,36 @@
 @include('layouts.template.kirim-reminder')
 @push('scripts')
 <script>
+    $(document).ready(function () {
+        $('#validatorUserId').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Pilih Validator --',
+            allowClear: true,
+            dropdownParent: $('#modalAssignValidator'),
+            ajax: {
+                url: '{{ route("ajax.users.search") }}',
+                dataType: 'json',
+                delay: 250,
+                cache: true,
+                data: function (params) {
+                    return { q: params.term, page: params.page || 1, role: 'validator' };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return { results: data.results, pagination: data.pagination };
+                },
+            },
+        });
+    });
+
     const csrfToken = '{{ csrf_token() }}';
     let currentPengajuanId = null;
 
     // Show Assign Validator Modal
     function showAssignValidatorModal(pengajuanId) {
         currentPengajuanId = pengajuanId;
-        document.getElementById('validatorUserId').value = '';
+        $('#validatorUserId').val(null).trigger('change');
         const modal = new bootstrap.Modal(document.getElementById('modalAssignValidator'));
         modal.show();
     }
