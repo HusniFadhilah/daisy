@@ -6,6 +6,7 @@ namespace App\Http\Controllers\UPPS;
 use App\Http\Controllers\Controller;
 use App\Models\AsesmenDocument;
 use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -109,12 +110,19 @@ class PenyampaianHasilAkreditasiController extends Controller
                 ->first();
         }
 
+        $sertifikat = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+            ->where('jenis_dokumen', 'sertifikat')
+            ->where('is_latest', true)
+            ->latest()
+            ->first();
+
         return view('upps.penyampaian-hasil-akreditasi.show', compact(
             'pengajuan',
             'hasil',
             'peringkat',
             'elemenList',
-            'beritaAcara'
+            'beritaAcara',
+            'sertifikat'
         ));
     }
 
@@ -177,64 +185,27 @@ class PenyampaianHasilAkreditasiController extends Controller
 
     public function downloadSertifikat($id)
     {
-        $pengajuan = PengajuanAkreditasi::with([
-            'studyProgram.university',
-            'studyProgram.degreeLevel',
-            'asesmen.hasil.statusFinal',
-            'asesmen.hasil.statusAl',
-            'asesmen.hasil.statusAk',
-        ])->findOrFail($id);
+        $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
         $user = Auth::user();
         if (!$user->studyPrograms()->pluck('study_programs.id')->contains($pengajuan->id_program_studi)) {
             abort(403);
         }
 
-        $hasil = $pengajuan->asesmen->hasil;
-        $tanggalPenetapan = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
-        $masaBerlakuTahun = $pengajuan->masa_berlaku_tahun
-            ?? $hasil?->statusFinal?->siklus_tahun
-            ?? $hasil?->statusAl?->siklus_tahun
-            ?? $hasil?->statusAk?->siklus_tahun
-            ?? 1;
+        $dokumen = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+            ->where('jenis_dokumen', 'sertifikat')
+            ->where('is_latest', true)
+            ->latest()
+            ->firstOrFail();
 
-        $tanggalMulai    = \Carbon\Carbon::parse($tanggalPenetapan);
-        $tanggalBerakhir = $tanggalMulai->copy()->addYears($masaBerlakuTahun);
-        $masaBerlaku     = [
-            'tahun'            => $masaBerlakuTahun,
-            'tanggal_mulai'    => $tanggalMulai,
-            'tanggal_berakhir' => $tanggalBerakhir,
-        ];
-
-        $elemenList = ($hasil?->detail_skor_al ?? [])['elemen'] ?? [];
-
-        $resumeRaw = $hasil
-            ? $hasil->getResumeAsesmenOrDefault()
-            : \App\Models\HasilAkreditasi::resumeAsesmenSkeleton();
-
-        $resume = $resumeRaw;
-        if (!isset($resume['bab']) || !is_array($resume['bab'])) {
-            $resume['bab'] = [];
+        if (!Storage::disk('public')->exists($dokumen->path_file)) {
+            return back()->with('error', 'File sertifikat tidak ditemukan.');
         }
 
-        $nomorSertifikat = $pengajuan->nomor_sertifikat ?? $pengajuan->generateNomorSertifikat();
-
-        $pdf = Pdf::loadView('de.penyampaian-hasil-akreditasi.sertifikat-pdf', [
-            'pengajuan'        => $pengajuan,
-            'hasil'            => $hasil,
-            'studyProgram'     => $pengajuan->studyProgram,
-            'university'       => $pengajuan->studyProgram->university,
-            'nomorSertifikat'  => $nomorSertifikat,
-            'tanggalPenetapan' => $tanggalPenetapan,
-            'masaBerlaku'      => $masaBerlaku,
-            'elemenList'       => $elemenList,
-            'resume'           => $resume,
-            'forPdf'           => true,
-            'downloadUrl'      => null,
-        ])->setPaper('A4', 'landscape');
-
-        $fileName = 'Sertifikat_Akreditasi_' . str_replace(' ', '_', $pengajuan->studyProgram->name) . '.pdf';
-        return $pdf->download($fileName);
+        return response()->file(Storage::disk('public')->path($dokumen->path_file), [
+            'Content-Type' => $dokumen->mime_type ?: 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . ($dokumen->original_filename ?? $dokumen->nama_file) . '"',
+        ]);
     }
 
     /**

@@ -316,7 +316,24 @@
                     </h5>
                 </div>
                 <div class="card-body">
+                    @php
+                    $hasilArsip = $pengajuan->asesmen->hasil ?? null;
+                    $peringkatArsip = $hasilArsip?->peringkat_akreditasi_final;
+                    @endphp
                     <table class="table table-borderless">
+                        <tr>
+                            <th>Status Akreditasi</th>
+                            <td>
+                                :
+                                @if($peringkatArsip)
+                                <span class="badge px-3 py-2" style="background-color: {{ $hasilArsip->getPeringkatColor() }}; color:#222">
+                                    {{ $peringkatArsip }}
+                                </span>
+                                @else
+                                <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                        </tr>
                         <tr>
                             <th>Tanggal Penyimpanan Arsip Akreditasi</th>
                             <td>

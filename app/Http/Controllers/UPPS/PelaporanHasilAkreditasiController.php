@@ -75,6 +75,7 @@ class PelaporanHasilAkreditasiController extends Controller
             'pengaju',
             'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
                 'sertifikat',
+                'sertifikat_banding',
                 'sk_akreditasi',
                 'sk_penetapan',
                 'laporan_hasil',
@@ -112,8 +113,13 @@ class PelaporanHasilAkreditasiController extends Controller
         }
 
         $hasil = $pengajuan->asesmen->hasil;
-        $tanggalPenetapan = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
-        $masaBerlakuTahun = $pengajuan->masa_berlaku_tahun
+        $tanggalPenetapan = ($pengajuan->hasBanding() ? $pengajuan->tanggal_sertifikat_banding : null)
+            ?? $pengajuan->tanggal_sertifikat_pelaporan
+            ?? $pengajuan->tanggal_sertifikat
+            ?? $pengajuan->tanggal_penetapan;
+        $masaBerlakuTahun = ($pengajuan->hasBanding() ? $pengajuan->masa_berlaku_tahun_banding : null)
+            ?? $pengajuan->masa_berlaku_tahun_pelaporan
+            ?? $pengajuan->masa_berlaku_tahun
             ?? $hasil?->statusFinal?->siklus_tahun
             ?? $hasil?->statusAl?->siklus_tahun
             ?? $hasil?->statusAk?->siklus_tahun
@@ -143,7 +149,10 @@ class PelaporanHasilAkreditasiController extends Controller
             'hasil'            => $hasil,
             'studyProgram'     => $pengajuan->studyProgram,
             'university'       => $pengajuan->studyProgram->university,
-            'nomorSertifikat'  => $pengajuan->nomor_sertifikat ?? $pengajuan->generateNomorSertifikat(),
+            'nomorSertifikat'  => ($pengajuan->hasBanding() ? $pengajuan->nomor_sertifikat_banding : null)
+                ?? $pengajuan->nomor_sertifikat_pelaporan
+                ?? $pengajuan->nomor_sertifikat
+                ?? $pengajuan->generateNomorSertifikat(),
             'tanggalPenetapan' => $tanggalPenetapan,
             'masaBerlaku'      => $masaBerlaku,
             'elemenList'       => $elemenList,
@@ -169,8 +178,13 @@ class PelaporanHasilAkreditasiController extends Controller
         }
 
         $hasil = $pengajuan->asesmen->hasil;
-        $tanggalPenetapan = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
-        $masaBerlakuTahun = $pengajuan->masa_berlaku_tahun
+        $tanggalPenetapan = ($pengajuan->hasBanding() ? $pengajuan->tanggal_sertifikat_banding : null)
+            ?? $pengajuan->tanggal_sertifikat_pelaporan
+            ?? $pengajuan->tanggal_sertifikat
+            ?? $pengajuan->tanggal_penetapan;
+        $masaBerlakuTahun = ($pengajuan->hasBanding() ? $pengajuan->masa_berlaku_tahun_banding : null)
+            ?? $pengajuan->masa_berlaku_tahun_pelaporan
+            ?? $pengajuan->masa_berlaku_tahun
             ?? $hasil?->statusFinal?->siklus_tahun
             ?? $hasil?->statusAl?->siklus_tahun
             ?? $hasil?->statusAk?->siklus_tahun
@@ -195,7 +209,10 @@ class PelaporanHasilAkreditasiController extends Controller
             $resume['bab'] = [];
         }
 
-        $nomorSertifikat = $pengajuan->nomor_sertifikat ?? $pengajuan->generateNomorSertifikat();
+        $nomorSertifikat = ($pengajuan->hasBanding() ? $pengajuan->nomor_sertifikat_banding : null)
+            ?? $pengajuan->nomor_sertifikat_pelaporan
+            ?? $pengajuan->nomor_sertifikat
+            ?? $pengajuan->generateNomorSertifikat();
 
         $pdf = Pdf::loadView('de.pelaporan-hasil-akreditasi.sertifikat-pdf', [
             'pengajuan'        => $pengajuan,

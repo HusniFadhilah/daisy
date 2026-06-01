@@ -1260,7 +1260,10 @@
 <body>
 
     @php
-    $peringkatFinal = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0), 'al');
+    // Pakai peringkat_akreditasi_final langsung jika tersedia (akurat untuk banding)
+    $peringkatFinal = $peringkatFinalOverride
+        ?? $hasil->peringkat_akreditasi_final
+        ?? $hasil->getPeringkatFromSkor((float)($hasil->skor_final ?? $hasil->skor_al ?? 0), 'final');
     $verifikasiUrl = url("/verifikasi-sertifikat/{$nomorSertifikat}");
     $verifikasiUrlShort = parse_url($verifikasiUrl, PHP_URL_HOST) . '/verifikasi-sertifikat';
     $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" . urlencode($verifikasiUrl);

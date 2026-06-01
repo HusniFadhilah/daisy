@@ -62,6 +62,7 @@ class PengajuanDokumen extends Model
         'laporan_al'                   => 'Laporan AL',
         'laporan_hasil'                => 'Laporan Hasil Akreditasi',
         'sertifikat'                   => 'Sertifikat Akreditasi',
+        'sertifikat_banding'           => 'Sertifikat Akreditasi (Terbaru)',
         'data_kualitatif'              => 'Laporan Evaluasi Diri (LED)',
         'data_kuantitatif'             => 'Laporan Kinerja Program Studi (LKPS)',
         'data_suplemen'                => 'Suplemen Laporan Evaluasi Diri (LED)',

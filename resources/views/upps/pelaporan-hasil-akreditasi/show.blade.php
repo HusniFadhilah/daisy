@@ -77,7 +77,7 @@
                 <div class="card-body">
                     @php
                     $dokumenHasil = $pengajuan->dokumen
-                    ->whereIn('jenis_dokumen', ['sertifikat','laporan_hasil'])
+                    ->whereIn('jenis_dokumen', ['sertifikat','sertifikat_banding','laporan_hasil'])
                     ->where('is_latest', true);
                     @endphp
 
@@ -96,6 +96,8 @@
                                 <br>
                                 @if($dokumen->jenis_dokumen === 'sertifikat')
                                 <small class="text-dark">Sertifikat Akreditasi</small>
+                                @elseif($dokumen->jenis_dokumen === 'sertifikat_banding')
+                                <small class="text-dark">Sertifikat Akreditasi (Terbaru)</small>
                                 @elseif($dokumen->jenis_dokumen === 'sk_akreditasi')
                                 <small class="text-dark">SK Akreditasi</small>
                                 @elseif($dokumen->jenis_dokumen === 'sk_penetapan')
@@ -175,8 +177,8 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="text-muted small">Status Akreditasi</label><br>
-                            <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">
-                                {{ $peringkat }}
+                            <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor() }}; color:#222">
+                                {{ $hasil->peringkat_akreditasi_final ?? $peringkat ?? '-' }}
                             </span>
                         </div>
                         <div class="col-md-6 mb-3">

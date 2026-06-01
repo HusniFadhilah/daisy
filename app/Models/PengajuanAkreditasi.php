@@ -184,6 +184,14 @@ class PengajuanAkreditasi extends Model
         'tanggal_kedaluwarsa_akhir',
         'tanggal_sertifikat',
         'nomor_sertifikat',
+        'nomor_sertifikat_banding',
+        'tanggal_sertifikat_banding',
+        'masa_berlaku_tahun_banding',
+        'keterangan_sertifikat_banding',
+        'nomor_sertifikat_pelaporan',
+        'tanggal_sertifikat_pelaporan',
+        'masa_berlaku_tahun_pelaporan',
+        'keterangan_sertifikat_pelaporan',
         'peringkat_awal',
         'peringkat_hasil',
         'skor_hasil',
@@ -257,7 +265,9 @@ class PengajuanAkreditasi extends Model
         'tanggal_penyimpanan' => 'datetime',
         'tanggal_kedaluwarsa_awal' => 'datetime',
         'tanggal_kedaluwarsa_akhir' => 'datetime',
-        'tanggal_sertifikat' => 'datetime',
+        'tanggal_sertifikat'            => 'datetime',
+        'tanggal_sertifikat_banding'    => 'datetime',
+        'tanggal_sertifikat_pelaporan'  => 'datetime',
     ];
 
     public function scopeNonExample($query)

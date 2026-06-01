@@ -155,7 +155,11 @@ return new class extends Migration
             $table->datetime('tanggal_kedaluwarsa_awal')->nullable()->comment('Tanggal kedaluwarsa awal prodi sebelum diakreditasi');
             $table->datetime('tanggal_kedaluwarsa_akhir')->nullable()->comment('Tanggal kedaluwarsa prodi setelah diakreditasi');
             $table->datetime('tanggal_sertifikat')->nullable()->comment('Tanggal sertifikat dikeluarkan');
+            $table->date('tanggal_sertifikat_banding')->nullable();
+            $table->date('tanggal_sertifikat_pelaporan')->nullable();
             $table->string('nomor_sertifikat')->nullable();
+            $table->string('nomor_sertifikat_banding')->nullable();
+            $table->string('nomor_sertifikat_pelaporan')->nullable();
             $table->string('peringkat_awal')->nullable()->comment('Peringkat akreditasi awal prodi sebelum diakreditasi');
             $table->string('peringkat_hasil')->nullable()->comment('Peringkat hasil akreditasi awal yang disampaikan ke prodi');
             $table->decimal('skor_hasil', 6, 2)->nullable()->comment('Nilai hasil akreditasi awal (0-400)');
@@ -164,7 +168,11 @@ return new class extends Migration
             $table->string('peringkat_final')->nullable();
             $table->decimal('skor_final', 6, 2)->nullable();
             $table->integer('masa_berlaku_tahun')->default(null)->nullable();
+            $table->unsignedTinyInteger('masa_berlaku_tahun_banding')->nullable();
+            $table->unsignedTinyInteger('masa_berlaku_tahun_pelaporan')->nullable();
             $table->text('catatan_hasil')->nullable();
+            $table->text('keterangan_sertifikat_banding')->nullable();
+            $table->text('keterangan_sertifikat_pelaporan')->nullable();
             $table->text('alasan_banding')->nullable();
             $table->enum('hasil_banding', ['diterima', 'ditolak'])->nullable();
             $table->boolean('is_active')->default(true)->index();
@@ -235,8 +243,10 @@ return new class extends Migration
                 'dokumen_pendukung',
                 'laporan_ak',
                 'laporan_al',
+                'laporan_banding',
                 'laporan_hasil',
                 'sertifikat',
+                'sertifikat_banding',
                 'data_kualitatif',
                 'data_kuantitatif',
                 'data_suplemen',

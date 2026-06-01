@@ -126,7 +126,8 @@ class PelaporanHasilAkreditasiController extends Controller
             'studyProgram.degreeLevel',
             'studyProgram.category',
             'pengaju',
-            'asesmen.hasil',
+            'asesmen.hasil.statusFinal',
+            'asesmen.hasil.statusAl',
             'dokumen' => function ($q) {
                 $q->whereIn('jenis_dokumen', [
                     'laporan_ak',
@@ -134,6 +135,7 @@ class PelaporanHasilAkreditasiController extends Controller
                     'laporan_banding',
                     'laporan_hasil',
                     'sertifikat',
+                    'sertifikat_banding',
                     'lainnya',
                 ])
                     ->where('is_latest', true)
@@ -335,14 +337,17 @@ class PelaporanHasilAkreditasiController extends Controller
     {
         // validasi "conditional": file boleh salah satu, tapi minimal ada salah satu
         $request->validate([
-            'file_laporan' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
-            'file_sertifikat' => 'nullable|file|mimes:pdf|max:5120',
-            'masa_berlaku_tahun' => 'nullable|integer|min:1|max:10',
-            'keterangan' => 'nullable|string|max:1000',
+            'file_laporan'          => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+            'file_sertifikat'       => 'nullable|file|mimes:pdf|max:5120',
+            'file_sertifikat_banding' => 'nullable|file|mimes:pdf|max:5120',
+            'masa_berlaku_tahun'    => 'nullable|integer|min:1|max:10',
+            'keterangan'            => 'nullable|string|max:1000',
         ]);
 
-        if (!$request->hasFile('file_laporan') && !$request->hasFile('file_sertifikat')) {
-            return back()->with('error', 'Minimal upload salah satu: Laporan Hasil atau Sertifikat.');
+        if (!$request->hasFile('file_laporan')
+            && !$request->hasFile('file_sertifikat')
+            && !$request->hasFile('file_sertifikat_banding')) {
+            return back()->with('error', 'Minimal upload salah satu dokumen.');
         }
 
         $pengajuan = PengajuanAkreditasi::findOrFail($id);
@@ -389,8 +394,8 @@ class PelaporanHasilAkreditasiController extends Controller
                 ]);
             }
 
-            // === 2) Upload sertifikat (jika ada) ===
-            if ($request->hasFile('file_sertifikat')) {
+            // === 2) Upload sertifikat (jika ada, hanya saat tidak banding) ===
+            if ($request->hasFile('file_sertifikat') && !$pengajuan->hasBanding()) {
                 $file = $request->file('file_sertifikat');
                 $filename = 'sertifikat_' . $pengajuan->nomor_pengajuan . '_' . time() . '.pdf';
                 $path = $file->storeAs('pengajuan_dokumen/sertifikat', $filename, 'public');
@@ -401,26 +406,72 @@ class PelaporanHasilAkreditasiController extends Controller
                     ->update(['is_latest' => false]);
 
                 PengajuanDokumen::create([
-                    'id_pengajuan' => $id,
-                    'jenis_dokumen' => 'sertifikat',
-                    'nama_file' => $filename,
-                    'path_file' => $path,
+                    'id_pengajuan'      => $id,
+                    'jenis_dokumen'     => 'sertifikat',
+                    'nama_file'         => $filename,
+                    'path_file'         => $path,
                     'original_filename' => $file->getClientOriginalName(),
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
-                    'uploaded_by' => auth()->id(),
-                    'keterangan' => $request->keterangan,
-                    'versi' => (PengajuanDokumen::where('id_pengajuan', $id)
+                    'file_size'         => $file->getSize(),
+                    'mime_type'         => $file->getMimeType(),
+                    'uploaded_by'       => auth()->id(),
+                    'keterangan'        => $request->keterangan,
+                    'versi'             => (PengajuanDokumen::where('id_pengajuan', $id)
                         ->where('jenis_dokumen', 'sertifikat')
                         ->max('versi') ?? 0) + 1,
-                    'is_latest' => true,
+                    'is_latest'         => true,
                 ]);
 
                 $pengajuan->update([
                     'masa_berlaku_tahun' => $request->masa_berlaku_tahun,
-                    'nomor_sertifikat' => $request->nomor_sertifikat,
+                    'nomor_sertifikat'   => $request->nomor_sertifikat,
                     'tanggal_sertifikat' => $request->tanggal_sertifikat,
                 ]);
+            }
+
+            // === 3) Upload sertifikat_banding (hanya saat banding) ===
+            if ($request->hasFile('file_sertifikat_banding') && $pengajuan->hasBanding()) {
+                $file = $request->file('file_sertifikat_banding');
+                $filename = 'sertifikat_banding_' . $pengajuan->nomor_pengajuan . '_' . time() . '.pdf';
+                $path = $file->storeAs('pengajuan_dokumen/sertifikat_banding', $filename, 'public');
+                $uploadedPaths[] = $path;
+
+                PengajuanDokumen::where('id_pengajuan', $id)
+                    ->where('jenis_dokumen', 'sertifikat_banding')
+                    ->update(['is_latest' => false]);
+
+                PengajuanDokumen::create([
+                    'id_pengajuan'      => $id,
+                    'jenis_dokumen'     => 'sertifikat_banding',
+                    'nama_file'         => $filename,
+                    'path_file'         => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_size'         => $file->getSize(),
+                    'mime_type'         => $file->getMimeType(),
+                    'uploaded_by'       => auth()->id(),
+                    'keterangan'        => $request->keterangan,
+                    'versi'             => (PengajuanDokumen::where('id_pengajuan', $id)
+                        ->where('jenis_dokumen', 'sertifikat_banding')
+                        ->max('versi') ?? 0) + 1,
+                    'is_latest'         => true,
+                ]);
+
+                // Simpan meta sertifikat banding ke field _pelaporan
+                $updateMeta = [];
+                if ($request->filled('masa_berlaku_tahun')) {
+                    $updateMeta['masa_berlaku_tahun_banding'] = (int) $request->masa_berlaku_tahun;
+                }
+                if ($request->filled('nomor_sertifikat')) {
+                    $updateMeta['nomor_sertifikat_banding'] = $request->nomor_sertifikat;
+                }
+                if ($request->filled('tanggal_sertifikat')) {
+                    $updateMeta['tanggal_sertifikat_banding'] = $request->tanggal_sertifikat;
+                }
+                if ($request->filled('keterangan')) {
+                    $updateMeta['keterangan_sertifikat_banding'] = $request->keterangan;
+                }
+                if (!empty($updateMeta)) {
+                    $pengajuan->update($updateMeta);
+                }
             }
 
             DB::commit();
@@ -511,18 +562,19 @@ class PelaporanHasilAkreditasiController extends Controller
             // ── Simpan field meta ke pengajuan ────────────────
             $meta       = $request->input('meta', []);
             $updateData = [];
+            $metaSuffix = $pengajuan->hasBanding() ? 'banding' : 'pelaporan';
 
             if (isset($meta['masa_berlaku_tahun']) && $meta['masa_berlaku_tahun'] !== '') {
-                $updateData['masa_berlaku_tahun'] = (int) $meta['masa_berlaku_tahun'];
+                $updateData["masa_berlaku_tahun_{$metaSuffix}"] = (int) $meta['masa_berlaku_tahun'];
             }
             if (isset($meta['nomor_sertifikat']) && $meta['nomor_sertifikat'] !== '') {
-                $updateData['nomor_sertifikat'] = $meta['nomor_sertifikat'];
+                $updateData["nomor_sertifikat_{$metaSuffix}"] = $meta['nomor_sertifikat'];
             }
             if (isset($meta['tanggal_sertifikat']) && $meta['tanggal_sertifikat'] !== '') {
-                $updateData['tanggal_penetapan'] = $meta['tanggal_sertifikat'];
+                $updateData["tanggal_sertifikat_{$metaSuffix}"] = $meta['tanggal_sertifikat'];
             }
             if (isset($meta['keterangan']) && $meta['keterangan'] !== '') {
-                $updateData['keterangan_pelaporan'] = $meta['keterangan'];
+                $updateData["keterangan_sertifikat_{$metaSuffix}"] = $meta['keterangan'];
             }
 
             if (!empty($updateData)) {
@@ -572,13 +624,15 @@ class PelaporanHasilAkreditasiController extends Controller
             ->where('is_latest', true)
             ->exists();
 
+        $jenisSertifikatWajib = $pengajuan->hasBanding() ? 'sertifikat_banding' : 'sertifikat';
         $hasSertifikat = PengajuanDokumen::where('id_pengajuan', $id)
-            ->where('jenis_dokumen', 'sertifikat')
+            ->where('jenis_dokumen', $jenisSertifikatWajib)
             ->where('is_latest', true)
             ->exists();
 
         if (!$hasLaporan || !$hasSertifikat) {
-            return back()->with('error', 'Wajib upload Laporan Hasil dan Sertifikat sebelum menyelesaikan pelaporan.');
+            $labelSertifikat = $pengajuan->hasBanding() ? 'Sertifikat Akreditasi (Terbaru)' : 'Sertifikat';
+            return back()->with('error', "Wajib upload Laporan Hasil dan {$labelSertifikat} sebelum menyelesaikan pelaporan.");
         }
 
         DB::beginTransaction();
@@ -841,17 +895,31 @@ class PelaporanHasilAkreditasiController extends Controller
                 return back()->with('error', 'Hasil belum ditetapkan.');
             }
 
-            $hasil       = $pengajuan->asesmen->hasil;
-            $tanggalPenetapan = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
-            $masaBerlaku = $this->calculateMasaBerlaku($hasil, $tanggalPenetapan, $pengajuan->masa_berlaku_tahun);
-            $elemenList  = ($hasil->detail_skor_al ?? [])['elemen'] ?? [];
+            $hasil = $pengajuan->asesmen->hasil;
 
-            // Ambil resume dari DB; normalisasi ke struktur array bab
+            // Fallback chain: _pelaporan (banding override) → _penyampaian (field existing) → default
+            $nomorSertifikat = ($pengajuan->hasBanding() ? $pengajuan->nomor_sertifikat_banding : null)
+                ?? $pengajuan->nomor_sertifikat_pelaporan
+                ?? $pengajuan->nomor_sertifikat
+                ?? $pengajuan->generateNomorSertifikat();
+
+            $tanggalPenetapan = ($pengajuan->hasBanding() ? $pengajuan->tanggal_sertifikat_banding : null)
+                ?? $pengajuan->tanggal_sertifikat_pelaporan
+                ?? $pengajuan->tanggal_sertifikat
+                ?? $pengajuan->tanggal_penetapan;
+
+            $masaBerlakuTahun = ($pengajuan->hasBanding() ? $pengajuan->masa_berlaku_tahun_banding : null)
+                ?? $pengajuan->masa_berlaku_tahun_pelaporan
+                ?? $pengajuan->masa_berlaku_tahun;
+
+            $masaBerlaku = $this->calculateMasaBerlaku($hasil, $tanggalPenetapan, $masaBerlakuTahun);
+            // Gunakan detail_skor_final jika ada (banding), fallback ke detail_skor_al
+            $elemenList = ($hasil->detail_skor_final ?? $hasil->detail_skor_al ?? [])['elemen'] ?? [];
+
             $resumeRaw = $hasil
                 ? $hasil->getResumeAsesmenOrDefault()
                 : \App\Models\HasilAkreditasi::resumeAsesmenSkeleton();
 
-            // Pastikan key 'bab' selalu array
             $resume = $resumeRaw;
             if (!isset($resume['bab']) || !is_array($resume['bab'])) {
                 $resume['bab'] = [];
@@ -862,11 +930,13 @@ class PelaporanHasilAkreditasiController extends Controller
                 'hasil'            => $hasil,
                 'studyProgram'     => $pengajuan->studyProgram,
                 'university'       => $pengajuan->studyProgram->university,
-                'nomorSertifikat'  => $pengajuan->nomor_sertifikat ?? $pengajuan->generateNomorSertifikat(),
+                'nomorSertifikat'  => $nomorSertifikat,
                 'tanggalPenetapan' => $tanggalPenetapan,
                 'masaBerlaku'      => $masaBerlaku,
                 'elemenList'       => $elemenList,
                 'resume'           => $resume,
+                // Peringkat final langsung — tidak perlu hitung ulang dari skor di blade
+                'peringkatFinalOverride' => $hasil->peringkat_akreditasi_final ?? null,
             ];
             return view('de.pelaporan-hasil-akreditasi.sertifikat-pdf', $data);
         } catch (\Exception $e) {

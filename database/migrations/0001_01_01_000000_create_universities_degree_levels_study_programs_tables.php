@@ -68,6 +68,11 @@ return new class extends Migration
                 $table->string('peringkat_akreditasi')->nullable();
                 $table->date('tanggal_kedaluwarsa')->nullable();
                 $table->enum('status_kedaluwarsa', ['Aktif', 'Kedaluwarsa', 'Belum Terakreditasi'])->default(null)->nullable();
+                $table->string('akreditasi_source')->nullable()->comment('banpt | lamdepilar | manual');
+                $table->timestamp('akreditasi_locked_at')->nullable();
+                $table->text('akreditasi_locked_reason')->nullable();
+                $table->timestamp('last_banpt_checked_at')->nullable();
+                $table->json('last_banpt_payload')->nullable();
                 $table->string('ketua_prodi_name')->nullable()->comment('Nama Ketua Program Studi');
                 $table->string('ketua_prodi_nip')->nullable()->comment('NIP Ketua Program Studi');
                 $table->string('ketua_tim_akreditasi')->nullable()->comment('Ketua Tim Akreditasi');

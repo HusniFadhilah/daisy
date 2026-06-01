@@ -131,12 +131,9 @@
                                     {!! $pengajuan->getPermohonanAkreditasiSectionFor('upps') !!}
                                 </td>
                                 <td>
-                                    @if($hasil && $hasil->skor_final)
-                                    @php
-                                    $peringkatFinal = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0), 'al');
-                                    @endphp
-                                    <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkatFinal) }}; color:#222">
-                                        {{ $peringkatFinal }}
+                                    @if($hasil && $hasil->peringkat_akreditasi_final)
+                                    <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor() }}; color:#222">
+                                        {{ $hasil->peringkat_akreditasi_final }}
                                     </span>
                                     @else
                                     <span class="text-muted">-</span>

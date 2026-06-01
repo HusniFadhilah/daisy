@@ -24,11 +24,6 @@
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
         <div class="d-flex gap-2">
-            @if($pengajuan->nomor_sertifikat)
-            <a href="{{ route('upps.penyampaian-hasil-akreditasi.preview-sertifikat', $pengajuan->id) }}" class="btn btn-outline-dark" target="_blank">
-                <i class="bi bi-patch-check"></i> Lihat Sertifikat
-            </a>
-            @endif
             <a href="{{ route('upps.penyampaian-hasil-akreditasi') }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Kembali
             </a>
@@ -85,6 +80,32 @@
                         <div>
                             <a href="{{ route('upps.penyampaian-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary mt-3" target="_blank">
                                 <i class="bi bi-eye"></i> Lihat File
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($sertifikat)
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start">
+                        <div class="d-flex align-items-start flex-grow-1">
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">Sertifikat Akreditasi</h5>
+                                <p class="text-muted mb-2">
+                                    <i class="bi bi-file-pdf text-danger"></i>
+                                    {{ $sertifikat->original_filename ?? $sertifikat->nama_file }}
+                                </p>
+                                <small class="text-muted">
+                                    Diupload pada {{ $sertifikat->created_at?->locale('id')->translatedFormat('d M Y, H:i') }}
+                                </small>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ route('upps.penyampaian-hasil-akreditasi.download-sertifikat', $pengajuan->id) }}" class="btn btn-outline-primary mt-3" target="_blank">
+                                <i class="bi bi-eye"></i> Lihat
                             </a>
                         </div>
                     </div>

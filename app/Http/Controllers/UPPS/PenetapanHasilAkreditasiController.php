@@ -5,6 +5,7 @@ namespace App\Http\Controllers\UPPS;
 use App\Http\Controllers\Controller;
 use App\Models\AsesmenDocument;
 use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -69,7 +70,6 @@ class PenetapanHasilAkreditasiController extends Controller
             'asesmen.asesmenLapangan',
             'asesmen.hasil',
             'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
-                'sertifikat',
                 'sk_akreditasi',
             ])->orderBy('created_at', 'desc'),
             'statusLog' => fn($q) => $q->orderBy('changed_at', 'desc'),
@@ -87,8 +87,8 @@ class PenetapanHasilAkreditasiController extends Controller
 
         // detail skor per elemen
         $elemenList = [];
-        if ($hasil && $hasil->detail_skor_al) {
-            $detailSkorAL = $hasil->detail_skor_al;
+        if ($hasil && ($hasil->detail_skor_final || $hasil->detail_skor_al)) {
+            $detailSkorAL = $hasil->detail_skor_final ?? $hasil->detail_skor_al;
             $elemenList = $detailSkorAL['elemen'] ?? [];
         }
 

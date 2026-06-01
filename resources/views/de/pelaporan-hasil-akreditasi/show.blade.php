@@ -29,10 +29,9 @@
     </div>
 
     @php
-    // Catatan: bagian hasil/asesmen kamu sebelumnya belum lengkap (variabel $peringkat belum didefinisikan).
-    // Saya biarkan aman: ambil dari field yang paling umum dipakai.
-    $peringkat = $pengajuan->peringkat_final ?? $pengajuan->peringkat_hasil ?? '-';
-    $hasil = $pengajuan->asesmen->hasil ?? null;
+    // $peringkat dan $hasil sudah di-pass dari controller
+    $peringkat = $peringkat ?? $hasil?->peringkat_akreditasi_final ?? '-';
+    $hasil = $hasil ?? $pengajuan->asesmen->hasil ?? null;
 
     $allowed = [
     \App\Models\PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
@@ -44,31 +43,51 @@
 
     // Ambil dokumen terbaru
     $dokumenHasil = $pengajuan->dokumen
-    ->whereIn('jenis_dokumen', ['sertifikat', 'laporan_hasil'])
+    ->whereIn('jenis_dokumen', ['sertifikat', 'sertifikat_banding', 'laporan_hasil'])
     ->where('is_latest', true)
     ->values();
 
+    $hasBanding = $pengajuan->hasBanding();
     $laporanHasil = $dokumenHasil->firstWhere('jenis_dokumen', 'laporan_hasil');
     $sertifikat = $dokumenHasil->firstWhere('jenis_dokumen', 'sertifikat');
+    $sertifikatBanding = $dokumenHasil->firstWhere('jenis_dokumen', 'sertifikat_banding');
+    // Sertifikat "aktif" yang dipakai: banding → sertifikat_banding, else → sertifikat
+    $sertifikatAktif = $hasBanding ? $sertifikatBanding : $sertifikat;
 
     // Rule upload: hanya jika belum "HASIL_DILAPORKAN"
     $canUpload = !in_array($log?->status_to, [\App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,\App\Models\PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,\App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,\App\Models\PengajuanAkreditasi::STATUS_SELESAI]);
 
     $hasLaporan = !is_null($laporanHasil);
-    $hasSertifikat = !is_null($sertifikat);
+    // "hasSertifikat" untuk logic upload: banding butuh sertifikat_banding, else sertifikat
+    $hasSertifikat = $hasBanding ? !is_null($sertifikatBanding) : !is_null($sertifikat);
     // $resume sudah di-pass dari controller (show method)
     $resumeBabs = $resume['bab'] ?? \App\Models\HasilAkreditasi::resumeAsesmenSkeleton()['bab'];
     $babDefaults = \App\Models\HasilAkreditasi::resumeBabDefaults();
     $charLimit = \App\Models\HasilAkreditasi::resumeBabCharLimit();
     $resumeSaved = $hasil ? $hasil->hasResumeAsesmen() : false;
 
-    // Nilai awal field meta (untuk prefill di form resume)
-    $metaMasaBerlaku = old('masa_berlaku_tahun',$pengajuan->masa_berlaku_tahun ?? ($hasil && $hasil->statusFinal ? $hasil->statusFinal->siklus_tahun : ''));
-    $metaNomorSertif = old('nomor_sertifikat', $pengajuan->nomor_sertifikat ?? $pengajuan->generateNomorSertifikat());
-    $tanggalSertifikat = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
-    $metaTanggalSertif = old('tanggal_sertifikat',
-    $tanggalSertifikat?->format('Y-m-d'));
-    $metaKeterangan = old('keterangan', '');
+    // Nilai awal field meta — _pelaporan (override banding) → _penyampaian (existing) → default
+    $metaFromPelaporan = (bool) (($hasBanding ? $pengajuan->nomor_sertifikat_banding : null) ?? $pengajuan->nomor_sertifikat_pelaporan);
+    $metaMasaBerlaku = old('masa_berlaku_tahun',
+    ($hasBanding ? $pengajuan->masa_berlaku_tahun_banding : null)
+    ?? $pengajuan->masa_berlaku_tahun_pelaporan
+    ?? $pengajuan->masa_berlaku_tahun
+    ?? ($hasil && $hasil->statusFinal ? $hasil->statusFinal->siklus_tahun : ''));
+    $metaNomorSertif = old('nomor_sertifikat',
+    ($hasBanding ? $pengajuan->nomor_sertifikat_banding : null)
+    ?? $pengajuan->nomor_sertifikat_pelaporan
+    ?? $pengajuan->nomor_sertifikat
+    ?? $pengajuan->generateNomorSertifikat());
+    $tanggalSertifikat = ($hasBanding ? $pengajuan->tanggal_sertifikat_banding : null)
+    ?? $pengajuan->tanggal_sertifikat_pelaporan
+    ?? $pengajuan->tanggal_sertifikat
+    ?? $pengajuan->tanggal_penetapan;
+    $metaTanggalSertif = old('tanggal_sertifikat', $tanggalSertifikat?->format('Y-m-d'));
+    $metaKeterangan = old('keterangan',
+    ($hasBanding ? $pengajuan->keterangan_sertifikat_banding : null)
+    ?? $pengajuan->keterangan_sertifikat_pelaporan
+    ?? $pengajuan->keterangan_pelaporan
+    ?? '');
     @endphp
 
     <div class="row">
@@ -190,6 +209,11 @@
                                 {{-- ── Field meta sertifikat ── --}}
                                 <p class="small fw-semibold text-muted mb-2">
                                     <i class="bi bi-card-list"></i> Data Sertifikat
+                                    @if($metaFromPelaporan)
+                                    <span class="badge bg-success ms-1">dioverride pelaporan</span>
+                                    @else
+                                    <span class="badge bg-secondary ms-1">dari penyampaian</span>
+                                    @endif
                                 </p>
                                 <div class="row g-2 mb-3">
                                     <div class="col-md-4">
@@ -238,7 +262,8 @@
                         <div class="card-header d-flex justify-content-between align-items-center bg-secondary text-white">
                             <h6 class="mb-0">
                                 <span class="badge rounded-pill bg-light text-dark me-2" style="font-size:.75rem;">2</span>
-                                <i class="bi bi-upload"></i> Upload Laporan {{ !$hasSertifikat ? 'dan Sertifikat' : '' }}
+                                <i class="bi bi-upload"></i> Upload Laporan
+                                @if(!$hasSertifikat) dan {{ $hasBanding ? 'Sertifikat Akreditasi (Terbaru)' : 'Sertifikat' }} @endif
                             </h6>
                             @if(!$resumeSaved)
                             <span class="badge bg-warning text-dark small">
@@ -270,10 +295,16 @@
                                     </div>
                                     @if(!$hasSertifikat)
                                     <div class="col-md-6">
+                                        @if($hasBanding)
+                                        <label class="form-label small">File Sertifikat Terbaru (hasil akhir)</label>
+                                        <input type="file" name="file_sertifikat_banding" class="form-control form-control-sm @error('file_sertifikat_banding') is-invalid @enderror" accept=".pdf" {{ !$resumeSaved ? 'disabled' : '' }}>
+                                        @error('file_sertifikat_banding')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        @else
                                         <label class="form-label small">File Sertifikat</label>
                                         <input type="file" name="file_sertifikat" class="form-control form-control-sm @error('file_sertifikat') is-invalid @enderror" accept=".pdf" {{ !$resumeSaved ? 'disabled' : '' }}>
-                                        <div class="form-text">PDF · maks 5 MB</div>
                                         @error('file_sertifikat')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        @endif
+                                        <div class="form-text">PDF · maks 5 MB</div>
                                     </div>
                                     @endif
                                     <div class="col-12">
@@ -319,7 +350,7 @@
                     @endif
 
                     {{-- LIST DOKUMEN TERUPLOAD --}}
-                    @if($hasLaporan || $hasSertifikat)
+                    @if($hasLaporan || $sertifikat || $sertifikatBanding)
                     <div class="card border-0">
                         <div class="card-header bg-white">
                             <h6 class="mb-0"><i class="bi bi-files"></i> Dokumen Terupload</h6>
@@ -329,10 +360,22 @@
                             <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
                                 <div>
                                     <i class="bi bi-file-text text-primary me-2"></i>
-                                    <strong>Sertifikat</strong><br>
+                                    <strong>Sertifikat Akreditasi</strong><br>
                                     <small class="text-muted">{{ $sertifikat->original_filename }}</small>
                                 </div>
-                                <a href="{{ route('de.pelaporan-hasil-akreditasi.download', [$pengajuan->id, 'sertifikat']) }}" class="btn btn-sm btn-primary">
+                                <a href="{{ route('de.pelaporan-hasil-akreditasi.download', [$pengajuan->id, 'sertifikat']) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                            @endif
+                            @if($sertifikatBanding)
+                            <div class="d-flex justify-content-between align-items-center p-3 rounded mb-2 border border-success">
+                                <div>
+                                    <i class="bi bi-award text-success me-2"></i>
+                                    <strong class="text-success">Sertifikat Akreditasi (Terbaru)</strong><br>
+                                    <small class="text-muted">{{ $sertifikatBanding->original_filename }}</small>
+                                </div>
+                                <a href="{{ route('de.pelaporan-hasil-akreditasi.download', [$pengajuan->id, 'sertifikat_banding']) }}" class="btn btn-sm btn-success">
                                     <i class="bi bi-eye"></i>
                                 </a>
                             </div>
@@ -440,11 +483,12 @@
                         <div class="col-md-6 mb-3">
                             <label class="text-muted small">Status Akreditasi</label><br>
                             @php
-                            // fallback warna jika method tidak ada / hasil null
-                            $warna = method_exists($hasil, 'getPeringkatColor') ? $hasil->getPeringkatColor($peringkat) : '#ced4da';
+                            $warna = ($hasil && method_exists($hasil, 'getPeringkatColor'))
+                            ? $hasil->getPeringkatColor()
+                            : '#ced4da';
                             @endphp
                             <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $warna }}; color:#222">
-                                {{ $peringkat }}
+                                {{ $hasil?->peringkat_akreditasi_final ?? $peringkat ?? '-' }}
                             </span>
                         </div>
                         <div class="col-md-6 mb-3">
