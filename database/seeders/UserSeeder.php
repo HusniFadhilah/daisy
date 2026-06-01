@@ -305,7 +305,7 @@ class UserSeeder extends Seeder
             ],
         ];
 
-        $trainingPassword = 'Pelatihan290526';
+        $trainingPassword = 'PelatihanLamdepilar2026';
         $rumpunAkunPelatihan = [
             'desain' => 'Desain',
             'perencanaan' => 'Perencanaan',
