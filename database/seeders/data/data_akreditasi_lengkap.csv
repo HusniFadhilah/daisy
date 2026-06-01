@@ -1,66 +1,70 @@
-Universitas,Program Studi,Jenjang,Tipe,Nomor SK,Tahun,email,Peringkat_Akreditasi,Tanggal_Kadaluarsa,Status_Kadaluarsa
+﻿Universitas,Program Studi,Jenjang,Tipe,Nomor SK,Tahun,email,Peringkat_Akreditasi,Tanggal_Kadaluarsa,Status_Kadaluarsa
 Universitas Nusa Cendana,Arsitektur,S1,PTN,2224/SK/BAN-PT/Ak-PPJ/S/IV/2022,2022,s1arsitektur@universitasnusacendana.ac.id,B,2027-03-22,Masih Berlaku
 Universitas Fajar,Arsitektur,S1,9,2168/SK/BAN-PT/Akred-PMT/S/IV/2022,2022,s1arsitektur@universitasfajar.ac.id,Baik,2027-04-05,Masih Berlaku
+Universitas Merdeka Surabaya,Arsitektur,S1,7,2631/SK/BAN-PT/AK-ISK/S/IV/2022,2022,s1arsitektur@universitasmerdekasurabaya.ac.id,Baik,2026-04-29,140 hari lagi kadaluarsa
 Universitas Teknologi Yogyakarta,Arsitektur,S1,5,3168/SK/BAN-PT/Ak-PPJ/S/V/2022,2022,s1arsitektur@universitasteknologiyogyakarta.ac.id,A,2027-06-07,Masih Berlaku
 Universitas Diponegoro,Ilmu Arsitektur Dan Perkotaan,S3,PTN,3405/SK/BAN-PT/Akred-Itnl/D/V/2022,2022,s3ilmuarsitekturdanperkotaan@universitasdiponegoro.ac.id,Unggul,2027-09-30,Masih Berlaku
 Universitas Pendidikan Indonesia,Arsitektur,S2,PTN,3282/SK/BAN-PT/Akred/M/V/2022,2022,s2arsitektur@universitaspendidikanindonesia.ac.id,Baik,2027-05-31,Masih Berlaku
 Universitas Malikussaleh,Arsitektur,S1,PTN,3540/SK/BAN-PT/Ak-PPJ/S/VI/2022,2022,s1arsitektur@universitasmalikussaleh.ac.id,Baik Sekali,2027-04-26,Masih Berlaku
-Institut Modern Arsitektur Dan Teknologi,Arsitektur,S1,1,4013/SK/BAN-PT/PB-PS/S/VII/2022,2022,s1arsitektur@institutmodernarsitekturdanteknologi.ac.id,Baik,2026-06-17,18 hari lagi kadaluarsa
+Institut Modern Arsitektur Dan Teknologi,Arsitektur,S1,1,4013/SK/BAN-PT/PB-PS/S/VII/2022,2022,s1arsitektur@institutmodernarsitekturdanteknologi.ac.id,Baik,2026-06-17,Masih Berlaku
 Universitas Sumatera Utara,Arsitektur,S1,PTN,4376/SK/BAN-PT/Akred-PMT/S/VII/2022,2022,s1arsitektur@universitassumaterautara.ac.id,Unggul,2027-07-12,Masih Berlaku
-Institut Sains Dan Teknologi TD Pardede,Arsitektur,S1,1,4438/SK/BAN-PT/Ak-PPJ/S/VII/2022,2022,s1arsitektur@institutsainsdanteknologitdpardede.ac.id,B,2026-10-21,144 hari lagi kadaluarsa
-Universitas Mpu Tantular,Arsitektur,S1,3,5064/SK/BAN-PT/Ak.S/S/VII/2022,2022,s1arsitektur@universitasmputantular.ac.id,B,9999-01-01,Masih Berlaku
+Institut Sains Dan Teknologi TD Pardede,Arsitektur,S1,1,4438/SK/BAN-PT/Ak-PPJ/S/VII/2022,2022,s1arsitektur@institutsainsdanteknologitdpardede.ac.id,B,2026-10-21,Masih Berlaku
+Universitas Mpu Tantular,Arsitektur,S1,3,5064/SK/BAN-PT/Ak.S/S/VII/2022,2022,s1arsitektur@universitasmputantular.ac.id,B,-,Masih Berlaku
 Universitas Prisma,Arsitektur,S1,16,5206/SK/BAN-PT/Ak/S/VIII/2022,2022,s1arsitektur@universitasprisma.ac.id,Baik,2027-08-02,Masih Berlaku
-Universitas Nusa Nipa,Arsitektur,S1,15,5741/SK/BAN-PT/Ak.Ppj/S/VIII/2022,2022,s1arsitektur@universitasnusanipa.ac.id,Baik,2026-10-21,144 hari lagi kadaluarsa
+Universitas Nusa Nipa,Arsitektur,S1,15,5741/SK/BAN-PT/Ak.Ppj/S/VIII/2022,2022,s1arsitektur@universitasnusanipa.ac.id,Baik,2026-10-21,Masih Berlaku
 Universitas Hasanuddin,Arsitektur,S2,PTN,5810/SK/BAN-PT/Ak.Ppj/M/VIII/2022,2022,s2arsitektur@universitashasanuddin.ac.id,B,2027-09-13,Masih Berlaku
 Institut Teknologi Kalimantan,Arsitektur,S1,PTN,5909/SK/BAN-PT/Ak/S/IX/2022,2022,s1arsitektur@institutteknologikalimantan.ac.id,Baik,2027-09-06,Masih Berlaku
 Sekolah Tinggi Ilmu Teknik Trisula,Arsitektur,S1,2,5912/SK/BAN-PT/Ak/S/IX/2022,2022,s1arsitektur@sekolahtinggiilmutekniktrisula.ac.id,Baik,2027-09-06,Masih Berlaku
 Universitas Nahdlatul Ulama Kalimantan Selatan,Teknik Arsitektur,S1,11,5983/SK/BAN-PT/Ak/S/IX/2022,2022,s1teknikarsitektur@universitasnahdlatululamakalimantanselatan.ac.id,Baik,2027-09-07,Masih Berlaku
 Universitas Pandanaran,Arsitektur,S1,6,6895/SK/BAN-PT/Ak.KP/S/X/2022,2022,s1arsitektur@universitaspandanaran.ac.id,Baik,2027-01-11,Masih Berlaku
-Universitas Bina Taruna Gorontalo,Arsitektur,S1,16,7309/SK/BAN-PT/Ak.KP/S/X/2022,2022,s1arsitektur@universitasbinatarunagorontalo.ac.id,Baik,2026-06-18,19 hari lagi kadaluarsa
+Universitas Bina Taruna Gorontalo,Arsitektur,S1,16,7309/SK/BAN-PT/Ak.KP/S/X/2022,2022,s1arsitektur@universitasbinatarunagorontalo.ac.id,Baik,2026-06-18,Masih Berlaku
 Universitas Nahdlatul Ulama Gorontalo,Arsitektur,S1,16,7982/SK/BAN-PT/Ak/S/X/2022,2022,s1arsitektur@universitasnahdlatululamagorontalo.ac.id,Baik,2027-10-18,Masih Berlaku
 Universitas Ichsan Gorontalo,Teknik Arsitektur,S1,16,8455/SK/BAN-PT/Ak.Ppj/S/X/2022,2022,s1teknikarsitektur@universitasichsangorontalo.ac.id,Baik,2027-10-25,Masih Berlaku
 Universitas Negeri Makassar,Arsitektur,S1,PTN,9677/SK/BAN-PT/Ak/S/XI/2022,2022,s1arsitektur@universitasnegerimakassar.ac.id,Baik,2027-11-22,Masih Berlaku
 Universitas Nahdlatul Ulama Kalimantan Timur,Arsitektur,S1,11,9678/SK/BAN-PT/Ak/S/XI/2022,2022,s1arsitektur@universitasnahdlatululamakalimantantimur.ac.id,Baik,2027-11-22,Masih Berlaku
 Universitas Negeri Gorontalo,Teknik Arsitektur,S1,PTN,10067/SK/BAN-PT/Ak/S/XI/2022,2022,s1teknikarsitektur@universitasnegerigorontalo.ac.id,Baik Sekali,2027-11-29,Masih Berlaku
-Universitas Atma Jaya Yogyakarta,Arsitektur,S2,5,135/SK/BAN-PT/Ak-PPJ/M/I/2021,2025,s2arsitektur@universitasatmajayayogyakarta.ac.id,A,2030-12-31,Masih Berlaku
-Universitas Internasional Batam,Arsitektur,S1,17,877/SK/BAN-PT/Akred/S/II/2021,2026,s1arsitektur@universitasinternasionalbatam.ac.id,Baik,9999-01-01,Masih Berlaku
-Universitas Islam Negeri Walisongo Semarang,Ilmu Seni Dan Arsitektur Islam,S1,PTAN,1722/SK/BAN-PT/Akred/S/III/2021,2026,s1ilmusenidanarsitekturislam@universitasislamnegeriwalisongosemarang.ac.id,Baik Sekali,2031-03-10,Masih Berlaku
-Universitas Bina Nusantara,Arsitektur,S1,3,2300/SK/BAN-PT/Ak-PPJ/S/IV/2021,2026,s1arsitektur@universitasbinanusantara.ac.id,Unggul,2031-04-23,Masih Berlaku
-Universitas Widya Mataram,Arsitektur,S1,5,2544/SK/BAN-PT/Ak-PPJ/S/IV/2021,2026,s1arsitektur@universitaswidyamataram.ac.id,B,2027-04-30,Masih Berlaku
-Universitas Katolik Parahyangan,Arsitektur,S2,4,2516/SK/BAN-PT/Ak-PPJ/M/IV/2021,2026,s2arsitektur@universitaskatolikparahyangan.ac.id,A,2031-04-30,Masih Berlaku
-Universitas Kristen Maranatha,Arsitektur,S1,4,2682/SK/BAN-PT/Akred/S/V/2021,2026,s1arsitektur@universitaskristenmaranatha.ac.id,Baik,2027-05-05,Masih Berlaku
-Universitas Selamat Sri,Arsitektur,S1,6,2740/SK/BAN-PT/Ak-TMSP/S/V/2021,2021,s1arsitektur@universitasselamatsri.ac.id,Tidak Terakreditasi,,Tidak Ada Data
-Politeknik Negeri Pontianak,Arsitektur Bangunan Gedung,D-IV,PTN,3038/SK/BAN-PT/Akred/ST/V/2021,2026,divarsitekturbangunangedung@politekniknegeripontianak.ac.id,Baik,2031-05-19,Masih Berlaku
-Universitas Katolik Soegijapranata,Arsitektur,S2,6,2980/SK/BAN-PT/AK-ISK/M/V/2021,2026,s2arsitektur@universitaskatoliksoegijapranata.ac.id,Baik Sekali,2031-04-23,Masih Berlaku
-Institut Teknologi Minaesa,Arsitektur,S1,16,8714/SK/BAN-PT/Ak-PPJ/S/VI/2021,2021,s1arsitektur@institutteknologiminaesa.ac.id,B,2026-06-11,12 hari lagi kadaluarsa
-Universitas 17 Agustus 1945 Semarang,Arsitektur,S1,6,8712/SK/BAN-PT/Ak-PPJ/S/VI/2021,2021,s1arsitektur@universitas17agustus1945semarang.ac.id,B,2026-06-11,12 hari lagi kadaluarsa
-Universitas Pendidikan Indonesia,Pendidikan Teknik Arsitektur,S1,PTN,9144/SK/BAN-PT/Akred-Itnl/S/VI/2021,2026,s1pendidikanteknikarsitektur@universitaspendidikanindonesia.ac.id,Unggul,2031-05-06,Masih Berlaku
-Universitas Syiah Kuala,Arsitektur,S2,PTN,9424/SK/BAN-PT/Akred/M/VII/2021,2021,s2arsitektur@universitassyiahkuala.ac.id,Baik,2026-07-13,44 hari lagi kadaluarsa
-Universitas Ibrahimy,Arsitektur,S1,7,9671/SK/BAN-PT/Akred/S/VII/2021,2021,s1arsitektur@universitasibrahimy.ac.id,Baik,2026-07-21,52 hari lagi kadaluarsa
-Institut Teknologi Garut,Arsitektur,S1,4,10720/SK/BAN-PT/PB-PS/S/IX/2021,2021,s1arsitektur@institutteknologigarut.ac.id,Baik,2026-07-01,32 hari lagi kadaluarsa
-Universitas Hasanuddin,Arsitektur,S1,PTN,10813/SK/BAN-PT/AK-ISK/S/IX/2021,2021,s1arsitektur@universitashasanuddin.ac.id,Unggul,2026-06-18,19 hari lagi kadaluarsa
-Universitas Tomakaka,Arsitektur,S1,9,11083/SK/BAN-PT/Akred/S/IX/2021,2021,s1arsitektur@universitastomakaka.ac.id,Baik,2026-09-28,121 hari lagi kadaluarsa
-Universitas Agung Podomoro,Arsitektur,S1,3,11782/SK/BAN-PT/Akred/S/X/2021,2021,s1arsitektur@universitasagungpodomoro.ac.id,Baik Sekali,2026-10-19,142 hari lagi kadaluarsa
-Universitas Indonesia,Arsitektur,S1,PTN,11713/SK/BAN-PT/AK-ISK/S/X/2021,2021,s1arsitektur@universitasindonesia.ac.id,Unggul,2026-09-03,96 hari lagi kadaluarsa
-Institut Teknologi Calvin,Arsitektur,S1,3,11875/SK/BAN-PT/Akred/S/X/2021,2021,s1arsitektur@institutteknologicalvin.ac.id,Baik,2026-10-26,149 hari lagi kadaluarsa
-Universitas Nusantara Manado,Arsitektur,S1,16,12071/SK/BAN-PT/Akred/S/XI/2021,2021,s1arsitektur@universitasnusantaramanado.ac.id,Baik,2026-11-02,156 hari lagi kadaluarsa
-Universitas Quality Berastagi,Arsitektur,S1,1,12565/SK/BAN-PT/Akred/S/XI/2021,2021,s1arsitektur@universitasqualityberastagi.ac.id,Baik,2026-11-24,178 hari lagi kadaluarsa
+Universitas Atma Jaya Yogyakarta,Arsitektur,S2,5,135/SK/BAN-PT/Ak-PPJ/M/I/2021,2021,s2arsitektur@universitasatmajayayogyakarta.ac.id,A,2025-12-30,20 hari lagi kadaluarsa
+Universitas Internasional Batam,Arsitektur,S1,17,877/SK/BAN-PT/Akred/S/II/2021,2021,s1arsitektur@universitasinternasionalbatam.ac.id,Baik,2026-02-16,68 hari lagi kadaluarsa
+Universitas Sumatera Utara,Ilmu Arsitektur Dan Perkotaan,S3,PTN,1008/SK/BAN-PT/Akred/D/II/2021,2021,s3ilmuarsitekturdanperkotaan@universitassumaterautara.ac.id,Baik,2026-02-23,75 hari lagi kadaluarsa
+Universitas Islam Negeri Walisongo Semarang,Ilmu Seni Dan Arsitektur Islam,S1,PTAN,1722/SK/BAN-PT/Akred/S/III/2021,2021,s1ilmusenidanarsitekturislam@universitasislamnegeriwalisongosemarang.ac.id,Baik,2026-03-30,110 hari lagi kadaluarsa
+Universitas Kristen Indonesia,Arsitektur,S1,3,1961/SK/BAN-PT/AK-ISK/S/IV/2021,2021,s1arsitektur@universitaskristenindonesia.ac.id,Unggul,2026-02-05,57 hari lagi kadaluarsa
+Universitas Bina Nusantara,Arsitektur,S1,3,2300/SK/BAN-PT/Ak-PPJ/S/IV/2021,2021,s1arsitektur@universitasbinanusantara.ac.id,A,2026-04-22,133 hari lagi kadaluarsa
+Universitas Widya Mataram,Arsitektur,S1,5,2544/SK/BAN-PT/Ak-PPJ/S/IV/2021,2021,s1arsitektur@universitaswidyamataram.ac.id,B,2026-04-29,140 hari lagi kadaluarsa
+Universitas Katolik Parahyangan,Arsitektur,S2,4,2516/SK/BAN-PT/Ak-PPJ/M/IV/2021,2021,s2arsitektur@universitaskatolikparahyangan.ac.id,A,2026-04-29,140 hari lagi kadaluarsa
+Universitas Kristen Maranatha,Arsitektur,S1,4,2682/SK/BAN-PT/Akred/S/V/2021,2021,s1arsitektur@universitaskristenmaranatha.ac.id,Baik,2026-05-04,145 hari lagi kadaluarsa
+Universitas Selamat Sri,Arsitektur,S1,6,2740/SK/BAN-PT/Ak-TMSP/S/V/2021,2021,s1arsitektur@universitasselamatsri.ac.id,Tidak Terakreditasi,,Masih Berlaku
+Politeknik Negeri Pontianak,Arsitektur Bangunan Gedung,D-IV,PTN,3038/SK/BAN-PT/Akred/ST/V/2021,2021,divarsitekturbangunangedung@politekniknegeripontianak.ac.id,Baik,2026-05-18,159 hari lagi kadaluarsa
+Institut Teknologi Sumatera,Arsitektur Lanskap,S1,PTN,3029/SK/BAN-PT/Akred/S/V/2021,2021,s1arsitekturlanskap@institutteknologisumatera.ac.id,Baik,2026-05-18,159 hari lagi kadaluarsa
+Universitas Katolik Soegijapranata,Arsitektur,S2,6,2980/SK/BAN-PT/AK-ISK/M/V/2021,2021,s2arsitektur@universitaskatoliksoegijapranata.ac.id,Baik Sekali,2026-04-22,133 hari lagi kadaluarsa
+Institut Teknologi Minaesa,Arsitektur,S1,16,8714/SK/BAN-PT/Ak-PPJ/S/VI/2021,2021,s1arsitektur@institutteknologiminaesa.ac.id,B,2026-06-11,Masih Berlaku
+Universitas 17 Agustus 1945 Semarang,Arsitektur,S1,6,8712/SK/BAN-PT/Ak-PPJ/S/VI/2021,2021,s1arsitektur@universitas17agustus1945semarang.ac.id,B,2026-06-11,Masih Berlaku
+Universitas Pendidikan Indonesia,Pendidikan Teknik Arsitektur,S1,PTN,9144/SK/BAN-PT/Akred-Itnl/S/VI/2021,2021,s1pendidikanteknikarsitektur@universitaspendidikanindonesia.ac.id,Unggul,2026-06-30,Masih Berlaku
+Universitas Syiah Kuala,Arsitektur,S2,PTN,9424/SK/BAN-PT/Akred/M/VII/2021,2021,s2arsitektur@universitassyiahkuala.ac.id,Baik,2026-07-13,Masih Berlaku
+Universitas Ibrahimy,Arsitektur,S1,7,9671/SK/BAN-PT/Akred/S/VII/2021,2021,s1arsitektur@universitasibrahimy.ac.id,Baik,2026-07-21,Masih Berlaku
+Institut Teknologi Garut,Arsitektur,S1,4,10720/SK/BAN-PT/PB-PS/S/IX/2021,2021,s1arsitektur@institutteknologigarut.ac.id,Baik,2026-07-01,Masih Berlaku
+Universitas Hasanuddin,Arsitektur,S1,PTN,10813/SK/BAN-PT/AK-ISK/S/IX/2021,2021,s1arsitektur@universitashasanuddin.ac.id,Unggul,2026-06-18,Masih Berlaku
+Universitas Tomakaka,Arsitektur,S1,9,11083/SK/BAN-PT/Akred/S/IX/2021,2021,s1arsitektur@universitastomakaka.ac.id,Baik,2026-09-28,Masih Berlaku
+Universitas Agung Podomoro,Arsitektur,S1,3,11782/SK/BAN-PT/Akred/S/X/2021,2021,s1arsitektur@universitasagungpodomoro.ac.id,Baik Sekali,2026-10-19,Masih Berlaku
+Universitas Indonesia,Arsitektur,S1,PTN,11713/SK/BAN-PT/AK-ISK/S/X/2021,2021,s1arsitektur@universitasindonesia.ac.id,Unggul,2026-09-03,Masih Berlaku
+Institut Teknologi Calvin,Arsitektur,S1,3,11875/SK/BAN-PT/Akred/S/X/2021,2021,s1arsitektur@institutteknologicalvin.ac.id,Baik,2026-10-26,Masih Berlaku
+Universitas Nusantara Manado,Arsitektur,S1,16,12071/SK/BAN-PT/Akred/S/XI/2021,2021,s1arsitektur@universitasnusantaramanado.ac.id,Baik,2026-11-02,Masih Berlaku
+Universitas Quality Berastagi,Arsitektur,S1,1,12565/SK/BAN-PT/Akred/S/XI/2021,2021,s1arsitektur@universitasqualityberastagi.ac.id,Baik,2026-11-24,Masih Berlaku
 Universitas Bhinneka PGRI,Arsitektur,S1,7,12747/SK/BAN-PT/Akred/S/XII/2021,2021,s1arsitektur@universitasbhinnekapgri.ac.id,Baik,2026-12-01,Masih Berlaku
-Institut Teknologi Sepuluh Nopember,Arsitektur,S1,PTN,12847/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1arsitektur@institutteknologisepuluhnopember.ac.id,A,2026-11-25,179 hari lagi kadaluarsa
-Universitas Gunadarma,Arsitektur,S1,3,13442/SK/BAN-PT/AK-ISK/S/XII/2021,2021,s1arsitektur@universitasgunadarma.ac.id,Unggul,2026-06-18,19 hari lagi kadaluarsa
-Universitas Muhammadiyah Surakarta,Arsitektur,S1,6,13456/SK/BAN-PT/AK-ISK/S/XII/2021,2021,s1arsitektur@universitasmuhammadiyahsurakarta.ac.id,Unggul,2026-09-30,123 hari lagi kadaluarsa
+Institut Teknologi Sepuluh Nopember,Arsitektur,S1,PTN,12847/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1arsitektur@institutteknologisepuluhnopember.ac.id,A,2026-11-25,Masih Berlaku
+Universitas Gunadarma,Arsitektur,S1,3,13442/SK/BAN-PT/AK-ISK/S/XII/2021,2021,s1arsitektur@universitasgunadarma.ac.id,Unggul,2026-06-18,Masih Berlaku
+Universitas Muhammadiyah Surakarta,Arsitektur,S1,6,13456/SK/BAN-PT/AK-ISK/S/XII/2021,2021,s1arsitektur@universitasmuhammadiyahsurakarta.ac.id,Unggul,2026-09-30,Masih Berlaku
 Universitas Ekasakti,Arsitektur,S1,10,13831/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1arsitektur@universitasekasakti.ac.id,B,2026-12-28,Masih Berlaku
 Universitas Lancang Kuning,Arsitektur,S1,17,13847/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1arsitektur@universitaslancangkuning.ac.id,B,2026-12-28,Masih Berlaku
-Universitas Sam Ratulangi,Arsitektur,S1,PTN,11709/SK/BAN-PT/Akred-PMT/S/X/2021,2021,s1arsitektur@universitassamratulangi.ac.id,Unggul,2026-10-19,142 hari lagi kadaluarsa
+Universitas Sam Ratulangi,Arsitektur,S1,PTN,11709/SK/BAN-PT/Akred-PMT/S/X/2021,2021,s1arsitektur@universitassamratulangi.ac.id,Unggul,2026-10-19,Masih Berlaku
 Sekolah Tinggi Arsitektur YKPN Yogyakarta,Gambar Arsitektur,D-III,5,6199/SK/BAN-PT/PEPA-Ppj/D3/IV/2025,2025,diiigambararsitektur@sekolahtinggiarsitekturykpnyogyakarta.ac.id,Baik,2030-04-14,Masih Berlaku
-Universitas Muhammadiyah Aceh,Arsitektur,S1,13,6190/SK/BAN-PT/PEPA-Ppj/S/IV/2025,2026,s1arsitektur@universitasmuhammadiyahaceh.ac.id,Baik,2031-03-03,Masih Berlaku
-Universitas Presiden,Arsitektur,S1,4,6082/SK/BAN-PT/Ak.P/S/III/2025,2025,s1arsitektur@universitaspresiden.ac.id,Baik,2030-12-16,Masih Berlaku
+Universitas Muhammadiyah Aceh,Arsitektur,S1,13,6190/SK/BAN-PT/PEPA-Ppj/S/IV/2025,2025,s1arsitektur@universitasmuhammadiyahaceh.ac.id,Baik,2030-04-14,Masih Berlaku
+Universitas Presiden,Arsitektur,S1,4,6082/SK/BAN-PT/Ak.P/S/III/2025,2025,s1arsitektur@universitaspresiden.ac.id,Baik,2027-03-25,Masih Berlaku
 Institut Seni Indonesia Surakarta,Arsitektur,S1,PTN,471/SK/BAN-PT/Ak.P/S/III/2025,2025,s1arsitektur@institutseniindonesiasurakarta.ac.id,Terakreditasi Sementara,2030-03-19,Masih Berlaku
 Universitas Prima Indonesia,Arsitektur,S1,1,426/SK/BAN-PT/Ak/S/III/2025,2025,s1arsitektur@universitasprimaindonesia.ac.id,Baik,2030-03-19,Masih Berlaku
 Universitas Katolik Parahyangan,Ilmu Arsitektur,S3,4,455/SK/BAN-PT/Ak.Ppj/D/III/2025,2025,s3ilmuarsitektur@universitaskatolikparahyangan.ac.id,Baik Sekali,2030-03-30,Masih Berlaku
 Universitas Brawijaya,Arsitektur,S1,PTN,430/SK/BAN-PT/Ak.Ppj/S/III/2025,2025,s1arsitektur@universitasbrawijaya.ac.id,Unggul,2030-03-16,Masih Berlaku
 Institut Sains Dan Teknologi Nasional,Arsitektur Lanskap,S1,3,390/SK/BAN-PT/Ak/S/III/2025,2025,s1arsitekturlanskap@institutsainsdanteknologinasional.ac.id,Baik,2030-03-11,Masih Berlaku
-Institut Sains Dan Teknologi Nasional,Arsitektur,S1,3,8216/SK/BAN-PT/Ak.KP/S/XI/2025,2025,s1arsitektur@institutsainsdanteknologinasional.ac.id,Baik Sekali,2030-03-19,Masih Berlaku
+Institut Sains Dan Teknologi Nasional,Arsitektur,S1,3,8216/SK/BAN-PT/Ak.KP/S/XI/2025,2025,s1arsitektur@institutsainsdanteknologinasional.ac.id,Baik,2030-03-11,Masih Berlaku
 Universitas Kristen Duta Wacana,Arsitektur,S2,5,302/SK/BAN-PT/Ak/M/II/2025,2025,s2arsitektur@universitaskristendutawacana.ac.id,Baik Sekali,2030-02-25,Masih Berlaku
 Universitas Yapis Papua,Arsitektur,S1,14,317/SK/BAN-PT/Ak.P/S/II/2025,2025,s1arsitektur@universitasyapispapua.ac.id,Baik,2027-02-25,Masih Berlaku
 Politeknik Negeri Sriwijaya,Arsitektur Bangunan Gedung,D-IV,PTN,141/SK/BAN-PT/Ak.P/STr/I/2025,2025,divarsitekturbangunangedung@politekniknegerisriwijaya.ac.id,Terakreditasi Sementara,2030-01-21,Masih Berlaku
@@ -71,53 +75,55 @@ Universitas Al Washliyah Darussalam Banda Aceh,Arsitektur,S1,13,78/SK/BAN-PT/Ak.
 Universitas Madani,Arsitektur,S1,5,4/SK/BAN-PT/Ak.P/S/I/2025,2025,s1arsitektur@universitasmadani.ac.id,Terakreditasi Sementara,2030-01-14,Masih Berlaku
 Universitas Sam Ratulangi,Arsitektur,S3,PTN,9/SK/BAN-PT/Ak.P/D/I/2025,2025,s3arsitektur@universitassamratulangi.ac.id,Terakreditasi Sementara,2030-01-14,Masih Berlaku
 Universitas Sebelas Maret,Arsitektur,S1,PTN,448/SK/BAN-PT/Ak.Ppj/S/III/2025,2025,s1arsitektur@universitassebelasmaret.ac.id,Unggul,2030-04-02,Masih Berlaku
-Universitas Borobudur,Arsitektur,S1,3,6225/SK/BAN-PT/Ak.S/S/IV/2025,2026,s1arsitektur@universitasborobudur.ac.id,Baik Sekali,2031-03-10,Masih Berlaku
+Universitas Borobudur,Arsitektur,S1,3,6225/SK/BAN-PT/Ak.S/S/IV/2025,2025,s1arsitektur@universitasborobudur.ac.id,Baik Sekali,-,Masih Berlaku
 Universitas Udayana,Arsitektur,S2,PTN,6241/SK/BAN-PT/Ak.KP/M/IV/2025,2025,s2arsitektur@universitasudayana.ac.id,Unggul,2027-08-02,Masih Berlaku
 Universitas Warmadewa,Arsitektur,S1,8,6213/SK/BAN-PT/Ak/S/IV/2025,2025,s1arsitektur@universitaswarmadewa.ac.id,Unggul,2030-04-22,Masih Berlaku
 Universitas Muhammadiyah Bengkulu,Arsitektur,S1,2,6270/SK/BAN-PT/Ak.P/S/IV/2025,2025,s1arsitektur@universitasmuhammadiyahbengkulu.ac.id,Baik,2027-04-29,Masih Berlaku
-Universitas Negeri Manado,Arsitektur,S1,PTN,6276/SK/BAN-PT/Ak.S/S/IV/2025,2025,s1arsitektur@universitasnegerimanado.ac.id,Baik,9999-01-01,Masih Berlaku
+Universitas Negeri Manado,Arsitektur,S1,PTN,6276/SK/BAN-PT/Ak.S/S/IV/2025,2025,s1arsitektur@universitasnegerimanado.ac.id,Baik,-,Masih Berlaku
 Universitas Tunas Pembangunan Surakarta (UTP),Arsitektur,S1,6,6311/SK/BAN-PT/Ak.Ppj/S/IV/2025,2025,s1arsitektur@universitastunaspembangunansurakartautp.ac.id,B,2030-05-04,Masih Berlaku
-Universitas Langlang Buana,Arsitektur,S1,4,6370/SK/BAN-PT/Ak.S/S/V/2025,2026,s1arsitektur@universitaslanglangbuana.ac.id,Baik Sekali,2031-03-31,Masih Berlaku
+Universitas Langlang Buana,Arsitektur,S1,4,6370/SK/BAN-PT/Ak.S/S/V/2025,2025,s1arsitektur@universitaslanglangbuana.ac.id,B,-,Masih Berlaku
 Universitas Merdeka Malang,Arsitektur,S1,7,6362/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1arsitektur@universitasmerdekamalang.ac.id,Baik Sekali,2030-03-19,Masih Berlaku
-Universitas Tribhuwana Tungga Dewi,Arsitektur Lanskap,S1,7,6556/SK/BAN-PT/Ak.S/S/V/2025,2026,s1arsitekturlanskap@universitastribhuwanatunggadewi.ac.id,Baik Sekali,2031-02-03,Masih Berlaku
+Universitas Tribhuwana Tungga Dewi,Arsitektur Lanskap,S1,7,6556/SK/BAN-PT/Ak.S/S/V/2025,2025,s1arsitekturlanskap@universitastribhuwanatunggadewi.ac.id,Baik,-,Masih Berlaku
+Universitas Persada Indonesia Yai,Arsitektur,S1,3,6547/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1arsitektur@universitaspersadaindonesiayai.ac.id,Baik Sekali,2028-12-20,Masih Berlaku
 Universitas Pelita Harapan,Arsitektur,S1,3,6452/SK/BAN-PT/Ak/S/V/2025,2025,s1arsitektur@universitaspelitaharapan.ac.id,Baik Sekali,2030-05-14,Masih Berlaku
 Universitas Islam Negeri Datokarama Palu,Arsitektur,S1,PTAN,6597/SK/BAN-PT/Ak.P/S/V/2025,2025,s1arsitektur@universitasislamnegeridatokaramapalu.ac.id,Baik,2027-05-15,Masih Berlaku
 Institut Pertanian Bogor,Arsitektur Lanskap,S1,PTN,6645/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1arsitekturlanskap@institutpertanianbogor.ac.id,Unggul,2029-07-03,Masih Berlaku
+Universitas Matana,Arsitektur,S1,4,6619/SK/BAN-PT/Ak/S/V/2025,2025,s1arsitektur@universitasmatana.ac.id,Baik,2030-05-20,Masih Berlaku
 Universitas Medan Area,Arsitektur,S1,1,6695/SK/BAN-PT/Ak.Ppj/S/V/2025,2025,s1arsitektur@universitasmedanarea.ac.id,Baik Sekali,2030-05-06,Masih Berlaku
 Universitas Negeri Medan,Arsitektur,S1,PTN,6698/SK/BAN-PT/Ak/S/V/2025,2025,s1arsitektur@universitasnegerimedan.ac.id,Baik,2030-05-27,Masih Berlaku
 Universitas Islam Indonesia,Arsitektur,S1,5,6762/SK/BAN-PT/Ak.Ppj/S/VI/2025,2025,s1arsitektur@universitasislamindonesia.ac.id,Unggul,2030-06-17,Masih Berlaku
 Universitas Ubudiyah Indonesia,Arsitektur,S1,13,6809/SK/BAN-PT/Ak/S/VI/2025,2025,s1arsitektur@universitasubudiyahindonesia.ac.id,Baik,2030-06-14,Masih Berlaku
 Universitas Lambung Mangkurat,Arsitektur,S2,PTN,2403/SK/BAN-PT/Ak.P/S2/IV/2025,2025,s2arsitektur@universitaslambungmangkurat.ac.id,Terakreditasi Sementara,2030-04-22,Masih Berlaku
 Universitas Indo Global Mandiri,Arsitektur,S1,2,6955/SK/BAN-PT/Ak/S1/VII/2025,2025,s1arsitektur@universitasindoglobalmandiri.ac.id,Baik Sekali,2030-07-08,Masih Berlaku
-Universitas Faletehan,Arsitektur (Kampus Kota Bandung),S1,4,7074/SK/BAN-PT/Ak.S/S1/VII/2025,2025,s1arsitekturkampuskotabandung@universitasfaletehan.ac.id,Baik,9999-01-01,Masih Berlaku
+Universitas Faletehan,Arsitektur (Kampus Kota Bandung),S1,4,7074/SK/BAN-PT/Ak.S/S1/VII/2025,2025,s1arsitekturkampuskotabandung@universitasfaletehan.ac.id,Baik,-,Masih Berlaku
 Universitas Madako Tolitoli,Arsitektur,S1,16,7078/SK/BAN-PT/Ak.Ppj/S1/VII/2025,2025,s1arsitektur@universitasmadakotolitoli.ac.id,Baik,2030-07-22,Masih Berlaku
 Universitas Diponegoro,Teknik Infrastruktur Sipil Dan Perancangan Arsitektur,D-IV,PTN,0647/SK/LAM Teknik/VST/VIII/2025,2025,divteknikinfrastruktursipildanperancanganarsitektur@universitasdiponegoro.ac.id,Unggul,2030-08-20,Masih Berlaku
-Universitas Gunadarma,Arsitektur (Kampus Kabupaten Penajam Paser Utara),S1,3,7128/SK/BAN-PT/Ak.P/S/VIII/2025,2026,s1arsitekturkampuskabupatenpenajampaserutara@universitasgunadarma.ac.id,Baik,2031-05-26,Masih Berlaku
-Universitas Subang,Arsitektur,S1,4,7124/SK/BAN-PT/Ak.S/S/VIII/2025,2025,s1arsitektur@universitassubang.ac.id,Baik,9999-01-01,Masih Berlaku
+Universitas Gunadarma,Arsitektur (Kampus Kabupaten Penajam Paser Utara),S1,3,7128/SK/BAN-PT/Ak.P/S/VIII/2025,2025,s1arsitekturkampuskabupatenpenajampaserutara@universitasgunadarma.ac.id,Baik,2027-08-05,Masih Berlaku
+Universitas Subang,Arsitektur,S1,4,7124/SK/BAN-PT/Ak.S/S/VIII/2025,2025,s1arsitektur@universitassubang.ac.id,Baik,-,Masih Berlaku
 Universitas Hasanuddin,Ilmu Arsitektur,S3,PTN,7232/SK/BAN-PT/Ak.Ppj/D/VIII/2025,2025,s3ilmuarsitektur@universitashasanuddin.ac.id,A,2030-07-22,Masih Berlaku
-Institut Teknologi Adhi Tama Surabaya,Arsitektur,S1,7,7312/SK/BAN-PT/Ak.S/S/VIII/2025,2026,s1arsitektur@institutteknologiadhitamasurabaya.ac.id,Baik Sekali,2031-03-17,Masih Berlaku
-Universitas Multimedia Nusantara Jakarta,Arsitektur,S1,3,7318/SK/BAN-PT/Ak/S/VIII/2025,2025,s1arsitektur@universitasmultimedianusantarajakarta.ac.id,B,2028-05-31,Masih Berlaku
-Universitas Tridinanti,Arsitektur,S1,2,7507/SK/BAN-PT/Ak.S/S/IX/2025,2025,s1arsitektur@universitastridinanti.ac.id,B,9999-01-01,Masih Berlaku
+Institut Teknologi Adhi Tama Surabaya,Arsitektur,S1,7,7312/SK/BAN-PT/Ak.S/S/VIII/2025,2025,s1arsitektur@institutteknologiadhitamasurabaya.ac.id,B,-,Masih Berlaku
+Universitas Multimedia Nusantara Jakarta,Arsitektur,S1,3,7318/SK/BAN-PT/Ak/S/VIII/2025,2025,s1arsitektur@universitasmultimedianusantarajakarta.ac.id,Baik Sekali,2030-08-13,Masih Berlaku
+Universitas Tridinanti,Arsitektur,S1,2,7507/SK/BAN-PT/Ak.S/S/IX/2025,2025,s1arsitektur@universitastridinanti.ac.id,B,-,Masih Berlaku
 Universitas Islam Negeri Sulthan Thaha Saifuddin Jambi,Arsitektur,S1,PTAN,7464/SK/BAN-PT/Ak.P/S/IX/2025,2025,s1arsitektur@universitasislamnegerisulthanthahasaifuddinjambi.ac.id,Baik,2027-09-02,Masih Berlaku
 Universitas Kristen Petra,Arsitektur,S1,7,7469/SK/BAN-PT/Ak.Ppj/S/IX/2025,2025,s1arsitektur@universitaskristenpetra.ac.id,Unggul,2030-09-05,Masih Berlaku
 Universitas Katolik Darma Cendika,Arsitektur,S1,7,7491/SK/BAN-PT/Ak.Ppj/S/IX/2025,2025,s1arsitektur@universitaskatolikdarmacendika.ac.id,B,2030-09-05,Masih Berlaku
-Universitas Krisnadwipayana,Arsitektur,S1,3,7515/SK/BAN-PT/Ak.S/S/IX/2025,2026,s1arsitektur@universitaskrisnadwipayana.ac.id,Baik Sekali,2031-03-10,Masih Berlaku
+Universitas Krisnadwipayana,Arsitektur,S1,3,7515/SK/BAN-PT/Ak.S/S/IX/2025,2025,s1arsitektur@universitaskrisnadwipayana.ac.id,B,-,Masih Berlaku
 Universitas Lampung,Arsitektur,S1,PTN,7444/SK/BAN-PT/Ak/S/IX/2025,2025,s1arsitektur@universitaslampung.ac.id,Baik Sekali,2030-09-02,Masih Berlaku
-Universitas Jayabaya,Arsitektur,S1,3,7516/SK/BAN-PT/Ak.S/S/IX/2025,2025,s1arsitektur@universitasjayabaya.ac.id,B,9999-01-01,Masih Berlaku
+Universitas Jayabaya,Arsitektur,S1,3,7516/SK/BAN-PT/Ak.S/S/IX/2025,2025,s1arsitektur@universitasjayabaya.ac.id,B,-,Masih Berlaku
 Universitas Negeri Yogyakarta,Arsitektur,S1,PTN,7551/SK/BAN-PT/Ak.P/S/IX/2025,2025,s1arsitektur@universitasnegeriyogyakarta.ac.id,Baik,2027-09-09,Masih Berlaku
 Institut Desain Dan Bisnis Bali,Arsitektur,S1,8,7129/SK/BAN-PT/Ak.P/S1/VIII/2025,2025,s1arsitektur@institutdesaindanbisnisbali.ac.id,Terakreditasi Sementara,2030-08-25,Masih Berlaku
 Politeknik Dewantara,Arsitektur Bangunan Gedung,D4,9,7138/SK/BAN-PT/Ak.P/D4/VIII/2025,2025,d4arsitekturbangunangedung@politeknikdewantara.ac.id,Terakreditasi Sementara,2030-08-25,Masih Berlaku
 Universitas Klabat,Arsitektur,S1,16,7169/SK/BAN-PT/Ak.P/2.0/S1/IX/2025,2025,s1arsitektur@universitasklabat.ac.id,Terakreditasi Sementara,2030-09-09,Masih Berlaku
 Universitas Kristen Indonesia Tomohon,Arsitektur,S1,16,7610/SK/BAN-PT/Ak/S/IX/2025,2025,s1arsitektur@universitaskristenindonesiatomohon.ac.id,Baik,2030-09-16,Masih Berlaku
-Politeknik Negeri Pontianak,Arsitektur,D-III,PTN,7796/SK/BAN-PT/Ak.S/D3/X/2025,2025,diiiarsitektur@politekniknegeripontianak.ac.id,B,9999-01-01,Masih Berlaku
-Universitas Islam Negeri Sunan Kalijaga,Arsitektur,S1,PTAN,7746/SK/BAN-PT/Ak.S/S/X/2025,2025,s1arsitektur@universitasislamnegerisunankalijaga.ac.id,Baik,9999-01-01,Masih Berlaku
+Politeknik Negeri Pontianak,Arsitektur,D-III,PTN,7796/SK/BAN-PT/Ak.S/D3/X/2025,2025,diiiarsitektur@politekniknegeripontianak.ac.id,B,-,Masih Berlaku
+Universitas Islam Negeri Sunan Kalijaga,Arsitektur,S1,PTAN,7746/SK/BAN-PT/Ak.S/S/X/2025,2025,s1arsitektur@universitasislamnegerisunankalijaga.ac.id,Baik,-,Masih Berlaku
 Universitas Muhammadiyah Kendari,Arsitektur,S1,9,7824/SK/BAN-PT/PEPA-Ppj/S/X/2025,2025,s1arsitektur@universitasmuhammadiyahkendari.ac.id,Baik,2030-10-06,Masih Berlaku
 Universitas Wijayakusuma Purwokerto,Arsitektur,S1,6,7901/SK/BAN-PT/PEPA-Ppj/S/X/2025,2025,s1arsitektur@universitaswijayakusumapurwokerto.ac.id,Baik,2030-10-07,Masih Berlaku
-Universitas Nahdlatul Ulama Sulawesi Tenggara,Teknik Arsitektur,S1,9,7873/SK/BAN-PT/Ak.S/S/X/2025,2025,s1teknikarsitektur@universitasnahdlatululamasulawesitenggara.ac.id,Baik,2030-12-18,Masih Berlaku
+Universitas Nahdlatul Ulama Sulawesi Tenggara,Teknik Arsitektur,S1,9,7873/SK/BAN-PT/Ak.S/S/X/2025,2025,s1teknikarsitektur@universitasnahdlatululamasulawesitenggara.ac.id,Baik,-,Masih Berlaku
 Universitas 17 Agustus 1945 Surabaya,Arsitektur,S1,7,7908/SK/BAN-PT/PEPA-Ppj/S/X/2025,2025,s1arsitektur@universitas17agustus1945surabaya.ac.id,Baik Sekali,2030-10-07,Masih Berlaku
 Universitas Udayana,Arsitektur Lanskap,S1,PTN,8027/SK/BAN-PT/Ak-PNB/S/X/2025,2025,s1arsitekturlanskap@universitasudayana.ac.id,B,2029-03-06,Masih Berlaku
-Universitas Winaya Mukti,Arsitektur,S1,4,8118/SK/BAN-PT/Ak.S/S/X/2025,2025,s1arsitektur@universitaswinayamukti.ac.id,Baik,9999-01-01,Masih Berlaku
-Universitas Ngurah Rai,Arsitektur,S1,8,8109/SK/BAN-PT/Ak.S/S/X/2025,2026,s1arsitektur@universitasngurahrai.ac.id,Baik Sekali,2031-03-17,Masih Berlaku
+Universitas Winaya Mukti,Arsitektur,S1,4,8118/SK/BAN-PT/Ak.S/S/X/2025,2025,s1arsitektur@universitaswinayamukti.ac.id,Baik,-,Masih Berlaku
+Universitas Ngurah Rai,Arsitektur,S1,8,8109/SK/BAN-PT/Ak.S/S/X/2025,2025,s1arsitektur@universitasngurahrai.ac.id,Baik Sekali,-,Masih Berlaku
 Universitas Komputer Indonesia,Teknik Arsitektur,S1,4,8092/SK/BAN-PT/Ak/S/X/2025,2025,s1teknikarsitektur@universitaskomputerindonesia.ac.id,Baik Sekali,2030-10-28,Masih Berlaku
 Universitas Islam Negeri Alauddin Makassar,Teknik Arsitektur,S1,PTAN,8222/SK/BAN-PT/Ak.Ppj/S/XI/2025,2025,s1teknikarsitektur@universitasislamnegerialauddinmakassar.ac.id,A,2030-10-28,Masih Berlaku
 Universitas Sam Ratulangi,Arsitektur,S2,PTN,8232/SK/BAN-PT/Ak.Ppj/M/XI/2025,2025,s2arsitektur@universitassamratulangi.ac.id,B,2030-11-18,Masih Berlaku
@@ -129,17 +135,20 @@ Universitas Persatuan Guru Republik Indonesia Semarang,Arsitektur,S1,6,8396/SK/B
 Universitas Palangka Raya,Arsitektur,S1,PTN,8449/SK/BAN-PT/Ak.KP/S/XII/2025,2025,s1arsitektur@universitaspalangkaraya.ac.id,Baik Sekali,2029-04-17,Masih Berlaku
 Universitas Gunadarma,Arsitektur,S2,3,8496/SK/BAN-PT/Ak.Ppj/M/XII/2025,2025,s2arsitektur@universitasgunadarma.ac.id,Baik,2030-12-09,Masih Berlaku
 Universitas Negeri Surabaya,Arsitektur Bangunan Gedung,D4,PTN,087/SK/BAN-PT/Ak.P/2.0/D4/XII/2025,2025,d4arsitekturbangunangedung@universitasnegerisurabaya.ac.id,Terakreditasi Pertama,2027-12-02,Masih Berlaku
-Universitas Trisakti,Arsitektur Lansekap,S1,3,6079/SK/BAN-PT/Ak.Ppj/S/X/2024,2025,s1arsitekturlansekap@universitastrisakti.ac.id,Baik Sekali,2029-10-17,Masih Berlaku
+Universitas Andalas,Arsitektur,S1,PTN,40/SK/BAN-PT/Ak.P/S/I/2024,2024,s1arsitektur@universitasandalas.ac.id,Baik,2026-01-09,30 hari lagi kadaluarsa
+Universitas Trisakti,Arsitektur Lansekap,S1,3,6079/SK/BAN-PT/Ak.Ppj/S/X/2024,2024,s1arsitekturlansekap@universitastrisakti.ac.id,B,2029-10-17,Masih Berlaku
 Institut Pertanian Bogor,Arsitektur Lanskap,S2,PTN,121/SK/BAN-PT/Ak.Ppj/M/I/2024,2024,s2arsitekturlanskap@institutpertanianbogor.ac.id,Unggul,2029-01-17,Masih Berlaku
-Universitas Pendidikan Indonesia,Arsitektur,S1,PTN,250/SK/BAN-PT/PEPA-Ppj/S/I/2024,2026,s1arsitektur@universitaspendidikanindonesia.ac.id,Unggul,2031-02-24,Masih Berlaku
+Universitas Pendidikan Indonesia,Arsitektur,S1,PTN,250/SK/BAN-PT/PEPA-Ppj/S/I/2024,2024,s1arsitektur@universitaspendidikanindonesia.ac.id,Unggul,2026-06-30,Masih Berlaku
 Universitas Bung Hatta,Arsitektur,S2,10,241/SK/BAN-PT/PEPA-Ppj/M/I/2024,2024,s2arsitektur@universitasbunghatta.ac.id,Baik,2028-12-20,Masih Berlaku
 Universitas Muslim Indonesia,Arsitektur,S1,9,305/SK/BAN-PT/PEPA-Ppj/S/I/2024,2024,s1arsitektur@universitasmuslimindonesia.ac.id,Baik,2028-09-14,Masih Berlaku
 Universitas Katolik Santo Thomas,Arsitektur,S1,1,944/SK/BAN-PT/Ak.Ppj/S/III/2024,2024,s1arsitektur@universitaskatoliksantothomas.ac.id,B,2029-03-14,Masih Berlaku
 Universitas Muhammadiyah Surabaya,Arsitektur,S1,7,740/SK/BAN-PT/Ak/S/III/2024,2024,s1arsitektur@universitasmuhammadiyahsurabaya.ac.id,Baik Sekali,2029-03-13,Masih Berlaku
 Universitas Pembangunan Panca Budi,Arsitektur,S1,1,735/SK/BAN-PT/Ak/S/III/2024,2024,s1arsitektur@universitaspembangunanpancabudi.ac.id,Baik Sekali,2029-03-13,Masih Berlaku
+Universitas Islam Negeri Profesor Kiai Haji Saifuddin Zuhri Purwokerto,Arsitektur,S1,PTAN,844/SK/BAN-PT/Ak.P/S/III/2024,2024,s1arsitektur@universitasislamnegeriprofesorkiaihajisaifuddinzuhripurwokerto.ac.id,Baik,2026-03-13,93 hari lagi kadaluarsa
 Sekolah Tinggi Arsitektur YKPN Yogyakarta,Arsitektur,S1,5,725/SK/BAN-PT/Ak/S/III/2024,2024,s1arsitektur@sekolahtinggiarsitekturykpnyogyakarta.ac.id,Baik,2029-03-05,Masih Berlaku
 Universitas Negeri Semarang,Teknik Arsitektur,S1,PTN,605/SK/BAN-PT/Ak/S/II/2024,2024,s1teknikarsitektur@universitasnegerisemarang.ac.id,Baik Sekali,2029-02-27,Masih Berlaku
 Universitas Tanri Abeng,Arsitektur,S1,3,608/SK/BAN-PT/PEPA-Ppj/S/II/2024,2024,s1arsitektur@universitastanriabeng.ac.id,Baik,2029-02-27,Masih Berlaku
+Politeknik Negeri Bengkalis,Teknologi Rekayasa Arsitektur Perkapalan,D-IV,PTN,354/SK/BAN-PT/Ak/STr/II/2024,2024,divteknologirekayasaarsitekturperkapalan@politekniknegeribengkalis.ac.id,Baik,2029-02-06,Masih Berlaku
 Institut Teknologi Dan Bisnis Ahmad Dahlan Lamongan,Arsitektur,S1,7,339/SK/BAN-PT/Ak/S/II/2024,2024,s1arsitektur@institutteknologidanbisnisahmaddahlanlamongan.ac.id,Baik,2029-02-06,Masih Berlaku
 Universitas Sriwijaya,Arsitektur,S1,PTN,462/SK/BAN-PT/PEPA-Ppj/S/II/2024,2024,s1arsitektur@universitassriwijaya.ac.id,B,2028-09-26,Masih Berlaku
 Universitas Tadulako,Arsitektur,S2,PTN,439/SK/BAN-PT/Ak.P/M/II/2024,2024,s2arsitektur@universitastadulako.ac.id,Terakreditasi Sementara,2029-02-20,Masih Berlaku
@@ -147,7 +156,7 @@ Universitas Trisakti,Arsitektur,S3,3,6955/SK/BAN-PT/Ak.P/D/XII/2024,2024,s3arsit
 Universitas Muhammadiyah Banjarmasin,Arsitektur,S1,11,6928/SK/BAN-PT/Ak.Ppj/S/XI/2024,2024,s1arsitektur@universitasmuhammadiyahbanjarmasin.ac.id,B,2029-08-14,Masih Berlaku
 Universitas Indonesia,Arsitektur,S2,PTN,6741/SK/BAN-PT/Ak.KP/M/XI/2024,2024,s2arsitektur@universitasindonesia.ac.id,Unggul,2029-03-13,Masih Berlaku
 Universitas Lambung Mangkurat,Arsitektur,S1,PTN,6700/SK/BAN-PT/Ak/S/XI/2024,2024,s1arsitektur@universitaslambungmangkurat.ac.id,Baik Sekali,2029-11-12,Masih Berlaku
-Universitas Trisakti,Arsitektur,S1,3,6730/SK/BAN-PT/Ak.KP/S/XI/2024,2024,s1arsitektur@universitastrisakti.ac.id,Unggul,2029-09-04,Masih Berlaku
+Universitas Trisakti,Arsitektur,S1,3,6730/SK/BAN-PT/Ak.KP/S/XI/2024,2024,s1arsitektur@universitastrisakti.ac.id,B,2029-10-17,Masih Berlaku
 Universitas Katolik Widya Mandira Kupang,Arsitektur,S1,15,6536/SK/BAN-PT/Ak/S/XI/2024,2024,s1arsitektur@universitaskatolikwidyamandirakupang.ac.id,Baik,2029-11-05,Masih Berlaku
 Universitas Katolik Parahyangan,Arsitektur,S1,4,6525/SK/BAN-PT/Ak.Ppj/S/X/2024,2024,s1arsitektur@universitaskatolikparahyangan.ac.id,Unggul,2029-11-13,Masih Berlaku
 Universitas Kaltara,Arsitektur,S1,11,6320/SK/BAN-PT/Ak/S/X/2024,2024,s1arsitektur@universitaskaltara.ac.id,Baik,2029-10-19,Masih Berlaku
@@ -158,16 +167,17 @@ Politeknik Negeri Samarinda,Arsitektur Bangunan Gedung,D-IV,PTN,6028/SK/BAN-PT/A
 Universitas Udayana,Arsitektur,S1,PTN,6025/SK/BAN-PT/Ak.Ppj/S/IX/2024,2024,s1arsitektur@universitasudayana.ac.id,Unggul,2029-09-19,Masih Berlaku
 Universitas Mercu Buana,Arsitektur,S1,3,4723/SK/BAN-PT/Ak/S/VI/2024,2024,s1arsitektur@universitasmercubuana.ac.id,Baik Sekali,2029-06-25,Masih Berlaku
 Universitas Katolik Soegijapranata,Arsitektur,S1,6,4762/SK/BAN-PT/Ak.Ppj/S/VI/2024,2024,s1arsitektur@universitaskatoliksoegijapranata.ac.id,Unggul,2029-07-10,Masih Berlaku
-Institut Teknologi Sepuluh Nopember,Ilmu Arsitektur,S3,PTN,4751/SK/BAN-PT/PEPA-Ppj/D/VI/2024,2026,s3ilmuarsitektur@institutteknologisepuluhnopember.ac.id,Unggul,2031-01-13,Masih Berlaku
-Universitas Gadjah Mada,Arsitektur,S2,PTN,5912/SK/BAN-PT/Ak.KP/M/IX/2024,2024,s2magisterarsitektur@universitasgadjahmada.ac.id,Unggul,2027-06-20,Masih Berlaku
-Universitas Atma Jaya Yogyakarta,Arsitektur,S3,5,5692/SK/BAN-PT/Ak.P/D/VIII/2024,2024,s3arsitektur@universitasatmajayayogyakarta.ac.id,Baik,2026-08-27,89 hari lagi kadaluarsa
-Universitas Islam Negeri Ar-Raniry Banda Aceh,Arsitektur,S1,PTAN,5599/SK/BAN-PT/Ak.KP/S/VIII/2024,2026,s1arsitektur@universitasislamnegeriarranirybandaaceh.ac.id,Baik Sekali,9999-01-01,Masih Berlaku
+Institut Teknologi Sepuluh Nopember,Ilmu Arsitektur,S3,PTN,4751/SK/BAN-PT/PEPA-Ppj/D/VI/2024,2024,s3ilmuarsitektur@institutteknologisepuluhnopember.ac.id,B,2029-06-25,Masih Berlaku
+Universitas Gadjah Mada,Magister Arsitektur,S2,PTN,5912/SK/BAN-PT/Ak.KP/M/IX/2024,2024,s2magisterarsitektur@universitasgadjahmada.ac.id,Unggul,2027-06-20,Masih Berlaku
+Universitas Atma Jaya Yogyakarta,Arsitektur,S3,5,5692/SK/BAN-PT/Ak.P/D/VIII/2024,2024,s3arsitektur@universitasatmajayayogyakarta.ac.id,Baik,2026-08-27,Masih Berlaku
+Universitas Budi Luhur,Arsitektur,S1,3,5613/SK/BAN-PT/Ak.KP/S/VIII/2024,2024,s1arsitektur@universitasbudiluhur.ac.id,Baik Sekali,2026-04-29,140 hari lagi kadaluarsa
+Universitas Islam Negeri Ar-Raniry Banda Aceh,Arsitektur,S1,PTAN,5599/SK/BAN-PT/Ak.KP/S/VIII/2024,2024,s1arsitektur@universitasislamnegeriarranirybandaaceh.ac.id,Baik Sekali,2025-12-15,5 hari lagi kadaluarsa
 Institut Teknologi Bandung,Arsitektur Lanskap,S2,PTN,5684/SK/BAN-PT/PEPA-Ppj/M/VIII/2024,2024,s2arsitekturlanskap@institutteknologibandung.ac.id,Baik Sekali,2029-08-27,Masih Berlaku
 Universitas Indonesia,Arsitektur,S3,PTN,5547/SK/BAN-PT/Ak.KP/D/VIII/2024,2024,s3arsitektur@universitasindonesia.ac.id,Unggul,2028-06-27,Masih Berlaku
 Universitas Amikom Yogyakarta,Arsitektur,S1,5,5498/SK/BAN-PT/Ak/S/VIII/2024,2024,s1arsitektur@universitasamikomyogyakarta.ac.id,Baik Sekali,2029-08-19,Masih Berlaku
 Universitas Indraprasta PGRI,Arsitektur,S1,3,5503/SK/BAN-PT/Ak/S/VIII/2024,2024,s1arsitektur@universitasindraprastapgri.ac.id,Baik,2029-08-19,Masih Berlaku
-Universitas Kristen Duta Wacana,Arsitektur,S1,5,5548/SK/BAN-PT/Ak.KP/S/VIII/2024,2025,s1arsitektur@universitaskristendutawacana.ac.id,Unggul,2030-12-31,Masih Berlaku
-Universitas Pancasila,Arsitektur,S1,3,5452/SK/BAN-PT/Ak.KP/S/VIII/2024,2026,s1arsitektur@universitaspancasila.ac.id,Unggul,2031-03-07,Masih Berlaku
+Universitas Kristen Duta Wacana,Arsitektur,S1,5,5548/SK/BAN-PT/Ak.KP/S/VIII/2024,2024,s1arsitektur@universitaskristendutawacana.ac.id,Unggul,2025-12-30,20 hari lagi kadaluarsa
+Universitas Pancasila,Arsitektur,S1,3,5452/SK/BAN-PT/Ak.KP/S/VIII/2024,2024,s1arsitektur@universitaspancasila.ac.id,Unggul,2026-03-06,86 hari lagi kadaluarsa
 Institut Teknologi Nasional Malang,Arsitektur,S1,7,5484/SK/BAN-PT/Ak.KP/S/VIII/2024,2024,s1arsitektur@institutteknologinasionalmalang.ac.id,Baik Sekali,2028-05-31,Masih Berlaku
 Universitas Sebelas Maret,Arsitektur,S2,PTN,5349/SK/BAN-PT/Ak/M/VIII/2024,2024,s2arsitektur@universitassebelasmaret.ac.id,Baik Sekali,2029-08-13,Masih Berlaku
 Universitas Pelita Bangsa,Arsitektur,S1,4,5346/SK/BAN-PT/Ak/S/VIII/2024,2024,s1arsitektur@universitaspelitabangsa.ac.id,Baik,2029-08-13,Masih Berlaku
@@ -177,22 +187,23 @@ Universitas Bengkulu,Arsitektur,S1,PTN,5133/SK/BAN-PT/Ak.Ppj/S/VII/2024,2024,s1a
 Universitas Pradita,Arsitektur,S1,3,5079/SK/BAN-PT/Ak/S/VII/2024,2024,s1arsitektur@universitaspradita.ac.id,Baik,2029-07-23,Masih Berlaku
 Universitas Syiah Kuala,Arsitektur,S1,PTN,5173/SK/BAN-PT/PEPA-Ppj/S/VII/2024,2024,s1arsitektur@universitassyiahkuala.ac.id,Baik Sekali,2029-07-30,Masih Berlaku
 Universitas 17 Agustus 1945 Surabaya,Arsitektur,S2,7,4616/SK/BAN-PT/Ak.P/M/VI/2024,2024,s2arsitektur@universitas17agustus1945surabaya.ac.id,Terakreditasi Sementara,2029-06-11,Masih Berlaku
-Institut Teknologi Sumatera,Arsitektur,S1,PTN,6059/SK/BAN-PT/Ak/S/X/2024,2024,s1arsitektur@institutteknologisumatera.ac.id,Baik Sekali,2029-10-03,Masih Berlaku
+Institut Teknologi Sumatera,Arsitektur,S1,PTN,6059/SK/BAN-PT/Ak/S/X/2024,2024,s1arsitektur@institutteknologisumatera.ac.id,Baik,2026-05-18,159 hari lagi kadaluarsa
 Universitas Negeri Malang,Arsitektur,S1,PTN,4912/SK/BAN-PT/Ak.P/S/VII/2024,2024,s1arsitektur@universitasnegerimalang.ac.id,Terakreditasi Sementara,2029-07-09,Masih Berlaku
 Universitas Gorontalo,Arsitektur,S1,16,4884/SK/BAN-PT/Ak/S/VII/2024,2024,s1arsitektur@universitasgorontalo.ac.id,Baik,2029-07-09,Masih Berlaku
 Universitas Bangka Belitung,Arsitektur,S1,PTN,4938/SK/BAN-PT/Ak/S/VII/2024,2024,s1arsitektur@universitasbangkabelitung.ac.id,Baik,2029-07-15,Masih Berlaku
 Universitas Mercu Buana,Arsitektur,S2,3,4602/SK/BAN-PT/Ak.P/M/VI/2024,2024,s2arsitektur@universitasmercubuana.ac.id,Terakreditasi Sementara,2029-06-06,Masih Berlaku
-Institut Teknologi Indonesia,Arsitektur,S1,3,4295/SK/BAN-PT/Ak.KP/S/V/2024,2024,s1arsitektur@institutteknologiindonesia.ac.id,Baik Sekali,2026-10-21,144 hari lagi kadaluarsa
+Institut Teknologi Indonesia,Arsitektur,S1,3,4295/SK/BAN-PT/Ak.KP/S/V/2024,2024,s1arsitektur@institutteknologiindonesia.ac.id,Baik Sekali,2026-10-21,Masih Berlaku
 Universitas Mahakarya Asia,Arsitektur,S1,5,4370/SK/BAN-PT/Ak/S/V/2024,2024,s1arsitektur@universitasmahakaryaasia.ac.id,Baik,2029-05-21,Masih Berlaku
 Universitas Bung Hatta,Arsitektur,S1,10,4215/SK/BAN-PT/Ak.KP/S/V/2024,2024,s1arsitektur@universitasbunghatta.ac.id,Baik Sekali,2028-07-25,Masih Berlaku
-Universitas Gadjah Mada,Arsitektur,S3,PTN,4290/SK/BAN-PT/Ak.KP/D/V/2024,2024,s3doktorarsitektur@universitasgadjahmada.ac.id,Unggul,2027-07-05,Masih Berlaku
-Universitas Tarumanagara,Arsitektur,S2,3,4310/SK/BAN-PT/Ak.KP/M/V/2024,2024,s2arsitektur@universitastarumanagara.ac.id,Baik Sekali,2026-11-25,179 hari lagi kadaluarsa
+Universitas Gadjah Mada,Doktor Arsitektur,S3,PTN,4290/SK/BAN-PT/Ak.KP/D/V/2024,2024,s3doktorarsitektur@universitasgadjahmada.ac.id,Unggul,2027-07-05,Masih Berlaku
+Universitas Tarumanagara,Arsitektur,S2,3,4310/SK/BAN-PT/Ak.KP/M/V/2024,2024,s2arsitektur@universitastarumanagara.ac.id,Baik Sekali,2026-11-25,Masih Berlaku
 Universitas Islam Indonesia,Arsitektur,S2,5,4309/SK/BAN-PT/Ak.KP/M/V/2024,2024,s2arsitektur@universitasislamindonesia.ac.id,Baik Sekali,2029-05-22,Masih Berlaku
 Universitas Katolik Musi Charitas,Arsitektur,S1,2,4080/SK/BAN-PT/Ak-PNB/S/V/2024,2024,s1arsitektur@universitaskatolikmusicharitas.ac.id,Baik,2029-04-16,Masih Berlaku
 Universitas Muhammadiyah Palembang,Arsitektur,S1,2,4022/SK/BAN-PT/Ak.Ppj/S/V/2024,2024,s1arsitektur@universitasmuhammadiyahpalembang.ac.id,B,2029-05-15,Masih Berlaku
+Universitas Islam Zainul Hasan Genggong Probolinggo,Ilmu Seni Dan Arsitektur Islam,S1,PTAS,3936/SK/BAN-PT/Ak.P/S/IV/2024,2024,s1ilmusenidanarsitekturislam@universitasislamzainulhasangenggongprobolinggo.ac.id,Baik,2026-04-29,140 hari lagi kadaluarsa
 Universitas Halu Oleo,Teknik Arsitektur,D-III,PTN,3800/SK/BAN-PT/Ak/D3/IV/2024,2024,diiiteknikarsitektur@universitashaluoleo.ac.id,Baik Sekali,2029-04-16,Masih Berlaku
 Universitas Sains Alqur An,Arsitektur,S1,6,3840/SK/BAN-PT/Ak.Ppj/S/IV/2024,2024,s1arsitektur@universitassainsalquran.ac.id,A,2029-04-24,Masih Berlaku
-Universitas Merdeka Malang,Arsitektur,S2,7,3820/SK/BAN-PT/Ak.Ppj/M/IV/2024,2025,s2arsitektur@universitasmerdekamalang.ac.id,Baik Sekali,2029-04-24,Masih Berlaku
+Universitas Merdeka Malang,Arsitektur,S2,7,3820/SK/BAN-PT/Ak.Ppj/M/IV/2024,2024,s2arsitektur@universitasmerdekamalang.ac.id,B,2029-04-24,Masih Berlaku
 Universitas Aisyiyah Yogyakarta,Arsitektur,S1,5,1214/SK/BAN-PT/Ak.Ppj/S/IV/2024,2024,s1arsitektur@universitasaisyiyahyogyakarta.ac.id,B,2029-04-10,Masih Berlaku
 Universitas Khairun,Arsitektur,S1,PTN,1101/SK/BAN-PT/Ak/S/IV/2024,2024,s1arsitektur@universitaskhairun.ac.id,Baik Sekali,2029-04-02,Masih Berlaku
 Universitas 17 Agustus 1945 Samarinda,Arsitektur,S1,11,1141/SK/BAN-PT/Ak/S/IV/2024,2024,s1arsitektur@universitas17agustus1945samarinda.ac.id,Baik,2029-04-02,Masih Berlaku
@@ -200,12 +211,12 @@ Universitas Satyagama,Arsitektur,S1,3,1102/SK/BAN-PT/Ak/S/IV/2024,2024,s1arsitek
 Universitas Surakarta,Arsitektur,S1,6,1205/SK/BAN-PT/Ak.Ppj/S/IV/2024,2024,s1arsitektur@universitassurakarta.ac.id,B,2029-04-10,Masih Berlaku
 Sekolah Tinggi Teknik Multimedia Internasional Malang,Arsitektur,S1,7,1077/SK/BAN-PT/Ak-PNB/S/III/2024,2024,s1arsitektur@sekolahtinggiteknikmultimediainternasionalmalang.ac.id,Baik,2028-11-14,Masih Berlaku
 Universitas Gadjah Mada,Arsitektur,S1,PTN,678/SK/BAN-PT/Ak.Ppj/S/III/2023,2023,s1arsitektur@universitasgadjahmada.ac.id,Unggul,2028-01-31,Masih Berlaku
-Universitas Halu Oleo,Arsitektur,S1,PTN,189/SK/BAN-PT/Ak.Ppj/S/I/2023,2025,s1arsitektur@universitashaluoleo.ac.id,Baik Sekali,2027-08-16,Masih Berlaku
+Universitas Halu Oleo,Arsitektur,S1,PTN,189/SK/BAN-PT/Ak.Ppj/S/I/2023,2023,s1arsitektur@universitashaluoleo.ac.id,B,2027-08-16,Masih Berlaku
 Universitas Bosowa,Arsitektur,S1,9,480/SK/BAN-PT/Ak.Ppj/S/II/2023,2023,s1arsitektur@universitasbosowa.ac.id,B,2027-09-13,Masih Berlaku
 Universitas Mataram,Arsitektur,S1,PTN,438/SK/BAN-PT/Ak/S/II/2023,2023,s1arsitektur@universitasmataram.ac.id,Baik,2028-02-14,Masih Berlaku
 Universitas Brawijaya,Arsitektur Lingkungan Binaan,S2,PTN,918/SK/BAN-PT/Ak.Ppj/M/III/2023,2023,s2arsitekturlingkunganbinaan@universitasbrawijaya.ac.id,Unggul,2028-03-28,Masih Berlaku
 Universitas Bung Karno,Arsitektur,S1,3,1037/SK/BAN-PT/Ak.Ppj/S/III/2023,2023,s1arsitektur@universitasbungkarno.ac.id,B,2028-04-04,Masih Berlaku
-Institut Teknologi Nasional Bandung,Arsitektur,S1,4,1752/SK/BAN-PT/Ak.Ppj/S/V/2023,2026,s1arsitektur@institutteknologinasionalbandung.ac.id,Unggul,2031-01-13,Masih Berlaku
+Institut Teknologi Nasional Bandung,Arsitektur,S1,4,1752/SK/BAN-PT/Ak.Ppj/S/V/2023,2023,s1arsitektur@institutteknologinasionalbandung.ac.id,B,2028-05-23,Masih Berlaku
 Universitas Muhammadiyah Makassar,Arsitektur,S1,9,1839/SK/BAN-PT/Ak/S/V/2023,2023,s1arsitektur@universitasmuhammadiyahmakassar.ac.id,Unggul,2028-05-17,Masih Berlaku
 Universitas Pembangunan Nasional Veteran Jawa Timur,Arsitektur,S1,PTN,1955/SK/BAN-PT/Ak.Ppj/S/V/2023,2023,s1arsitektur@universitaspembangunannasionalveteranjawatimur.ac.id,B,2028-06-07,Masih Berlaku
 Universitas PGRI Yogyakarta,Arsitektur,S1,5,1876/SK/BAN-PT/Ak/S/V/2023,2023,s1arsitektur@universitaspgriyogyakarta.ac.id,Baik,2028-05-23,Masih Berlaku
@@ -226,7 +237,7 @@ Universitas Pembangunan Jaya,Arsitektur,S1,4,3929/SK/BAN-PT/Ak.KP/S/X/2023,2023,
 Universitas Riau,Arsitektur,S1,PTN,4035/SK/BAN-PT/Ak/S/X/2023,2023,s1arsitektur@universitasriau.ac.id,Baik Sekali,2028-10-10,Masih Berlaku
 Universitas Pendidikan Mandalika,Arsitektur,D-III,8,4134/SK/BAN-PT/Ak.Ppj/D3/X/2023,2023,diiiarsitektur@universitaspendidikanmandalika.ac.id,Baik,2027-07-12,Masih Berlaku
 Universitas Dwijendra,Arsitektur,S1,8,4174/SK/BAN-PT/Ak.KP/S/X/2023,2023,s1arsitektur@universitasdwijendra.ac.id,Baik Sekali,2028-01-04,Masih Berlaku
-Universitas Ciputra Surabaya,Arsitektur,S1,7,4275/SK/BAN-PT/Ak.Ppj/S/X/2023,2026,s1arsitektur@universitasciputrasurabaya.ac.id,Unggul,2031-05-05,Masih Berlaku
+Universitas Ciputra Surabaya,Arsitektur,S1,7,4275/SK/BAN-PT/Ak.Ppj/S/X/2023,2023,s1arsitektur@universitasciputrasurabaya.ac.id,Baik Sekali,2028-10-31,Masih Berlaku
 Universitas Tanjungpura,Arsitektur,S1,PTN,4195/SK/BAN-PT/Ak.KP/S/X/2023,2023,s1arsitektur@universitastanjungpura.ac.id,Baik Sekali,2027-12-28,Masih Berlaku
 Universitas Mulawarman,Arsitektur,S1,PTN,4220/SK/BAN-PT/Ak/S/X/2023,2023,s1arsitektur@universitasmulawarman.ac.id,Baik,2028-10-17,Masih Berlaku
 Institut Teknologi Bandung,Arsitektur,S3,PTN,4368/SK/BAN-PT/Ak.Ppj/D/X/2023,2023,s3arsitektur@institutteknologibandung.ac.id,Unggul,2028-10-24,Masih Berlaku
@@ -239,33 +250,35 @@ Universitas Kristen Indonesia,Arsitektur,S2,3,5135/SK/BAN-PT/Ak.Ppj/M/XII/2023,2
 Universitas Kristen Petra,Arsitektur,S2,7,5272/SK/BAN-PT/Ak.Ppj/M/XII/2023,2023,s2arsitektur@universitaskristenpetra.ac.id,B,2028-12-29,Masih Berlaku
 Politeknik Negeri Samarinda,Arsitektur,D-III,PTN,5306/SK/BAN-PT/PEPA-Ppj/D3/XII/2023,2023,diiiarsitektur@politekniknegerisamarinda.ac.id,Baik,2028-12-07,Masih Berlaku
 Universitas Riau Kepulauan,Arsitektur,S1,17,5336/SK/BAN-PT/PEPA-Ppj/S/XII/2023,2023,s1arsitektur@universitasriaukepulauan.ac.id,Baik,2028-10-03,Masih Berlaku
-Universitas Balikpapan,Arsitektur,S1,11,979/SK/BAN-PT/PB-PS/S/II/2022,2022,s1arsitektur@universitasbalikpapan.ac.id,Baik,2026-06-01,2 hari lagi kadaluarsa
+Universitas Balikpapan,Arsitektur,S1,11,979/SK/BAN-PT/PB-PS/S/II/2022,2022,s1arsitektur@universitasbalikpapan.ac.id,Baik,2026-06-01,173 hari lagi kadaluarsa
 Universitas Tompotika Luwuk Banggai,Arsitektur,S1,16,1168/SK/BAN-PT/Akred/S/II/2022,2022,s1arsitektur@universitastompotikaluwukbanggai.ac.id,Baik,2027-02-22,Masih Berlaku
-Universitas Flores,Arsitektur,S1,15,1571/SK/BAN-PT/Ak-PPJ/S/III/2022,2022,s1arsitektur@universitasflores.ac.id,B,2026-08-19,81 hari lagi kadaluarsa
+Universitas Flores,Arsitektur,S1,15,1571/SK/BAN-PT/Ak-PPJ/S/III/2022,2022,s1arsitektur@universitasflores.ac.id,B,2026-08-19,Masih Berlaku
 Universitas Ichsan Sidenreng Rappang,Arsitektur,S1,9,1589/SK/BAN-PT/PB-PS/S/III/2022,2022,s1arsitektur@universitasichsansidenrengrappang.ac.id,Baik,2026-12-28,Masih Berlaku
 Universitas Islam Negeri Maulana Malik Ibrahim Malang,Teknik Arsitektur,S1,PTAN,1716/SK/BAN-PT/Ak-PPJ/S/III/2022,2022,s1teknikarsitektur@universitasislamnegerimaulanamalikibrahimmalang.ac.id,B,2027-03-30,Masih Berlaku
 Institut Teknologi Bandung,Ilmu Seni Rupa Dan Desain,S3,PTN,6201/SK/BAN-PT/PEPA-Ppj/D/IV/2025,2025,s3ilmusenirupadandesain@institutteknologibandung.ac.id,B,2030-04-14,Masih Berlaku
 Universitas Cendekia Mitra Indonesia,Desain Komunikasi Visual,S1,5,6063/SK/BAN-PT/Ak.P/S/III/2025,2025,s1desainkomunikasivisual@universitascendekiamitraindonesia.ac.id,Baik,2027-03-25,Masih Berlaku
-Universitas Pertiwi,Desain Komunikasi Visual,S1,4,6066/SK/BAN-PT/Ak.P/S/III/2025,2026,s1desainkomunikasivisual@universitaspertiwi.ac.id,Baik,2031-01-13,Masih Berlaku
-Universitas Internasional Jakarta,Desain Komunikasi Visual,S1,4,316/SK/BAN-PT/Ak.P/S/II/2025,2025,s1desainkomunikasivisual@universitasinternasionaljakarta.ac.id,Baik,2030-12-16,Masih Berlaku
-Institut Seni Indonesia Yogyakarta,Desain Mode Kriya Batik,D-IV,PTN,339/SK/BAN-PT/Ak.S/STr/II/2025,2026,divdesainmodekriyabatik@institutseniindonesiayogyakarta.ac.id,Baik,2031-03-03,Masih Berlaku
-Universitas Sains Indonesia,Desain Grafis,S1,4,237/SK/BAN-PT/Ak-PNB/S/II/2025,2026,s1desaingrafis@universitassainsindonesia.ac.id,Baik,2027-04-07,Masih Berlaku
+Universitas Pertiwi,Desain Komunikasi Visual,S1,4,6066/SK/BAN-PT/Ak.P/S/III/2025,2025,s1desainkomunikasivisual@universitaspertiwi.ac.id,Baik,2027-03-25,Masih Berlaku
+Politeknik Negeri Malang,Optimasi Desain Mekanik,S3 Terapan,PTN,475/SK/BAN-PT/Ak.P/DTr/III/2025,2025,s3terapanoptimasidesainmekanik@politekniknegerimalang.ac.id,Terakreditasi Sementara,2030-03-19,Masih Berlaku
+Universitas Internasional Jakarta,Desain Komunikasi Visual,S1,4,316/SK/BAN-PT/Ak.P/S/II/2025,2025,s1desainkomunikasivisual@universitasinternasionaljakarta.ac.id,Baik,2027-02-25,Masih Berlaku
+Institut Seni Indonesia Yogyakarta,Desain Mode Kriya Batik,D-IV,PTN,339/SK/BAN-PT/Ak.S/STr/II/2025,2025,divdesainmodekriyabatik@institutseniindonesiayogyakarta.ac.id,B,-,Masih Berlaku
+Universitas Sains Indonesia,Desain Grafis,S1,4,237/SK/BAN-PT/Ak-PNB/S/II/2025,2025,s1desaingrafis@universitassainsindonesia.ac.id,Baik,2026-04-06,117 hari lagi kadaluarsa
 Universitas Muhammadiyah Tegal,Desain Produk,D-III,6,53/SK/BAN-PT/Ak.P/D3/I/2025,2025,diiidesainproduk@universitasmuhammadiyahtegal.ac.id,Terakreditasi Sementara,2030-01-14,Masih Berlaku
 Institut Seni Indonesia Denpasar,Desain,S3,PTN,35/SK/BAN-PT/Ak.P/D/I/2025,2025,s3desain@institutseniindonesiadenpasar.ac.id,Terakreditasi Sementara,2030-01-14,Masih Berlaku
 Institut Modern Arsitektur Dan Teknologi,Desain Komunikasi Visual,S1,1,19/SK/BAN-PT/Ak.P/S/I/2025,2025,s1desainkomunikasivisual@institutmodernarsitekturdanteknologi.ac.id,Terakreditasi Sementara,2030-01-14,Masih Berlaku
-Universitas Ciputra Surabaya,Desain Komunikasi Visual,S1,7,6242/SK/BAN-PT/Ak.KP/S/IV/2025,2025,s1desainkomunikasivisual@universitasciputrasurabaya.ac.id,Unggul,2030-12-14,Masih Berlaku
+Universitas Ciputra Surabaya,Desain Komunikasi Visual,S1,7,6242/SK/BAN-PT/Ak.KP/S/IV/2025,2025,s1desainkomunikasivisual@universitasciputrasurabaya.ac.id,Baik,2029-07-02,Masih Berlaku
 Universitas Kristen Petra,Desain Komunikasi Visual,S1,7,6246/SK/BAN-PT/Ak.KP/S/IV/2025,2025,s1desainkomunikasivisual@universitaskristenpetra.ac.id,Unggul,2030-04-08,Masih Berlaku
-Universitas Bina Nusantara,Desain Komunikasi Visual (Kampus Kota Semarang),S1,3,6274/SK/BAN-PT/Ak.P/S/IV/2025,2026,s1desainkomunikasivisualkampuskotasemarang@universitasbinanusantara.ac.id,Baik,2031-01-13,Masih Berlaku
-Universitas Telkom,Desain Komunikasi Visual,S1,4,6298/SK/BAN-PT/Ak.KP/S/IV/2025,2025,s1desainkomunikasivisual@universitastelkom.ac.id,Unggul,2027-11-08,Masih Berlaku
-Universitas Katolik Soegijapranata,Desain Komunikasi Visual,S1,6,6299/SK/BAN-PT/Ak.KP/S/IV/2025,2025,s1desainkomunikasivisual@universitaskatoliksoegijapranata.ac.id,Baik Sekali,2026-06-18,19 hari lagi kadaluarsa
-Universitas Telkom,Desain Produk,S1,4,6343/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1desainproduk@universitastelkom.ac.id,Unggul,2028-03-28,Masih Berlaku
+Universitas Bina Nusantara,Desain Komunikasi Visual (Kampus Kota Semarang),S1,3,6274/SK/BAN-PT/Ak.P/S/IV/2025,2025,s1desainkomunikasivisualkampuskotasemarang@universitasbinanusantara.ac.id,Baik,2027-04-29,Masih Berlaku
+Universitas Telkom,Desain Komunikasi Visual,S1,4,6298/SK/BAN-PT/Ak.KP/S/IV/2025,2025,s1desainkomunikasivisual@universitastelkom.ac.id,Baik,2026-09-14,Masih Berlaku
+Universitas Katolik Soegijapranata,Desain Komunikasi Visual,S1,6,6299/SK/BAN-PT/Ak.KP/S/IV/2025,2025,s1desainkomunikasivisual@universitaskatoliksoegijapranata.ac.id,Baik Sekali,2026-06-18,Masih Berlaku
+Universitas Telkom,Desain Produk,S1,4,6343/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1desainproduk@universitastelkom.ac.id,Baik,2029-03-05,Masih Berlaku
 Universitas Informatika Dan Bisnis Indonesia,Desain Komunikasi Visual,S1,4,6407/SK/BAN-PT/Ak.Ppj/S/V/2025,2025,s1desainkomunikasivisual@universitasinformatikadanbisnisindonesia.ac.id,B,2030-05-06,Masih Berlaku
 Universitas Kristen Petra,Desain Interior,S1,7,6336/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1desaininterior@universitaskristenpetra.ac.id,Unggul,2029-10-16,Masih Berlaku
 Universitas Komputer Indonesia,Desain,S2,4,6514/SK/BAN-PT/Ak.KP/M/V/2025,2025,s2desain@universitaskomputerindonesia.ac.id,Baik Sekali,2027-01-27,Masih Berlaku
 Universitas Surabaya,Desain Produk,S1,7,6469/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1desainproduk@universitassurabaya.ac.id,Unggul,2029-11-13,Masih Berlaku
 Politeknik Kreatif Indonesia,Desain Mode,D-IV,3,6733/SK/BAN-PT/Ak/STr/VI/2025,2025,divdesainmode@politeknikkreatifindonesia.ac.id,Baik,2030-06-04,Masih Berlaku
+Universitas Negeri Padang,Pendidikan Vokasional Desain Fashion,S1,PTN,669/SK/LAMDIK/Ak-PSB/S/VI/2025,2025,s1pendidikanvokasionaldesainfashion@universitasnegeripadang.ac.id,Baik,-,Masih Berlaku
 Universitas Widyatama,Desain Grafis,D-IV,4,6825/SK/BAN-PT/PEPA-Ppj/STr/VI/2025,2025,divdesaingrafis@universitaswidyatama.ac.id,B,2030-06-14,Masih Berlaku
-Universitas Wiraraja,Desain Komunikasi Visual,S1,7,6772/SK/BAN-PT/Ak.P/S/VI/2025,2026,s1desainkomunikasivisual@universitaswiraraja.ac.id,Baik,2031-01-13,Masih Berlaku
+Universitas Wiraraja,Desain Komunikasi Visual,S1,7,6772/SK/BAN-PT/Ak.P/S/VI/2025,2025,s1desainkomunikasivisual@universitaswiraraja.ac.id,Baik,2027-06-14,Masih Berlaku
 Universitas PGRI Silampari,Desain Komunikasi Visual,S1,2,6801/SK/BAN-PT/Ak/S/VI/2025,2025,s1desainkomunikasivisual@universitaspgrisilampari.ac.id,Baik,2030-06-14,Masih Berlaku
 Universitas Pembangunan Nasional Veteran Jawa Timur,Desain Interior,S1,PTN,6802/SK/BAN-PT/Ak/S/VI/2025,2025,s1desaininterior@universitaspembangunannasionalveteranjawatimur.ac.id,Baik,2030-06-14,Masih Berlaku
 Universitas Bina Nusantara,Desain Komunikasi Visual (Kampus Kota Medan),S1,3,2423/SK/BAN-PT/Ak.P/S1/V/2025,2025,s1desainkomunikasivisualkampuskotamedan@universitasbinanusantara.ac.id,Terakreditasi Sementara,2030-05-14,Masih Berlaku
@@ -273,19 +286,20 @@ Institut Seni Indonesia Denpasar,Desain,S2,PTN,6858/SK/BAN-PT/Ak/S2/VII/2025,202
 Universitas Pelita Harapan,Desain Interior,S1,3,6920/SK/BAN-PT/Ak/S1/VII/2025,2025,s1desaininterior@universitaspelitaharapan.ac.id,Unggul,2030-07-01,Masih Berlaku
 Akademi Kesejahteraan Sosial AKK,Desain Busana,D-III,5,7000/SK/BAN-PT/Ak.Ppj/D3/VII/2025,2025,diiidesainbusana@akademikesejahteraansosialakk.ac.id,B,2030-07-12,Masih Berlaku
 Universitas Dinamika,Desain Komunikasi Visual,S1,7,7052/SK/BAN-PT/Ak/S1/VII/2025,2025,s1desainkomunikasivisual@universitasdinamika.ac.id,Unggul,2030-07-29,Masih Berlaku
-Universitas Ichsan Gorontalo,Desain Komunikasi Visual,S1,16,7086/SK/BAN-PT/Ak.S/S1/VII/2025,2026,s1desainkomunikasivisual@universitasichsangorontalo.ac.id,Baik,2031-01-13,Masih Berlaku
+Universitas Ichsan Gorontalo,Desain Komunikasi Visual,S1,16,7086/SK/BAN-PT/Ak.S/S1/VII/2025,2025,s1desainkomunikasivisual@universitasichsangorontalo.ac.id,Baik,-,Masih Berlaku
 Institut Teknologi Bandung,Desain Interior,S1,PTN,7089/SK/BAN-PT/Ak.Ppj/S1/VII/2025,2025,s1desaininterior@institutteknologibandung.ac.id,Unggul,2030-08-03,Masih Berlaku
+Politeknik TEDC,Mekanik Industri Dan Desain,D-IV,4,0479/SK/LAM Teknik/VST/VIII/2025,2025,divmekanikindustridandesain@politekniktedc.ac.id,Baik Sekali,2030-08-20,Masih Berlaku
 Institut Bisnis Dan Teknologi Indonesia,Desain Komunikasi Visual,S1,8,7126/SK/BAN-PT/Ak/S1/VIII/2025,2025,s1desainkomunikasivisual@institutbisnisdanteknologiindonesia.ac.id,Baik,2030-08-05,Masih Berlaku
-Universitas Bhinneka Nusantara,Desain Komunikasi Visual,S1,7,7375/SK/BAN-PT/Ak-PNB/S/VIII/2025,2025,s1desainkomunikasivisual@universitasbhinnekanusantara.ac.id,Baik Sekali,2026-09-07,100 hari lagi kadaluarsa
+Universitas Bhinneka Nusantara,Desain Komunikasi Visual,S1,7,7375/SK/BAN-PT/Ak-PNB/S/VIII/2025,2025,s1desainkomunikasivisual@universitasbhinnekanusantara.ac.id,Baik Sekali,2026-09-07,Masih Berlaku
 Universitas Sahid Surakarta,Desain Interior,S1,6,7171/SK/BAN-PT/Ak.Ppj/S/VIII/2025,2025,s1desaininterior@universitassahidsurakarta.ac.id,B,2030-07-22,Masih Berlaku
 Politeknik Seni Yogyakarta,Desain Komunikasi Visual,D-III,5,7120/SK/BAN-PT/Ak.P/D3/VIII/2025,2025,diiidesainkomunikasivisual@politeknikseniyogyakarta.ac.id,Baik,2027-08-05,Masih Berlaku
 Universitas Negeri Jakarta,Desain Mode,D-IV,PTN,7166/SK/BAN-PT/Ak.Ppj/STr/VIII/2025,2025,divdesainmode@universitasnegerijakarta.ac.id,A,2030-07-24,Masih Berlaku
-Universitas Teknologi Digital,Desain Komunikasi Visual,S1,4,7129/SK/BAN-PT/Ak.P/S/VIII/2025,2026,s1desainkomunikasivisual@universitasteknologidigital.ac.id,Baik,2031-02-24,Masih Berlaku
-Universitas Trilogi,Desain Komunikasi Visual,S1,3,7107/SK/BAN-PT/Ak.S/S/VIII/2025,2025,s1desainkomunikasivisual@universitastrilogi.ac.id,Baik Sekali,2030-12-18,Masih Berlaku
-Institut Seni Budaya Indonesia Aceh,Desain Komunikasi Visual,S1,PTN,7228/SK/BAN-PT/Ak.S/S/VIII/2025,2025,s1desainkomunikasivisual@institutsenibudayaindonesiaaceh.ac.id,Baik,9999-01-01,Masih Berlaku
+Universitas Teknologi Digital,Desain Komunikasi Visual,S1,4,7129/SK/BAN-PT/Ak.P/S/VIII/2025,2025,s1desainkomunikasivisual@universitasteknologidigital.ac.id,Baik,2027-08-05,Masih Berlaku
+Universitas Trilogi,Desain Komunikasi Visual,S1,3,7107/SK/BAN-PT/Ak.S/S/VIII/2025,2025,s1desainkomunikasivisual@universitastrilogi.ac.id,Baik Sekali,-,Masih Berlaku
+Institut Seni Budaya Indonesia Aceh,Desain Komunikasi Visual,S1,PTN,7228/SK/BAN-PT/Ak.S/S/VIII/2025,2025,s1desainkomunikasivisual@institutsenibudayaindonesiaaceh.ac.id,Baik,-,Masih Berlaku
 Universitas Sebelas Maret,Desain Mode,S1,PTN,7236/SK/BAN-PT/Ak-PNB/S/VIII/2025,2025,s1desainmode@universitassebelasmaret.ac.id,Unggul,2027-09-27,Masih Berlaku
 Politeknik Tempo,Desain Media,D-IV,3,7415/SK/BAN-PT/Ak/STr/IX/2025,2025,divdesainmedia@politekniktempo.ac.id,Baik,2030-09-02,Masih Berlaku
-Institut Informatika Indonesia Surabaya,Desain Produk,S1,7,7553/SK/BAN-PT/Ak-TMSP/S/IX/2025,2025,s1desainproduk@institutinformatikaindonesiasurabaya.ac.id,Tidak Terakreditasi,,Tidak Ada Data
+Institut Informatika Indonesia Surabaya,Desain Produk,S1,7,7553/SK/BAN-PT/Ak-TMSP/S/IX/2025,2025,s1desainproduk@institutinformatikaindonesiasurabaya.ac.id,Tidak Terakreditasi,,Masih Berlaku
 Institut Teknologi Sains Bandung,Desain Produk,S1,4,7558/SK/BAN-PT/Ak/S/IX/2025,2025,s1desainproduk@institutteknologisainsbandung.ac.id,Baik Sekali,2030-09-10,Masih Berlaku
 Institut Seni Budaya Indonesia Bandung,Desain Interior,S1,PTN,7159/SK/BAN-PT/Ak.P/S1/VIII/2025,2025,s1desaininterior@institutsenibudayaindonesiabandung.ac.id,Terakreditasi Sementara,2030-08-25,Masih Berlaku
 Institut Komunikasi Dan Bisnis LSPR,Desain Media,D4,3,7128/SK/BAN-PT/Ak.P/D4/VIII/2025,2025,d4desainmedia@institutkomunikasidanbisnislspr.ac.id,Terakreditasi Sementara,2030-08-25,Masih Berlaku
@@ -297,23 +311,26 @@ Institut Teknologi Adhi Tama Surabaya,Desain Produk,S1,7,7620/SK/BAN-PT/PEPA-Ppj
 Institut Informatika Dan Bisnis Darmajaya,Desain Komunikasi Visual,S1,2,7601/SK/BAN-PT/Ak/S/IX/2025,2025,s1desainkomunikasivisual@institutinformatikadanbisnisdarmajaya.ac.id,Baik,2030-09-16,Masih Berlaku
 Universitas Bina Insani,Desain Komunikasi Visual,S1,4,7211/SK/BAN-PT/Ak.P/2.0/S1/IX/2025,2025,s1desainkomunikasivisual@universitasbinainsani.ac.id,Terakreditasi Sementara,2030-09-23,Masih Berlaku
 Universitas Sebelas Maret,Desain Media Digital,D4,PTN,7212/SK/BAN-PT/Ak.P/2.0/D4/IX/2025,2025,d4desainmediadigital@universitassebelasmaret.ac.id,Terakreditasi Sementara,2030-09-23,Masih Berlaku
-Universitas Tiga Serangkai,Desain Komunikasi Visual,D-III,6,7701/SK/BAN-PT/Ak-PNB/D3/IX/2025,2025,diiidesainkomunikasivisual@universitastigaserangkai.ac.id,Baik,2026-07-22,53 hari lagi kadaluarsa
-Institut Seni Indonesia Surakarta,Desain Komunikasi Visual,S1,PTN,7799/SK/BAN-PT/Ak.S/S/X/2025,2025,s1desainkomunikasivisual@institutseniindonesiasurakarta.ac.id,Baik Sekali,2030-12-16,Masih Berlaku
+Universitas Tiga Serangkai,Desain Produk Tekstil,D-III,6,7680/SK/BAN-PT/Ak-PNB/D3/IX/2025,2025,diiidesainproduktekstil@universitastigaserangkai.ac.id,Baik,2026-05-21,162 hari lagi kadaluarsa
+Universitas Tiga Serangkai,Desain Komunikasi Visual,D-III,6,7701/SK/BAN-PT/Ak-PNB/D3/IX/2025,2025,diiidesainkomunikasivisual@universitastigaserangkai.ac.id,Baik,2026-07-22,Masih Berlaku
+Institut Seni Indonesia Surakarta,Desain Komunikasi Visual,S1,PTN,7799/SK/BAN-PT/Ak.S/S/X/2025,2025,s1desainkomunikasivisual@institutseniindonesiasurakarta.ac.id,B,-,Masih Berlaku
 Institut Teknologi Sepuluh Nopember,Desain Interior,S1,PTN,7798/SK/BAN-PT/Ak.Ppj/S/X/2025,2025,s1desaininterior@institutteknologisepuluhnopember.ac.id,A,2030-09-23,Masih Berlaku
-Universitas Muhammadiyah Surabaya,Desain Komunikasi Visual,S1,7,7820/SK/BAN-PT/Ak.S/S/X/2025,2026,s1desainkomunikasivisual@universitasmuhammadiyahsurabaya.ac.id,Baik,2031-02-03,Masih Berlaku
+Universitas Muhammadiyah Surabaya,Desain Komunikasi Visual,S1,7,7820/SK/BAN-PT/Ak.S/S/X/2025,2025,s1desainkomunikasivisual@universitasmuhammadiyahsurabaya.ac.id,Baik,-,Masih Berlaku
 Universitas Pradita,Desain Interior,S1,3,7871/SK/BAN-PT/Ak.Ppj/S/X/2025,2025,s1desaininterior@universitaspradita.ac.id,Baik,2030-10-07,Masih Berlaku
 Universitas Telkom,Desain Komunikasi Visual (Kampus Jakarta),S1,4,7852/SK/BAN-PT/Ak/S/X/2025,2025,s1desainkomunikasivisualkampusjakarta@universitastelkom.ac.id,Baik,2030-10-07,Masih Berlaku
+Universitas Ibn Khaldun Bogor,Pendidikan Vokasional Desain Fashion,S1,4,1807/SK/LAMDIK/Ak/S/X/2025,2025,s1pendidikanvokasionaldesainfashion@universitasibnkhaldunbogor.ac.id,Baik,2030-07-25,Masih Berlaku
 Universitas Pelita Harapan,Desain Produk,S1,3,8017/SK/BAN-PT/Ak/S/X/2025,2025,s1desainproduk@universitaspelitaharapan.ac.id,Unggul,2030-10-15,Masih Berlaku
 Sekolah Tinggi Teknologi Muhammadiyah AR Fachruddin,Desain Komunikasi Visual,S1,7,8009/SK/BAN-PT/Ak/S/X/2025,2025,s1desainkomunikasivisual@sekolahtinggiteknologimuhammadiyaharfachruddin.ac.id,Baik,2030-10-15,Masih Berlaku
+Universitas Persada Indonesia Yai,Desain Komunikasi Visual,S1,3,7971/SK/BAN-PT/Ak.KP/S/X/2025,2025,s1desainkomunikasivisual@universitaspersadaindonesiayai.ac.id,Unggul,2029-07-17,Masih Berlaku
 Institut Teknologi Dan Bisnis Tuban,Desain Komunikasi Visual,S1,7,8042/SK/BAN-PT/Ak/S/X/2025,2025,s1desainkomunikasivisual@institutteknologidanbisnistuban.ac.id,Baik,2030-10-22,Masih Berlaku
 Institut Seni Budaya Indonesia Aceh,Desain Interior,S1,PTN,8107/SK/BAN-PT/Ak.P/S/X/2025,2025,s1desaininterior@institutsenibudayaindonesiaaceh.ac.id,Baik,2027-10-28,Masih Berlaku
 Universitas Kristen Duta Wacana,Desain Produk,S1,5,8230/SK/BAN-PT/Ak.Ppj/S/XI/2025,2025,s1desainproduk@universitaskristendutawacana.ac.id,B,2030-11-02,Masih Berlaku
 Universitas Kristen Maranatha,Desain Komunikasi Visual,S1,4,8208/SK/BAN-PT/Ak.Ppj/S/XI/2025,2025,s1desainkomunikasivisual@universitaskristenmaranatha.ac.id,Baik Sekali,2030-11-04,Masih Berlaku
-Universitas Ciputra Surabaya,Desain Mode,S1,7,8320/SK/BAN-PT/Ak-PNB/S/XI/2025,2025,s1desainmode@universitasciputrasurabaya.ac.id,Baik,2026-07-06,37 hari lagi kadaluarsa
+Universitas Ciputra Surabaya,Desain Mode,S1,7,8320/SK/BAN-PT/Ak-PNB/S/XI/2025,2025,s1desainmode@universitasciputrasurabaya.ac.id,Baik,2026-07-06,Masih Berlaku
 Institut Seni Indonesia Denpasar,Desain Produk,S1,PTN,8275/SK/BAN-PT/Ak/S/XI/2025,2025,s1desainproduk@institutseniindonesiadenpasar.ac.id,Baik,2030-11-11,Masih Berlaku
 Universitas Negeri Yogyakarta,Desain Komunikasi Visual,S1,PTN,028/SK/BAN-PT/Ak.P/2.0/S1/X/2025,2025,s1desainkomunikasivisual@universitasnegeriyogyakarta.ac.id,Terakreditasi Sementara,2030-10-21,Masih Berlaku
-Universitas Dian Nuswantoro,Desain Komunikasi Visual,S1,6,8345/SK/BAN-PT/Ak.Ppj/S/XI/2025,2025,s1desainkomunikasivisual@universitasdiannuswantoro.ac.id,Unggul,2030-11-16,Masih Berlaku
-Universitas Sampoerna,Desain Komunikasi Visual,S1,3,8406/SK/BAN-PT/Ak.S/S/XI/2025,2025,s1desainkomunikasivisual@universitassampoerna.ac.id,Baik,9999-01-01,Masih Berlaku
+Universitas Dian Nuswantoro,Desain Komunikasi Visual,S1,6,8345/SK/BAN-PT/Ak.Ppj/S/XI/2025,2025,s1desainkomunikasivisual@universitasdiannuswantoro.ac.id,Baik,2028-07-11,Masih Berlaku
+Universitas Sampoerna,Desain Komunikasi Visual,S1,3,8406/SK/BAN-PT/Ak.S/S/XI/2025,2025,s1desainkomunikasivisual@universitassampoerna.ac.id,Baik,-,Masih Berlaku
 Universitas Pelita Harapan,Desain Komunikasi Visual,S1,3,8410/SK/BAN-PT/PEPA-Ppj/S/XI/2025,2025,s1desainkomunikasivisual@universitaspelitaharapan.ac.id,Baik Sekali,2030-11-25,Masih Berlaku
 Universitas Multimedia Nusantara Jakarta,Desain,S2,3,049/SK/BAN-PT/Ak.P/2.0/S2/XI/2025,2025,s2desain@universitasmultimedianusantarajakarta.ac.id,Terakreditasi Sementara,2030-11-18,Masih Berlaku
 Universitas Esa Unggul,Desain Produk,S1,3,8472/SK/BAN-PT/Ak.KP/S/XII/2025,2025,s1desainproduk@universitasesaunggul.ac.id,Unggul,2030-05-06,Masih Berlaku
@@ -324,7 +341,11 @@ Universitas Adzkia,Desain Komunikasi Visual,S1,10,6110/SK/BAN-PT/Ak.P/S/X/2024,2
 Universitas Islam Negeri Syekh AIi Hasan Ahmad Addary Padangsidimpuan,Desain Komunikasi Visual,S1,PTAN,6111/SK/BAN-PT/Ak.P/S/X/2024,2024,s1desainkomunikasivisual@universitasislamnegerisyekhaiihasanahmadaddarypadangsidimpuan.ac.id,Terakreditasi Sementara,2029-10-03,Masih Berlaku
 Universitas Prima Indonesia,Desain Komunikasi Visual,S1,1,6060/SK/BAN-PT/Ak/S/X/2024,2024,s1desainkomunikasivisual@universitasprimaindonesia.ac.id,Baik,2029-10-03,Masih Berlaku
 Institut Seni Indonesia Yogyakarta,Desain Produk,S1,PTN,101/SK/BAN-PT/Ak.Ppj/S/I/2024,2024,s1desainproduk@institutseniindonesiayogyakarta.ac.id,Baik Sekali,2028-06-07,Masih Berlaku
-Universitas Primakara,Desain Komunikasi Visual,S1,8,164/SK/BAN-PT/Ak.P/S/I/2024,2026,s1desainkomunikasivisual@universitasprimakara.ac.id,Baik,9999-01-01,Masih Berlaku
+Universitas Satu,Desain Komunikasi Visual,S1,4,109/SK/BAN-PT/Ak.P/S/I/2024,2024,s1desainkomunikasivisual@universitassatu.ac.id,Baik,2026-01-17,38 hari lagi kadaluarsa
+Politeknik Bali Maha Werdhi,Desain Komunikasi Visual,D-III,8,208/SK/BAN-PT/Ak.P/D3/I/2024,2024,diiidesainkomunikasivisual@politeknikbalimahawerdhi.ac.id,Baik,2026-01-23,44 hari lagi kadaluarsa
+Universitas Al Hikmah Jepara,Desain Komunikasi Visual,S1,6,204/SK/BAN-PT/Ak.P/S/I/2024,2024,s1desainkomunikasivisual@universitasalhikmahjepara.ac.id,Baik,2026-01-23,44 hari lagi kadaluarsa
+Universitas Awal Bros,Desain Komunikasi Visual,S1,17,181/SK/BAN-PT/Ak.P/S/I/2024,2024,s1desainkomunikasivisual@universitasawalbros.ac.id,Baik,2026-01-23,44 hari lagi kadaluarsa
+Universitas Primakara,Desain Komunikasi Visual,S1,8,164/SK/BAN-PT/Ak.P/S/I/2024,2024,s1desainkomunikasivisual@universitasprimakara.ac.id,Baik,2026-01-23,44 hari lagi kadaluarsa
 Universitas Pendidikan Indonesia,Desain Produk Industri Kampus Tasikmalaya,S1,PTN,266/SK/BAN-PT/Ak/S/I/2024,2024,s1desainprodukindustrikampustasikmalaya@universitaspendidikanindonesia.ac.id,Baik,2029-01-30,Masih Berlaku
 Institut Desain Dan Bisnis Bali,Desain,S2,8,1030/SK/BAN-PT/Ak.P/M/III/2024,2024,s2desain@institutdesaindanbisnisbali.ac.id,Terakreditasi Sementara,2029-03-26,Masih Berlaku
 Politeknik Negeri Jakarta,Desain Grafis,D-IV,PTN,898/SK/BAN-PT/Ak/STr/III/2024,2024,divdesaingrafis@politekniknegerijakarta.ac.id,Baik,2029-03-19,Masih Berlaku
@@ -332,6 +353,8 @@ Universitas Trilogi,Desain Produk,S1,3,914/SK/BAN-PT/Ak/S/III/2024,2024,s1desain
 Institut Teknologi Dan Bisnis Kristen Bukit Pengharapan,Desain Komunikasi Visual,S1,6,913/SK/BAN-PT/Ak/S/III/2024,2024,s1desainkomunikasivisual@institutteknologidanbisniskristenbukitpengharapan.ac.id,Baik,2029-03-19,Masih Berlaku
 Universitas Agung Podomoro,Desain Produk,S1,3,736/SK/BAN-PT/Ak/S/III/2024,2024,s1desainproduk@universitasagungpodomoro.ac.id,Baik Sekali,2029-03-13,Masih Berlaku
 Universitas Mercu Buana,Desain Komunikasi Visual,S1,3,877/SK/BAN-PT/Ak.Ppj/S/III/2024,2024,s1desainkomunikasivisual@universitasmercubuana.ac.id,B,2029-03-27,Masih Berlaku
+Akademi Kesejahteraan Sosial Ibu Kartini,Desain Mode,D-IV,6,849/SK/BAN-PT/Ak.P/STr/III/2024,2024,divdesainmode@akademikesejahteraansosialibukartini.ac.id,Baik,2026-03-13,93 hari lagi kadaluarsa
+Institut Informatika Dan Bisnis Darmajaya,Desain Interior,S1,2,848/SK/BAN-PT/Ak.P/S/III/2024,2024,s1desaininterior@institutinformatikadanbisnisdarmajaya.ac.id,Baik,2026-03-13,93 hari lagi kadaluarsa
 Institut Teknologi Dan Bisnis Palcomtech,Desain Komunikasi Visual,D-III,2,687/SK/BAN-PT/Ak/D3/III/2024,2024,diiidesainkomunikasivisual@institutteknologidanbisnispalcomtech.ac.id,Baik Sekali,2029-03-05,Masih Berlaku
 Institut Teknologi Telkom Purwokerto,Desain Produk,S1,6,688/SK/BAN-PT/Ak/S/III/2024,2024,s1desainproduk@institutteknologitelkompurwokerto.ac.id,Baik,2029-03-05,Masih Berlaku
 Universitas Indraprasta PGRI,Desain Komunikasi Visual,S1,3,672/SK/BAN-PT/PEPA-Ppj/S/II/2024,2024,s1desainkomunikasivisual@universitasindraprastapgri.ac.id,B,2029-03-01,Masih Berlaku
@@ -342,7 +365,9 @@ Institut Teknologi Dan Bisnis Kalbis,Desain Komunikasi Visual,S1,3,592/SK/BAN-PT
 Universitas Maarif Hasyim Latif,Desain Komunikasi Visual,S1,7,593/SK/BAN-PT/Ak/S/II/2024,2024,s1desainkomunikasivisual@universitasmaarifhasyimlatif.ac.id,Baik Sekali,2029-02-27,Masih Berlaku
 Universitas Presiden,Desain Komunikasi Visual,S1,4,644/SK/BAN-PT/Ak.Ppj/S/II/2024,2024,s1desainkomunikasivisual@universitaspresiden.ac.id,B,2029-02-27,Masih Berlaku
 Universitas Esa Unggul,Desain Interior,S1,3,384/SK/BAN-PT/PEPA-Ppj/S/II/2024,2024,s1desaininterior@universitasesaunggul.ac.id,Baik,2028-08-28,Masih Berlaku
-Universitas Syekh Yusuf Al Makassari Gowa,Desain Komunikasi Visual,S1,9,441/SK/BAN-PT/Ak.P/S/II/2024,2026,s1desainkomunikasivisual@universitassyekhyusufalmakassarigowa.ac.id,Baik,2027-02-21,Masih Berlaku
+Universitas Syekh Yusuf Al Makassari Gowa,Desain Komunikasi Visual,S1,9,441/SK/BAN-PT/Ak.P/S/II/2024,2024,s1desainkomunikasivisual@universitassyekhyusufalmakassarigowa.ac.id,Baik,2026-02-20,72 hari lagi kadaluarsa
+Universitas Metamedia,Desain Komunikasi Visual,S1,10,481/SK/BAN-PT/Ak.P/S/II/2024,2024,s1desainkomunikasivisual@universitasmetamedia.ac.id,Baik,2026-02-21,73 hari lagi kadaluarsa
+Universitas Ngudi Waluyo,Pendidikan Vokasional Desain Fashion,S1,6,1965/SK/LAMDIK/Ak/S/XII/2024,2024,s1pendidikanvokasionaldesainfashion@universitasngudiwaluyo.ac.id,Baik Sekali,2029-12-30,Masih Berlaku
 Institut Desain Dan Bisnis Bali,Desain Interior,S1,8,7199/SK/BAN-PT/Ak/S/XII/2024,2024,s1desaininterior@institutdesaindanbisnisbali.ac.id,Unggul,2029-12-15,Masih Berlaku
 Universitas Negeri Makassar,Desain Komunikasi Visual,S1,PTN,7124/SK/BAN-PT/Ak/S/XII/2024,2024,s1desainkomunikasivisual@universitasnegerimakassar.ac.id,Baik Sekali,2029-12-15,Masih Berlaku
 Universitas Hindu Negeri I Gusti Bagus Sugriwa Denpasar,Desain Komunikasi Visual,S1,PTAN,7094/SK/BAN-PT/Ak.P/S/XII/2024,2024,s1desainkomunikasivisual@universitashindunegeriigustibagussugriwadenpasar.ac.id,Terakreditasi Sementara,2029-12-11,Masih Berlaku
@@ -351,17 +376,18 @@ Universitas Pendidikan Ganesha,Desain Komunikasi Visual,D-III,PTN,6884/SK/BAN-PT
 Universitas Swadaya Gunung Djati,Desain Komunikasi Visual,S1,4,6926/SK/BAN-PT/Ak.P/S/XI/2024,2024,s1desainkomunikasivisual@universitasswadayagunungdjati.ac.id,Terakreditasi Sementara,2029-11-26,Masih Berlaku
 Sekolah Tinggi Desain Indonesia Bandung,Desain Komunikasi Visual,S1,4,6865/SK/BAN-PT/Ak/S/XI/2024,2024,s1desainkomunikasivisual@sekolahtinggidesainindonesiabandung.ac.id,Baik,2029-11-19,Masih Berlaku
 Institut Teknologi Nasional Bandung,Desain Interior,S1,4,6718/SK/BAN-PT/Ak.KP/S/XI/2024,2024,s1desaininterior@institutteknologinasionalbandung.ac.id,Unggul,2028-05-09,Masih Berlaku
-Universitas Telkom,Desain Komunikasi Visual (Kampus Kabupaten Banyumas),S1,4,6662/SK/BAN-PT/Ak-PNB/S/XI/2024,2024,s1desainkomunikasivisualkampuskabupatenbanyumas@universitastelkom.ac.id,Baik,2026-09-14,107 hari lagi kadaluarsa
+Universitas Telkom,Desain Komunikasi Visual (Kampus Kabupaten Banyumas),S1,4,6662/SK/BAN-PT/Ak-PNB/S/XI/2024,2024,s1desainkomunikasivisualkampuskabupatenbanyumas@universitastelkom.ac.id,Baik,2026-09-14,Masih Berlaku
 Universitas Telkom,Desain Produk (Kampus Kabupaten Banyumas),S1,4,6663/SK/BAN-PT/Ak-PNB/S/XI/2024,2024,s1desainprodukkampuskabupatenbanyumas@universitastelkom.ac.id,Baik,2029-03-05,Masih Berlaku
 Institut Kesenian Jakarta,Desain Komunikasi Visual,S1,3,6445/SK/BAN-PT/PEPA-Ppj/S/X/2024,2024,s1desainkomunikasivisual@institutkesenianjakarta.ac.id,B,2029-10-22,Masih Berlaku
 Institut Teknologi Sepuluh Nopember,Desain Interior,S2,PTN,6308/SK/BAN-PT/Ak/M/X/2024,2024,s2desaininterior@institutteknologisepuluhnopember.ac.id,Baik,2029-10-19,Masih Berlaku
 Institut Teknologi Kalimantan,Desain Komunikasi Visual,S1,PTN,6166/SK/BAN-PT/Ak/S/X/2024,2024,s1desainkomunikasivisual@institutteknologikalimantan.ac.id,Baik,2029-10-08,Masih Berlaku
+Universitas Matana,Desain Komunikasi Visual,S1,4,6224/SK/BAN-PT/Ak/S/X/2024,2024,s1desainkomunikasivisual@universitasmatana.ac.id,Baik,2029-10-08,Masih Berlaku
 Universitas Wanita Internasional,Desain Komunikasi Visual,S1,4,6188/SK/BAN-PT/Ak.Ppj/S/X/2024,2024,s1desainkomunikasivisual@universitaswanitainternasional.ac.id,A,2029-10-23,Masih Berlaku
 Universitas Wanita Internasional,Desain Interior,S1,4,6192/SK/BAN-PT/Ak.Ppj/S/X/2024,2024,s1desaininterior@universitaswanitainternasional.ac.id,B,2029-10-23,Masih Berlaku
 Universitas Surabaya,Desain Komunikasi Visual,S1,7,6221/SK/BAN-PT/Ak.P/S/X/2024,2024,s1desainkomunikasivisual@universitassurabaya.ac.id,Terakreditasi Sementara,2029-10-08,Masih Berlaku
 Universitas Ciputra Surabaya,Desain Komunikasi Visual (Kampus Kota Makassar),S1,7,4831/SK/BAN-PT/Ak/S/VII/2024,2024,s1desainkomunikasivisualkampuskotamakassar@universitasciputrasurabaya.ac.id,Baik,2029-07-02,Masih Berlaku
 Universitas Bumigora,Desain Komunikasi Visual,S1,8,4861/SK/BAN-PT/Ak/S/VII/2024,2024,s1desainkomunikasivisual@universitasbumigora.ac.id,Baik,2029-07-02,Masih Berlaku
-Universitas Indonesia Mandiri,Desain Komunikasi Visual,S1,2,5926/SK/BAN-PT/Ak-PNB/S/IX/2024,2021,s1desainkomunikasivisual@universitasindonesiamandiri.ac.id,Baik,2026-06-25,26 hari lagi kadaluarsa
+Universitas Indonesia Mandiri,Desain Komunikasi Visual,S1,2,5926/SK/BAN-PT/Ak-PNB/S/IX/2024,2024,s1desainkomunikasivisual@universitasindonesiamandiri.ac.id,Baik,2026-06-25,Masih Berlaku
 Institut Kesenian Jakarta,Desain Interior,S1,3,4753/SK/BAN-PT/PEPA-Ppj/S/VI/2024,2024,s1desaininterior@institutkesenianjakarta.ac.id,Baik,2029-06-25,Masih Berlaku
 Universitas LIA,Desain Komunikasi Visual,S1,3,5794/SK/BAN-PT/Ak.P/S/IX/2024,2024,s1desainkomunikasivisual@universitaslia.ac.id,Terakreditasi Sementara,2029-09-03,Masih Berlaku
 Universitas Negeri Malang,Desain Mode,D-IV,PTN,5852/SK/BAN-PT/PEPA-Ppj/STr/IX/2024,2024,divdesainmode@universitasnegerimalang.ac.id,Baik,2029-09-10,Masih Berlaku
@@ -369,7 +395,7 @@ Universitas Putra Indonesia Yptk Padang,Desain Komunikasi Visual,S1,10,5851/SK/B
 Politeknik Negeri Samarinda,Desain Produk Kayu Dan Serat,D-IV,PTN,5626/SK/BAN-PT/Ak/STr/VIII/2024,2024,divdesainprodukkayudanserat@politekniknegerisamarinda.ac.id,Baik,2029-08-27,Masih Berlaku
 Universitas Komputer Indonesia,Desain Grafis,D-III,4,5686/SK/BAN-PT/PEPA-Ppj/D3/VIII/2024,2024,diiidesaingrafis@universitaskomputerindonesia.ac.id,Baik,2029-08-27,Masih Berlaku
 Institut Desain Dan Bisnis Bali,Desain Komunikasi Visual,S1,8,5353/SK/BAN-PT/Ak/S/VIII/2024,2024,s1desainkomunikasivisual@institutdesaindanbisnisbali.ac.id,Baik Sekali,2029-08-13,Masih Berlaku
-Universitas Teknologi Bandung,Desain Komunikasi Visual,S1,4,5307/SK/BAN-PT/Ak-PNB/S/VIII/2024,2026,s1desainkomunikasivisual@universitasteknologibandung.ac.id,Baik,2026-12-16,Masih Berlaku
+Universitas Teknologi Bandung,Desain Komunikasi Visual,S1,4,5307/SK/BAN-PT/Ak-PNB/S/VIII/2024,2024,s1desainkomunikasivisual@universitasteknologibandung.ac.id,Baik,2025-12-15,5 hari lagi kadaluarsa
 Universitas Catur Insan Cendekia,Desain Komunikasi Visual,S1,4,5148/SK/BAN-PT/Ak.Ppj/S/VII/2024,2024,s1desainkomunikasivisual@universitascaturinsancendekia.ac.id,Baik,2029-08-01,Masih Berlaku
 Universitas Gunadarma,Desain Interior,S1,3,5162/SK/BAN-PT/Ak.Ppj/S/VII/2024,2024,s1desaininterior@universitasgunadarma.ac.id,B,2029-07-31,Masih Berlaku
 Universitas Pasundan,Desain Komunikasi Visual,S1,4,5198/SK/BAN-PT/Ak.Ppj/S/VII/2024,2024,s1desainkomunikasivisual@universitaspasundan.ac.id,B,2029-08-14,Masih Berlaku
@@ -378,10 +404,11 @@ Universitas Brawijaya,Desain Grafis,D-IV,PTN,4649/SK/BAN-PT/Ak/STr/VI/2024,2024,
 STMIK Amik Bandung,Desain Komunikasi Visual,S1,4,4629/SK/BAN-PT/Ak.P/S/VI/2024,2024,s1desainkomunikasivisual@stmikamikbandung.ac.id,Terakreditasi Sementara,2029-06-11,Masih Berlaku
 Institut Teknologi Bandung,Desain,S2,PTN,4966/SK/BAN-PT/Ak.KP/M/VII/2024,2024,s2desain@institutteknologibandung.ac.id,Unggul,2027-06-07,Masih Berlaku
 Universitas Bina Nusantara,Desain,S2,3,4920/SK/BAN-PT/Ak.P/M/VII/2024,2024,s2desain@universitasbinanusantara.ac.id,Terakreditasi Sementara,2029-07-09,Masih Berlaku
-Institut Seni Indonesia Padang Panjang,Desain Komunikasi Visual,S1,PTN,5017/SK/BAN-PT/PEPA-Ppj/S/VII/2024,2025,s1desainkomunikasivisual@institutseniindonesiapadangpanjang.ac.id,Baik Sekali,2030-12-16,Masih Berlaku
-Universitas Nahdlatul Ulama Pasuruan,Desain Komunikasi Visual,S1,7,4416/SK/BAN-PT/Ak-PNB/S/V/2024,2026,s1desainkomunikasivisual@universitasnahdlatululamapasuruan.ac.id,Baik,2027-03-03,Masih Berlaku
+Institut Seni Indonesia Padang Panjang,Desain Komunikasi Visual,S1,PTN,5017/SK/BAN-PT/PEPA-Ppj/S/VII/2024,2024,s1desainkomunikasivisual@institutseniindonesiapadangpanjang.ac.id,Baik,2029-07-15,Masih Berlaku
+Universitas Nahdlatul Ulama Pasuruan,Desain Komunikasi Visual,S1,7,4416/SK/BAN-PT/Ak-PNB/S/V/2024,2024,s1desainkomunikasivisual@universitasnahdlatululamapasuruan.ac.id,Baik,2026-03-02,82 hari lagi kadaluarsa
 Institut Teknologi Bandung,Desain Komunikasi Visual,S1,PTN,4270/SK/BAN-PT/Ak.KP/S/V/2024,2024,s1desainkomunikasivisual@institutteknologibandung.ac.id,Unggul,2027-09-20,Masih Berlaku
 Universitas Kristen Maranatha,Desain Interior,S1,4,4386/SK/BAN-PT/Ak.Ppj/S/V/2024,2024,s1desaininterior@universitaskristenmaranatha.ac.id,A,2029-05-29,Masih Berlaku
+Institut Filsafat Dan Teknologi Kreatif Ledalero,Desain Komunikasi Visual,S1,15,4112/SK/BAN-PT/Ak.P/S/V/2024,2024,s1desainkomunikasivisual@institutfilsafatdanteknologikreatifledalero.ac.id,Baik,2026-05-14,155 hari lagi kadaluarsa
 Sekolah Tinggi Desain LaSalle,Fashion Desain,D-IV,3,4095/SK/BAN-PT/PEPA-Ppj/STr/V/2024,2024,divfashiondesain@sekolahtinggidesainlasalle.ac.id,Baik,2029-05-15,Masih Berlaku
 Universitas Sebelas Maret,Desain Komunikasi Visual,D-III,PTN,4050/SK/BAN-PT/Ak/D3/V/2024,2024,diiidesainkomunikasivisual@universitassebelasmaret.ac.id,Baik Sekali,2029-05-07,Masih Berlaku
 Universitas Potensi Utama,Desain Interior,S1,1,4025/SK/BAN-PT/Ak.Ppj/S/V/2024,2024,s1desaininterior@universitaspotensiutama.ac.id,B,2029-05-22,Masih Berlaku
@@ -395,12 +422,13 @@ Institut Seni Indonesia Denpasar,Desain Komunikasi Visual,S1,PTN,3747/SK/BAN-PT/
 Universitas Bunda Mulia,Desain Komunikasi Visual,S1,3,3761/SK/BAN-PT/Ak.KP/S/IV/2024,2024,s1desainkomunikasivisual@universitasbundamulia.ac.id,Unggul,2027-05-10,Masih Berlaku
 Institut Informatika Indonesia Surabaya,Desain Komunikasi Visual,S1,7,3822/SK/BAN-PT/Ak.Ppj/S/IV/2024,2024,s1desainkomunikasivisual@institutinformatikaindonesiasurabaya.ac.id,B,2029-04-24,Masih Berlaku
 Universitas Pembangunan Jaya,Desain Produk,S1,4,3845/SK/BAN-PT/Ak.Ppj/S/IV/2024,2024,s1desainproduk@universitaspembangunanjaya.ac.id,B,2029-04-24,Masih Berlaku
+Universitas Nusa Nipa,Desain Komunikasi Visual,S1,15,3801/SK/BAN-PT/Ak.P/S/IV/2024,2024,s1desainkomunikasivisual@universitasnusanipa.ac.id,Baik,2026-04-16,127 hari lagi kadaluarsa
 Universitas Kalbis,Desain Komunikasi Visual,S1,3,1255/SK/BAN-PT/Ak-PNB/S/IV/2024,2024,s1desainkomunikasivisual@universitaskalbis.ac.id,Baik Sekali,2029-02-27,Masih Berlaku
 Universitas PGRI Jombang,Desain Komunikasi Visual,S1,7,1231/SK/BAN-PT/Ak.P/S/IV/2024,2024,s1desainkomunikasivisual@universitaspgrijombang.ac.id,Terakreditasi Sementara,2029-04-02,Masih Berlaku
 Institut Seni Indonesia Padang Panjang,Desain Produk,S1,PTN,1116/SK/BAN-PT/Ak/S/IV/2024,2024,s1desainproduk@institutseniindonesiapadangpanjang.ac.id,Baik,2029-04-02,Masih Berlaku
 Sekolah Tinggi Desain Indonesia Bandung,Desain Interior,S1,4,1104/SK/BAN-PT/Ak/S/IV/2024,2024,s1desaininterior@sekolahtinggidesainindonesiabandung.ac.id,Baik,2029-04-02,Masih Berlaku
 Universitas Hayam Wuruk Perbanas,Desain Komunikasi Visual,S1,7,1086/SK/BAN-PT/Ak/S/IV/2024,2024,s1desainkomunikasivisual@universitashayamwurukperbanas.ac.id,Baik,2029-04-02,Masih Berlaku
-Institut Kesenian Jakarta,Desain Produk,S1,3,1125/SK/BAN-PT/PEPA-Ppj/S/IV/2024,2025,s1desainproduk@institutkesenianjakarta.ac.id,Baik Sekali,2030-12-16,Masih Berlaku
+Institut Kesenian Jakarta,Desain Produk,S1,3,1125/SK/BAN-PT/PEPA-Ppj/S/IV/2024,2024,s1desainproduk@institutkesenianjakarta.ac.id,B,2028-08-08,Masih Berlaku
 Institut Seni Budaya Indonesia Bandung,Desain Komunikasi Visual,S1,PTN,1031/SK/BAN-PT/Ak.P/S/III/2024,2024,s1desainkomunikasivisual@institutsenibudayaindonesiabandung.ac.id,Terakreditasi Sementara,2029-03-26,Masih Berlaku
 Universitas Muhammadiyah Purwokerto,Desain Komunikasi Visual,S1,6,1032/SK/BAN-PT/Ak.P/S/III/2024,2024,s1desainkomunikasivisual@universitasmuhammadiyahpurwokerto.ac.id,Terakreditasi Sementara,2029-03-26,Masih Berlaku
 Universitas Nusa Putra,Desain Komunikasi Visual,S1,4,471/SK/BAN-PT/Ak.Ppj/S/II/2023,2023,s1desainkomunikasivisual@universitasnusaputra.ac.id,B,2027-11-08,Masih Berlaku
@@ -414,28 +442,29 @@ Universitas Indo Global Mandiri,Desain Komunikasi Visual,S1,2,1958/SK/BAN-PT/Ak.
 Universitas Mercu Buana,Desain Interior,S1,3,2345/SK/BAN-PT/Ak/S/VI/2023,2023,s1desaininterior@universitasmercubuana.ac.id,Baik Sekali,2028-06-20,Masih Berlaku
 Universitas Prasetiya Mulya,Desain Produk,S1,3,2462/SK/BAN-PT/Ak/S/VI/2023,2023,s1desainproduk@universitasprasetiyamulya.ac.id,Baik,2028-06-27,Masih Berlaku
 Sekolah Tinggi Desain LaSalle,Desain Interior,S1,3,2481/SK/BAN-PT/Ak/S/VI/2023,2023,s1desaininterior@sekolahtinggidesainlasalle.ac.id,Baik,2028-06-27,Masih Berlaku
-Universitas Dian Nuswantoro,Desain Komunikasi Visual (Kampus Kota Kediri),S1,6,2680/SK/BAN-PT/Ak/S/VII/2023,2025,s1desainkomunikasivisualkampuskotakediri@universitasdiannuswantoro.ac.id,Unggul,2030-11-16,Masih Berlaku
+Universitas Dian Nuswantoro,Desain Komunikasi Visual (Kampus Kota Kediri),S1,6,2680/SK/BAN-PT/Ak/S/VII/2023,2023,s1desainkomunikasivisualkampuskotakediri@universitasdiannuswantoro.ac.id,Baik,2028-07-11,Masih Berlaku
+Universitas Aufa Royhan,Pendidikan Vokasional Desain Fashion,S1,1,787/SK/LAMDIK/Ak/S/VIII/2023,2023,s1pendidikanvokasionaldesainfashion@universitasaufaroyhan.ac.id,Baik,2027-11-07,Masih Berlaku
 Universitas Komputer Indonesia,Desain Komunikasi Visual,S1,4,3587/SK/BAN-PT/Ak.Ppj/S/IX/2023,2023,s1desainkomunikasivisual@universitaskomputerindonesia.ac.id,B,2028-09-14,Masih Berlaku
 Universitas Selamat Sri,Desain Komunikasi Visual,S1,6,3894/SK/BAN-PT/Ak.Ppj/S/IX/2023,2023,s1desainkomunikasivisual@universitasselamatsri.ac.id,Baik,2028-10-10,Masih Berlaku
 Politeknik Bina Madani,Desain Media,D-IV,4,4407/SK/BAN-PT/Ak/STr/X/2023,2023,divdesainmedia@politeknikbinamadani.ac.id,Baik,2028-10-31,Masih Berlaku
 Universitas Telkom,Desain,S2,4,4520/SK/BAN-PT/Ak/M/XI/2023,2023,s2desain@universitastelkom.ac.id,Baik Sekali,2028-11-07,Masih Berlaku
 Akademi Seni Rupa Dan Desain MSD,Desain Komunikasi Visual,D-III,5,4669/SK/BAN-PT/PEPA-Ppj/D3/XI/2023,2023,diiidesainkomunikasivisual@akademisenirupadandesainmsd.ac.id,Baik,2028-08-01,Masih Berlaku
-Universitas Bina Nusantara,Desain Interior,S1,3,4678/SK/BAN-PT/PEPA-Ppj/S/XI/2023,2023,s1desaininterior@universitasbinanusantara.ac.id,B,2028-11-02,Masih Berlaku
+Universitas Bina Nusantara,Desain Interior,S1,3,4678/SK/BAN-PT/PEPA-Ppj/S/XI/2023,2023,s1desaininterior@universitasbinanusantara.ac.id,Baik,2026-04-27,138 hari lagi kadaluarsa
 Universitas Paramadina,Desain Produk,S1,3,4702/SK/BAN-PT/Ak/S/XI/2023,2023,s1desainproduk@universitasparamadina.ac.id,Baik,2028-11-14,Masih Berlaku
 Sekolah Tinggi Seni Rupa Dan Desain Visi Indonesia,Desain Komunikasi Visual,S1,5,4996/SK/BAN-PT/Ak.Ppj/S/XI/2023,2023,s1desainkomunikasivisual@sekolahtinggisenirupadandesainvisiindonesia.ac.id,B,2027-08-02,Masih Berlaku
 Institut Teknologi Nasional Bandung,Desain Komunikasi Visual,S1,4,4977/SK/BAN-PT/Ak.Ppj/S/XI/2023,2023,s1desainkomunikasivisual@institutteknologinasionalbandung.ac.id,A,2028-10-16,Masih Berlaku
-Universitas Komputer Indonesia,Desain Interior,S1,4,5321/SK/BAN-PT/PEPA-Ppj/S/XII/2023,2026,s1desaininterior@universitaskomputerindonesia.ac.id,Unggul,2031-04-09,Masih Berlaku
+Universitas Komputer Indonesia,Desain Interior,S1,4,5321/SK/BAN-PT/PEPA-Ppj/S/XII/2023,2023,s1desaininterior@universitaskomputerindonesia.ac.id,B,2028-10-24,Masih Berlaku
 Institut Sains Dan Teknologi Al-Kamal,Desain Komunikasi Visual,S1,3,5326/SK/BAN-PT/PEPA-Ppj/S/XII/2023,2023,s1desainkomunikasivisual@institutsainsdanteknologialkamal.ac.id,Baik,2028-11-14,Masih Berlaku
 Universitas Mercu Buana,Desain Produk,S1,3,5317/SK/BAN-PT/PEPA-Ppj/S/XII/2023,2023,s1desainproduk@universitasmercubuana.ac.id,B,2028-11-02,Masih Berlaku
 Universitas Negeri Semarang,Desain Komunikasi Visual,D-III,PTN,5341/SK/BAN-PT/PEPA-Ppj/D3/XII/2023,2023,diiidesainkomunikasivisual@universitasnegerisemarang.ac.id,B,2028-12-29,Masih Berlaku
-Institut Seni Budaya Indonesia Tanah Papua,Desain Komunikasi Visual,S1,PTN,559/SK/BAN-PT/Akred/S/I/2022,2022,s1desainkomunikasivisual@institutsenibudayaindonesiatanahpapua.ac.id,Baik,2026-08-05,67 hari lagi kadaluarsa
-Institut Teknologi Sepuluh Nopember,Desain Produk,S1,PTN,355/SK/BAN-PT/Ak-PPJ/S/I/2022,2022,s1desainproduk@institutteknologisepuluhnopember.ac.id,A,2026-09-03,96 hari lagi kadaluarsa
-Sekolah Tinggi Seni Rupa Dan Desain Visi Indonesia,Desain Komunikasi Visual,D-III,5,442/SK/BAN-PT/Ak-PPJ/Dipl-III/I/2022,2022,diiidesainkomunikasivisual@sekolahtinggisenirupadandesainvisiindonesia.ac.id,B,2026-09-30,123 hari lagi kadaluarsa
-Universitas Islam Nahdlatul Ulama Jepara,Desain Produk,S1,6,406/SK/BAN-PT/Ak-PPJ/S/I/2022,2022,s1desainproduk@universitasislamnahdlatululamajepara.ac.id,B,2026-09-09,102 hari lagi kadaluarsa
+Institut Seni Budaya Indonesia Tanah Papua,Desain Komunikasi Visual,S1,PTN,559/SK/BAN-PT/Akred/S/I/2022,2022,s1desainkomunikasivisual@institutsenibudayaindonesiatanahpapua.ac.id,Baik,2026-08-05,Masih Berlaku
+Institut Teknologi Sepuluh Nopember,Desain Produk,S1,PTN,355/SK/BAN-PT/Ak-PPJ/S/I/2022,2022,s1desainproduk@institutteknologisepuluhnopember.ac.id,A,2026-09-03,Masih Berlaku
+Sekolah Tinggi Seni Rupa Dan Desain Visi Indonesia,Desain Komunikasi Visual,D-III,5,442/SK/BAN-PT/Ak-PPJ/Dipl-III/I/2022,2022,diiidesainkomunikasivisual@sekolahtinggisenirupadandesainvisiindonesia.ac.id,B,2026-09-30,Masih Berlaku
+Universitas Islam Nahdlatul Ulama Jepara,Desain Produk,S1,6,406/SK/BAN-PT/Ak-PPJ/S/I/2022,2022,s1desainproduk@universitasislamnahdlatululamajepara.ac.id,B,2026-09-09,Masih Berlaku
 Institut Seni Indonesia Padang Panjang,Desain Mode,D-IV,PTN,686/SK/BAN-PT/Akred/ST/II/2022,2022,divdesainmode@institutseniindonesiapadangpanjang.ac.id,Baik,2027-02-02,Masih Berlaku
-Universitas Negeri Surabaya,Desain Grafis,D-IV,PTN,1169/SK/BAN-PT/Akred/ST/II/2022,2026,divdesaingrafis@universitasnegerisurabaya.ac.id,Baik Sekali,2031-01-13,Masih Berlaku
-Universitas Bina Nusantara,Desain Komunikasi Visual,S1,3,1415/SK/BAN-PT/Akred-Itnl/S/III/2022,2022,s1desainkomunikasivisual@universitasbinanusantara.ac.id,Unggul,2027-03-02,Masih Berlaku
-Institut Teknologi Bandung,Desain Produk,S1,PTN,2438/SK/BAN-PT/AK-ISK/S/IV/2022,2022,s1desainproduk@institutteknologibandung.ac.id,Unggul,2026-06-03,4 hari lagi kadaluarsa
+Universitas Negeri Surabaya,Desain Grafis,D-IV,PTN,1169/SK/BAN-PT/Akred/ST/II/2022,2022,divdesaingrafis@universitasnegerisurabaya.ac.id,Baik,2027-02-22,Masih Berlaku
+Universitas Bina Nusantara,Desain Komunikasi Visual,S1,3,1415/SK/BAN-PT/Akred-Itnl/S/III/2022,2022,s1desainkomunikasivisual@universitasbinanusantara.ac.id,Baik,2026-04-27,138 hari lagi kadaluarsa
+Institut Teknologi Bandung,Desain Produk,S1,PTN,2438/SK/BAN-PT/AK-ISK/S/IV/2022,2022,s1desainproduk@institutteknologibandung.ac.id,Unggul,2026-06-03,175 hari lagi kadaluarsa
 Universitas Paramadina,Desain Komunikasi Visual,S1,3,3031/SK/BAN-PT/Ak-PPJ/S/V/2022,2022,s1desainkomunikasivisual@universitasparamadina.ac.id,A,2027-05-31,Masih Berlaku
 Institut Seni Indonesia Yogyakarta,Desain Interior,S1,PTN,3926/SK/BAN-PT/Akred-PMT/S/VI/2022,2022,s1desaininterior@institutseniindonesiayogyakarta.ac.id,Unggul,2027-06-27,Masih Berlaku
 Institut Teknologi Dan Bisnis Stikom Ambon,Desain Komunikasi Visual,S1,12,4020/SK/BAN-PT/PB-PS/S/VII/2022,2022,s1desainkomunikasivisual@institutteknologidanbisnisstikomambon.ac.id,Baik,2027-03-21,Masih Berlaku
@@ -445,85 +474,96 @@ Universitas Sebelas Maret,Desain Komunikasi Visual,S1,PTN,5244/SK/BAN-PT/Ak-PPJ/
 Universitas Muhammadiyah Tangerang,Desain Komunikasi Visual,S1,4,5332/SK/BAN-PT/Ak/S/VIII/2022,2022,s1desainkomunikasivisual@universitasmuhammadiyahtangerang.ac.id,Baik,2027-08-09,Masih Berlaku
 Politeknik Harapan Bersama,Desain Komunikasi Visual,D-III,6,5327/SK/BAN-PT/Ak/D3/VIII/2022,2022,diiidesainkomunikasivisual@politeknikharapanbersama.ac.id,Baik,2027-08-09,Masih Berlaku
 Politeknik Negeri Media Kreatif,Desain Mode,D-IV,PTN,5471/SK/BAN-PT/Ak/STr/VIII/2022,2022,divdesainmode@politekniknegerimediakreatif.ac.id,Baik,2027-08-16,Masih Berlaku
+Politeknik Perkapalan Negeri Surabaya,Teknik Desain Dan Manufaktur,D-IV,PTN,0105/SK/LAM Teknik/VST/VIII/2022,2022,divteknikdesaindanmanufaktur@politeknikperkapalannegerisurabaya.ac.id,Unggul,2027-08-20,Masih Berlaku
 Universitas Trisakti,Desain Produk,S1,3,5988/SK/BAN-PT/Ak.Ppj/S/IX/2022,2022,s1desainproduk@universitastrisakti.ac.id,Baik,2027-09-07,Masih Berlaku
 Sekolah Tinggi Desain Interstudi,Desain Interior,S1,3,6266/SK/BAN-PT/Ak.KP/S/IX/2022,2022,s1desaininterior@sekolahtinggidesaininterstudi.ac.id,Baik,2026-12-28,Masih Berlaku
 Sekolah Tinggi Media Komunikasi Trisakti,Desain Komunikasi Visual,S1,3,6618/SK/BAN-PT/Ak.KP/S/IX/2022,2022,s1desainkomunikasivisual@sekolahtinggimediakomunikasitrisakti.ac.id,Baik,2027-07-19,Masih Berlaku
-Akademi Seni Dan Desain Indonesia Surakarta,Desain Komunikasi Visual,D-III,6,7539/SK/BAN-PT/Ak.KP/D3/X/2022,2022,diiidesainkomunikasivisual@akademisenidandesainindonesiasurakarta.ac.id,Baik,2026-07-22,53 hari lagi kadaluarsa
+Akademi Seni Dan Desain Indonesia Surakarta,Desain Komunikasi Visual,D-III,6,7539/SK/BAN-PT/Ak.KP/D3/X/2022,2022,diiidesainkomunikasivisual@akademisenidandesainindonesiasurakarta.ac.id,Baik,2026-07-22,Masih Berlaku
+Akademi Seni Dan Desain Indonesia Surakarta,Desain Produk Tekstil,D-III,6,8199/SK/BAN-PT/Ak.KP/D3/X/2022,2022,diiidesainproduktekstil@akademisenidandesainindonesiasurakarta.ac.id,Baik,2026-05-21,162 hari lagi kadaluarsa
 Universitas Sebelas Maret,Desain Interior,S1,PTN,8892/SK/BAN-PT/Ak.Ppj/S/XI/2022,2022,s1desaininterior@universitassebelasmaret.ac.id,Unggul,2027-11-15,Masih Berlaku
 Universitas 'Aisyiyah Bandung,Desain Komunikasi Visual,S1,4,8859/SK/BAN-PT/Ak/S/XI/2022,2022,s1desainkomunikasivisual@universitasaisyiyahbandung.ac.id,Baik,2027-11-01,Masih Berlaku
 Universitas Kristen Satya Wacana,Desain Komunikasi Visual,S1,6,9109/SK/BAN-PT/Ak.Ppj/S/XI/2022,2022,s1desainkomunikasivisual@universitaskristensatyawacana.ac.id,A,2027-11-22,Masih Berlaku
 Politeknik Sains Seni Rekakreasi,Desain Komunikasi Visual,D-III,4,9918/SK/BAN-PT/Ak/D3/XI/2022,2022,diiidesainkomunikasivisual@politekniksainssenirekakreasi.ac.id,Baik,2027-11-29,Masih Berlaku
 Institut Teknologi Harapan Bangsa,Desain Komunikasi Visual,S1,4,10075/SK/BAN-PT/Ak/S/XI/2022,2022,s1desainkomunikasivisual@institutteknologiharapanbangsa.ac.id,Baik Sekali,2027-11-30,Masih Berlaku
-Universitas Pradita,Desain Komunikasi Visual,S1,3,1045/SK/BAN-PT/Akred/S/II/2021,2026,s1desainkomunikasivisual@universitaspradita.ac.id,Baik,2031-02-24,Masih Berlaku
-Universitas Negeri Padang,Desain Komunikasi Visual,S1,PTN,1123/SK/BAN-PT/Akred/S/III/2021,2026,s1desainkomunikasivisual@universitasnegeripadang.ac.id,A,2031-03-03,Masih Berlaku
-Politeknik Industri Furnitur Dan Pengolahan Kayu,Desain Furnitur,D-III,PTKL,358/SK/BAN-PT/Akred/Dipl-III/I/2021,2025,diiidesainfurnitur@politeknikindustrifurniturdanpengolahankayu.ac.id,Baik,2030-12-16,Masih Berlaku
-Institut Teknologi Batam,Desain Komunikasi Visual,S1,17,1358/SK/BAN-PT/Akred/S/III/2021,2026,s1desainkomunikasivisual@institutteknologibatam.ac.id,Baik,2027-03-10,Masih Berlaku
-Akademi Teknik PIKA,Desain Interior,D-III,6,1480/SK/BAN-PT/Akred/Dipl-III/III/2021,2026,diiidesaininterior@akademiteknikpika.ac.id,Baik,2031-03-17,Masih Berlaku
-Institut Teknologi Dan Bisnis Ahmad Dahlan,Desain Komunikasi Visual,S1,3,1500/SK/BAN-PT/Akred/S/III/2021,2026,s1desainkomunikasivisual@institutteknologidanbisnisahmaddahlan.ac.id,Baik,9999-01-01,Masih Berlaku
-Universitas Adhirajasa Reswara Sanjaya,Desain Komunikasi Visual,S1,4,1605/SK/BAN-PT/Akred/S/III/2021,2026,s1desainkomunikasivisual@universitasadhirajasareswarasanjaya.ac.id,Baik,2027-03-24,Masih Berlaku
-Universitas Kuningan,Desain Komunikasi Visual,S1,4,2028/SK/BAN-PT/Akred/S/IV/2021,2026,s1desainkomunikasivisual@universitaskuningan.ac.id,Baik,2031-04-14,Masih Berlaku
-Universitas Bina Nusantara,Desain Interior (Kampus Kota Bandung),S1,3,2438/SK/BAN-PT/Akred/S/IV/2021,2026,s1desaininteriorkampuskotabandung@universitasbinanusantara.ac.id,Baik,2031-04-28,Masih Berlaku
-Universitas Bina Nusantara,Desain Komunikasi Visual (Kampus Kota Bandung),S1,3,2441/SK/BAN-PT/Akred/S/IV/2021,2026,s1desainkomunikasivisualkampuskotabandung@universitasbinanusantara.ac.id,Baik,2031-04-28,Masih Berlaku
-Universitas Bina Nusantara,Desain Interior (Kampus Kota Malang),S1,3,2668/SK/BAN-PT/Akred/S/V/2021,2026,s1desaininteriorkampuskotamalang@universitasbinanusantara.ac.id,Baik,2031-05-05,Masih Berlaku
-Politeknik Negeri Pontianak,Desain Kawasan Binaan,D-IV,PTN,2878/SK/BAN-PT/Akred/ST/V/2021,2026,divdesainkawasanbinaan@politekniknegeripontianak.ac.id,Baik,2031-05-12,Masih Berlaku
-Institut Teknologi Sumatera,Desain Komunikasi Visual,S1,PTN,2731/SK/BAN-PT/Akred/S/V/2021,2026,s1desainkomunikasivisual@institutteknologisumatera.ac.id,Baik,2031-05-12,Masih Berlaku
-Universitas Sahid Surakarta,Desain Komunikasi Visual,S1,6,2993/SK/BAN-PT/Ak-PPJ/S/V/2021,2026,s1desainkomunikasivisual@universitassahidsurakarta.ac.id,B,2031-05-14,Masih Berlaku
-Universitas Bina Nusantara,Desain Komunikasi Visual (Kampus Kota Malang),S1,3,3288/SK/BAN-PT/Akred/S/V/2021,2026,s1desainkomunikasivisualkampuskotamalang@universitasbinanusantara.ac.id,Baik,2031-05-26,Masih Berlaku
-Universitas Teknologi Indonesia,Desain Produk,S1,8,6144/SK/BAN-PT/Ak-TMSP/S/VI/2021,2021,s1desainproduk@universitasteknologiindonesia.ac.id,Tidak Terakreditasi,,Tidak Ada Data
-Politeknik Muhammadiyah Tegal,Desain Produk,D-III,6,8752/SK/BAN-PT/Akred/Dipl-III/VI/2021,2021,diiidesainproduk@politeknikmuhammadiyahtegal.ac.id,Baik,2026-06-15,16 hari lagi kadaluarsa
-Politeknik Negeri Media Kreatif,Desain Grafis (Kampus Makassar),D-III,PTN,8915/SK/BAN-PT/Akred/Dipl-III/VI/2021,2021,diiidesaingrafiskampusmakassar@politekniknegerimediakreatif.ac.id,Baik,2026-06-22,23 hari lagi kadaluarsa
-Universitas Ciputra Surabaya,Desain Produk,S1,7,9276/SK/BAN-PT/Akred/S/VII/2021,2021,s1desainproduk@universitasciputrasurabaya.ac.id,Baik,2026-07-06,37 hari lagi kadaluarsa
-Universitas Budi Luhur,Desain Komunikasi Visual,S1,3,9440/SK/BAN-PT/Akred/S/VII/2021,2021,s1desainkomunikasivisual@universitasbudiluhur.ac.id,Baik,2026-07-13,44 hari lagi kadaluarsa
-Institut Sains Dan Teknologi Terpadu Surabaya,Desain Produk,S1,7,9709/SK/BAN-PT/Akred/S/VII/2021,2021,s1desainproduk@institutsainsdanteknologiterpadusurabaya.ac.id,Baik,2026-07-21,52 hari lagi kadaluarsa
-Institut Desain Dan Bisnis Bali,Desain Mode,D-IV,8,9921/SK/BAN-PT/Akred/ST/VIII/2021,2021,divdesainmode@institutdesaindanbisnisbali.ac.id,Baik,2026-08-03,65 hari lagi kadaluarsa
-Institut Teknologi Sepuluh Nopember,Desain Komunikasi Visual,S1,PTN,10472/SK/BAN-PT/Akred/S/VIII/2021,2021,s1desainkomunikasivisual@institutteknologisepuluhnopember.ac.id,Baik,2026-08-31,93 hari lagi kadaluarsa
-STIKI Malang,Desain Komunikasi Visual,S1,7,10632/SK/BAN-PT/Akred/S/IX/2021,2021,s1desainkomunikasivisual@stikimalang.ac.id,Baik Sekali,2026-09-07,100 hari lagi kadaluarsa
-Institut Teknologi Telkom Purwokerto,Desain Komunikasi Visual,S1,6,10875/SK/BAN-PT/Akred/S/IX/2021,2021,s1desainkomunikasivisual@institutteknologitelkompurwokerto.ac.id,Baik,2026-09-14,107 hari lagi kadaluarsa
-Universitas Pendidikan Indonesia,Desain Komunikasi Visual,S1,PTN,10936/SK/BAN-PT/Akred/S/IX/2021,2021,s1desainkomunikasivisual@universitaspendidikanindonesia.ac.id,Baik,2026-09-21,114 hari lagi kadaluarsa
-Universitas Indonesia Mandiri,Desain Komunikasi Visual,S1,4,11595/SK/BAN-PT/PB-PS/S/X/2021,2021,s1desainkomunikasivisual@universitasindonesiamandiri.ac.id,Baik,2026-06-25,26 hari lagi kadaluarsa
-Akademi Seni Rupa Dan Desain ISWI Jakarta,Desain Produk,D-III,3,11979/SK/BAN-PT/Akred/Dipl-III/X/2021,2021,diiidesainproduk@akademisenirupadandesainiswijakarta.ac.id,Baik,2026-10-26,149 hari lagi kadaluarsa
-Universitas Esa Unggul,Desain Komunikasi Visual,S1,3,12618/SK/BAN-PT/Ak-PPJ/S/XI/2021,2021,s1desainkomunikasivisual@universitasesaunggul.ac.id,B,2026-11-04,158 hari lagi kadaluarsa
+Universitas Pradita,Desain Komunikasi Visual,S1,3,1045/SK/BAN-PT/Akred/S/II/2021,2021,s1desainkomunikasivisual@universitaspradita.ac.id,Baik,2026-02-23,75 hari lagi kadaluarsa
+Institut Teknologi Dan Sains Nahdlatul Ulama Pasuruan,Desain Komunikasi Visual,S1,7,1179/SK/BAN-PT/Akred/S/III/2021,2021,s1desainkomunikasivisual@institutteknologidansainsnahdlatululamapasuruan.ac.id,Baik,2026-03-02,82 hari lagi kadaluarsa
+Universitas Negeri Padang,Desain Komunikasi Visual,S1,PTN,1123/SK/BAN-PT/Akred/S/III/2021,2021,s1desainkomunikasivisual@universitasnegeripadang.ac.id,A,2026-03-02,82 hari lagi kadaluarsa
+Institut Manajemen Wiyata Indonesia,Desain Grafis,S1,4,1861/SK/BAN-PT/Akred/S/IV/2021,2021,s1desaingrafis@institutmanajemenwiyataindonesia.ac.id,Baik,2026-04-06,117 hari lagi kadaluarsa
+Politeknik Industri Furnitur Dan Pengolahan Kayu,Desain Furnitur,D-III,PTKL,358/SK/BAN-PT/Akred/Dipl-III/I/2021,2021,diiidesainfurnitur@politeknikindustrifurniturdanpengolahankayu.ac.id,Baik,2025-12-23,13 hari lagi kadaluarsa
+Institut Teknologi Harapan Bangsa,Desain Produk,S1,4,657/SK/BAN-PT/Akred/S/II/2021,2021,s1desainproduk@institutteknologiharapanbangsa.ac.id,Baik,2026-02-02,54 hari lagi kadaluarsa
+Akademi Kesejahteraan Sosial Ibu Kartini,Desain Busana,D-III,6,1326/SK/BAN-PT/Akred/Dipl-III/III/2021,2021,diiidesainbusana@akademikesejahteraansosialibukartini.ac.id,B,2026-03-09,89 hari lagi kadaluarsa
+Institut Teknologi Batam,Desain Komunikasi Visual,S1,17,1358/SK/BAN-PT/Akred/S/III/2021,2021,s1desainkomunikasivisual@institutteknologibatam.ac.id,Baik,2026-03-09,89 hari lagi kadaluarsa
+Akademi Teknik PIKA,Desain Interior,D-III,6,1480/SK/BAN-PT/Akred/Dipl-III/III/2021,2021,diiidesaininterior@akademiteknikpika.ac.id,Baik,2026-03-16,96 hari lagi kadaluarsa
+Institut Teknologi Dan Bisnis Ahmad Dahlan,Desain Komunikasi Visual,S1,3,1500/SK/BAN-PT/Akred/S/III/2021,2021,s1desainkomunikasivisual@institutteknologidanbisnisahmaddahlan.ac.id,Baik,2026-03-16,96 hari lagi kadaluarsa
+Universitas Adhirajasa Reswara Sanjaya,Desain Komunikasi Visual,S1,4,1605/SK/BAN-PT/Akred/S/III/2021,2021,s1desainkomunikasivisual@universitasadhirajasareswarasanjaya.ac.id,Baik,2026-03-23,103 hari lagi kadaluarsa
+Universitas Kuningan,Desain Komunikasi Visual,S1,4,2028/SK/BAN-PT/Akred/S/IV/2021,2021,s1desainkomunikasivisual@universitaskuningan.ac.id,Baik,2026-04-13,124 hari lagi kadaluarsa
+Universitas Bina Nusantara,Desain Interior (Kampus Kota Bandung),S1,3,2438/SK/BAN-PT/Akred/S/IV/2021,2021,s1desaininteriorkampuskotabandung@universitasbinanusantara.ac.id,Baik,2026-04-27,138 hari lagi kadaluarsa
+Universitas Bina Nusantara,Desain Komunikasi Visual (Kampus Kota Bandung),S1,3,2441/SK/BAN-PT/Akred/S/IV/2021,2021,s1desainkomunikasivisualkampuskotabandung@universitasbinanusantara.ac.id,Baik,2026-04-27,138 hari lagi kadaluarsa
+Universitas Bina Nusantara,Desain Interior (Kampus Kota Malang),S1,3,2668/SK/BAN-PT/Akred/S/V/2021,2021,s1desaininteriorkampuskotamalang@universitasbinanusantara.ac.id,Baik,2026-05-04,145 hari lagi kadaluarsa
+Universitas Nahdlatul Ulama Kalimantan Timur,Desain Interior,S1,11,3112/SK/BAN-PT/Akred/S/V/2021,2021,s1desaininterior@universitasnahdlatululamakalimantantimur.ac.id,Baik,2026-05-19,160 hari lagi kadaluarsa
+Politeknik Negeri Pontianak,Desain Kawasan Binaan,D-IV,PTN,2878/SK/BAN-PT/Akred/ST/V/2021,2021,divdesainkawasanbinaan@politekniknegeripontianak.ac.id,Baik,2026-05-11,152 hari lagi kadaluarsa
+Institut Teknologi Sumatera,Desain Komunikasi Visual,S1,PTN,2731/SK/BAN-PT/Akred/S/V/2021,2021,s1desainkomunikasivisual@institutteknologisumatera.ac.id,Baik,2026-05-05,146 hari lagi kadaluarsa
+Universitas Sahid Surakarta,Desain Komunikasi Visual,S1,6,2993/SK/BAN-PT/Ak-PPJ/S/V/2021,2021,s1desainkomunikasivisual@universitassahidsurakarta.ac.id,B,2026-05-13,154 hari lagi kadaluarsa
+Universitas Bina Nusantara,Desain Komunikasi Visual (Kampus Kota Malang),S1,3,3288/SK/BAN-PT/Akred/S/V/2021,2021,s1desainkomunikasivisualkampuskotamalang@universitasbinanusantara.ac.id,Baik,2026-05-25,166 hari lagi kadaluarsa
+Universitas Teknologi Indonesia,Desain Produk,S1,8,6144/SK/BAN-PT/Ak-TMSP/S/VI/2021,2021,s1desainproduk@universitasteknologiindonesia.ac.id,Tidak Terakreditasi,,Masih Berlaku
+Politeknik Muhammadiyah Tegal,Desain Produk,D-III,6,8752/SK/BAN-PT/Akred/Dipl-III/VI/2021,2021,diiidesainproduk@politeknikmuhammadiyahtegal.ac.id,Baik,2026-06-15,Masih Berlaku
+Politeknik Negeri Media Kreatif,Desain Grafis (Kampus Makassar),D-III,PTN,8915/SK/BAN-PT/Akred/Dipl-III/VI/2021,2021,diiidesaingrafiskampusmakassar@politekniknegerimediakreatif.ac.id,Baik,2026-06-22,Masih Berlaku
+Universitas Ciputra Surabaya,Desain Produk,S1,7,9276/SK/BAN-PT/Akred/S/VII/2021,2021,s1desainproduk@universitasciputrasurabaya.ac.id,Baik,2026-07-06,Masih Berlaku
+Universitas Budi Luhur,Desain Komunikasi Visual,S1,3,9440/SK/BAN-PT/Akred/S/VII/2021,2021,s1desainkomunikasivisual@universitasbudiluhur.ac.id,Baik,2026-07-13,Masih Berlaku
+Institut Sains Dan Teknologi Terpadu Surabaya,Desain Produk,S1,7,9709/SK/BAN-PT/Akred/S/VII/2021,2021,s1desainproduk@institutsainsdanteknologiterpadusurabaya.ac.id,Baik,2026-07-21,Masih Berlaku
+Institut Desain Dan Bisnis Bali,Desain Mode,D-IV,8,9921/SK/BAN-PT/Akred/ST/VIII/2021,2021,divdesainmode@institutdesaindanbisnisbali.ac.id,Baik,2026-08-03,Masih Berlaku
+Institut Teknologi Sepuluh Nopember,Desain Komunikasi Visual,S1,PTN,10472/SK/BAN-PT/Akred/S/VIII/2021,2021,s1desainkomunikasivisual@institutteknologisepuluhnopember.ac.id,Baik,2026-08-31,Masih Berlaku
+STIKI Malang,Desain Komunikasi Visual,S1,7,10632/SK/BAN-PT/Akred/S/IX/2021,2021,s1desainkomunikasivisual@stikimalang.ac.id,Baik Sekali,2026-09-07,Masih Berlaku
+Institut Teknologi Telkom Purwokerto,Desain Komunikasi Visual,S1,6,10875/SK/BAN-PT/Akred/S/IX/2021,2021,s1desainkomunikasivisual@institutteknologitelkompurwokerto.ac.id,Baik,2026-09-14,Masih Berlaku
+Universitas Pendidikan Indonesia,Desain Komunikasi Visual,S1,PTN,10936/SK/BAN-PT/Akred/S/IX/2021,2021,s1desainkomunikasivisual@universitaspendidikanindonesia.ac.id,Baik,2026-09-21,Masih Berlaku
+Universitas Indonesia Mandiri,Desain Komunikasi Visual,S1,4,11595/SK/BAN-PT/PB-PS/S/X/2021,2021,s1desainkomunikasivisual@universitasindonesiamandiri.ac.id,Baik,2026-06-25,Masih Berlaku
+Akademi Seni Rupa Dan Desain ISWI Jakarta,Desain Produk,D-III,3,11979/SK/BAN-PT/Akred/Dipl-III/X/2021,2021,diiidesainproduk@akademisenirupadandesainiswijakarta.ac.id,Baik,2026-10-26,Masih Berlaku
+STKIP Pangeran Antasari,Pendidikan Vokasional Desain Fashion,S1,1,12208/SK/BAN-PT/Akred/S/XI/2021,2021,s1pendidikanvokasionaldesainfashion@stkippangeranantasari.ac.id,Baik,2026-11-03,Masih Berlaku
+Universitas Esa Unggul,Desain Komunikasi Visual,S1,3,12618/SK/BAN-PT/Ak-PPJ/S/XI/2021,2021,s1desainkomunikasivisual@universitasesaunggul.ac.id,B,2026-11-04,Masih Berlaku
 Universitas Trisakti,Desain Komunikasi Visual,S1,3,12885/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1desainkomunikasivisual@universitastrisakti.ac.id,A,2026-12-02,Masih Berlaku
-Sekolah Tinggi Desain Interstudi,Desain Produk,S1,3,13061/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1desainproduk@sekolahtinggidesaininterstudi.ac.id,B,2026-11-25,179 hari lagi kadaluarsa
-Sekolah Tinggi Desain Interstudi,Desain Komunikasi Visual,S1,3,13091/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1desainkomunikasivisual@sekolahtinggidesaininterstudi.ac.id,B,2026-11-25,179 hari lagi kadaluarsa
+Sekolah Tinggi Desain Interstudi,Desain Produk,S1,3,13061/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1desainproduk@sekolahtinggidesaininterstudi.ac.id,B,2026-11-25,Masih Berlaku
+Sekolah Tinggi Desain Interstudi,Desain Komunikasi Visual,S1,3,13091/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1desainkomunikasivisual@sekolahtinggidesaininterstudi.ac.id,B,2026-11-25,Masih Berlaku
 Universitas Multimedia Nusantara,Desain Komunikasi Visual,S1,3,13626/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1desainkomunikasivisual@universitasmultimedianusantara.ac.id,A,2026-12-28,Masih Berlaku
 Institut Seni Indonesia Yogyakarta,Desain Komunikasi Visual,S1,PTN,13625/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1desainkomunikasivisual@institutseniindonesiayogyakarta.ac.id,A,2026-12-28,Masih Berlaku
-Politeknik Negeri Media Kreatif,Desain Grafis,D-III,PTN,14023/SK/BAN-PT/Ak-PPJ/Dipl-III/XII/2021,2021,diiidesaingrafis@politekniknegerimediakreatif.ac.id,B,2027-01-11,Masih Berlaku
-Universitas Trisakti,Desain Interior,S1,3,14021/SK/BAN-PT/Ak-PPJ/S/XII/2021,2025,s1desaininterior@universitastrisakti.ac.id,Baik Sekali,2027-01-11,Masih Berlaku
-Institut Seni Indonesia Surakarta,Desain Interior,S1,PTN,8288/SK/BAN-PT/Ak-PPJ/S/XII/2020,2026,s1desaininterior@institutseniindonesiasurakarta.ac.id,Unggul,2031-03-03,Masih Berlaku
-Universitas Islam Nahdlatul Ulama Jepara,Desain Komunikasi Visual,S1,6,8568/SK/BAN-PT/Akred/S/XII/2020,2025,s1desainkomunikasivisual@universitasislamnahdlatululamajepara.ac.id,B,2030-12-23,Masih Berlaku
-Universitas Halu Oleo,Perencanaan Dan Pengembangan Wilayah,S2,PTN,6380/SK/BAN-PT/Ak.S/M/V/2025,2026,s2perencanaandanpengembanganwilayah@universitashaluoleo.ac.id,Baik Sekali,2031-03-03,Masih Berlaku
-Universitas Mataram,Perencanaan Kepariwisataan,S2,PTN,6094/SK/BAN-PT/Ak.P/M/III/2025,2025,s2perencanaankepariwisataan@universitasmataram.ac.id,Baik,2030-12-18,Masih Berlaku
+Politeknik Negeri Media Kreatif,Desain Grafis,D-III,PTN,14023/SK/BAN-PT/Ak-PPJ/Dipl-III/XII/2021,2021,diiidesaingrafis@politekniknegerimediakreatif.ac.id,Baik,2026-06-22,Masih Berlaku
+Universitas Trisakti,Desain Interior,S1,3,14021/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1desaininterior@universitastrisakti.ac.id,B,2027-01-11,Masih Berlaku
+Sekolah Tinggi Teknologi Bandung,Desain Komunikasi Visual,S1,4,8311/SK/BAN-PT/Akred/S/XII/2020,2020,s1desainkomunikasivisual@sekolahtinggiteknologibandung.ac.id,Baik,2025-12-15,5 hari lagi kadaluarsa
+Institut Seni Indonesia Surakarta,Desain Interior,S1,PTN,8288/SK/BAN-PT/Ak-PPJ/S/XII/2020,2020,s1desaininterior@institutseniindonesiasurakarta.ac.id,B,2025-12-13,3 hari lagi kadaluarsa
+Universitas Islam Nahdlatul Ulama Jepara,Desain Komunikasi Visual,S1,6,8568/SK/BAN-PT/Akred/S/XII/2020,2020,s1desainkomunikasivisual@universitasislamnahdlatululamajepara.ac.id,B,2025-12-22,12 hari lagi kadaluarsa
+Universitas Halu Oleo,Perencanaan Dan Pengembangan Wilayah,S2,PTN,6380/SK/BAN-PT/Ak.S/M/V/2025,2025,s2perencanaandanpengembanganwilayah@universitashaluoleo.ac.id,B,-,Masih Berlaku
+Universitas Mataram,Perencanaan Kepariwisataan,S2,PTN,6094/SK/BAN-PT/Ak.P/M/III/2025,2025,s2perencanaankepariwisataan@universitasmataram.ac.id,Baik,2027-03-25,Masih Berlaku
 Politeknik Internasional Bali,Perencanaan Dan Pengembangan Pariwisata,S2 Terapan,8,6135/SK/BAN-PT/Ak.P/MTr/III/2025,2025,s2terapanperencanaandanpengembanganpariwisata@politeknikinternasionalbali.ac.id,Terakreditasi Sementara,2030-03-25,Masih Berlaku
 Universitas Brawijaya,Perencanaan Wilayah Dan Kota,S1,PTN,6154/SK/BAN-PT/Ak.Ppj/S/III/2025,2025,s1perencanaanwilayahdankota@universitasbrawijaya.ac.id,Unggul,2030-04-02,Masih Berlaku
 Institut Sains Dan Teknologi Muhammadiyah Tarakan,Perencanaan Wilayah Dan Kota,S1,11,208/SK/BAN-PT/Ak/S/II/2025,2025,s1perencanaanwilayahdankota@institutsainsdanteknologimuhammadiyahtarakan.ac.id,Baik,2030-02-05,Masih Berlaku
-Universitas Nahdlatul Ulama Maluku Utara,Perencanaan Wilayah Dan Kota,S1,12,147/SK/BAN-PT/Ak.P/S/I/2025,2026,s1perencanaanwilayahdankota@universitasnahdlatululamamalukuutara.ac.id,Tidak Terakreditasi,,Tidak Ada Data
+Universitas Nahdlatul Ulama Maluku Utara,Perencanaan Wilayah Dan Kota,S1,12,147/SK/BAN-PT/Ak.P/S/I/2025,2025,s1perencanaanwilayahdankota@universitasnahdlatululamamalukuutara.ac.id,Baik,2027-01-21,Masih Berlaku
 Universitas Muhammadiyah Jambi,Perencanaan Wilayah Dan Kota,S1,10,85/SK/BAN-PT/Ak.P/S/I/2025,2025,s1perencanaanwilayahdankota@universitasmuhammadiyahjambi.ac.id,Terakreditasi Sementara,2030-01-14,Masih Berlaku
 Universitas Muhammadiyah Palopo,Perencanaan Wilayah Dan Kota,S1,9,6271/SK/BAN-PT/Ak.P/S/IV/2025,2025,s1perencanaanwilayahdankota@universitasmuhammadiyahpalopo.ac.id,Baik,2027-04-29,Masih Berlaku
 Universitas Sintuwu Maroso Poso,Perencanaan Wilayah Dan Perdesaan,S2,16,6266/SK/BAN-PT/Ak.P/M/IV/2025,2025,s2perencanaanwilayahdanperdesaan@universitassintuwumarosoposo.ac.id,Baik,2027-04-29,Masih Berlaku
 Institut Teknologi Nasional Yogyakarta,Perencanaan Wilayah Dan Kota,S1,5,6412/SK/BAN-PT/Ak.Ppj/S/V/2025,2025,s1perencanaanwilayahdankota@institutteknologinasionalyogyakarta.ac.id,B,2030-04-02,Masih Berlaku
 Institut Teknologi Nasional Malang,Perencanaan Wilayah Dan Kota,S1,7,6485/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1perencanaanwilayahdankota@institutteknologinasionalmalang.ac.id,Unggul,2029-07-17,Masih Berlaku
-Institut Teknologi Sepuluh Nopember,Perencanaan Wilayah Dan Kota,S2,PTN,6433/SK/BAN-PT/Ak.P/M/V/2025,2026,s2perencanaanwilayahdankota@institutteknologisepuluhnopember.ac.id,Baik Sekali,2031-04-09,Masih Berlaku
+Institut Teknologi Sepuluh Nopember,Perencanaan Wilayah Dan Kota,S2,PTN,6433/SK/BAN-PT/Ak.P/M/V/2025,2025,s2perencanaanwilayahdankota@institutteknologisepuluhnopember.ac.id,Baik,2027-05-14,Masih Berlaku
 Institut Teknologi Sumatera,Perencanaan Wilayah Dan Kota,S1,PTN,6549/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1perencanaanwilayahdankota@institutteknologisumatera.ac.id,Baik Sekali,2029-05-29,Masih Berlaku
 Universitas Jember,Perencanaan Wilayah Dan Kota,S1,PTN,6555/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1perencanaanwilayahdankota@universitasjember.ac.id,Baik Sekali,2029-05-15,Masih Berlaku
 Universitas Muhammadiyah Pare-pare,Perencanaan Wilayah Dan Kota,S1,9,6595/SK/BAN-PT/Ak.P/S/V/2025,2025,s1perencanaanwilayahdankota@universitasmuhammadiyahparepare.ac.id,Baik,2027-05-15,Masih Berlaku
 Universitas Teknologi Yogyakarta,Perencanaan Wilayah Dan Kota,S1,5,6626/SK/BAN-PT/Ak/S/V/2025,2025,s1perencanaanwilayahdankota@universitasteknologiyogyakarta.ac.id,Baik Sekali,2030-05-20,Masih Berlaku
-Universitas Simalungun,Perencanaan Wilayah Dan Kota,S2,1,6751/SK/BAN-PT/Ak.S/M/VI/2025,2025,s2perencanaanwilayahdankota@universitassimalungun.ac.id,B,9999-01-01,Masih Berlaku
-Universitas Bangka Belitung,Perencanaan Wilayah Dan Kota,S1,PTN,6768/SK/BAN-PT/Ak.S/S/VI/2025,2025,s1perencanaanwilayahdankota@universitasbangkabelitung.ac.id,Baik,9999-01-01,Masih Berlaku
+Universitas Simalungun,Perencanaan Wilayah Dan Kota,S2,1,6751/SK/BAN-PT/Ak.S/M/VI/2025,2025,s2perencanaanwilayahdankota@universitassimalungun.ac.id,B,-,Masih Berlaku
+Universitas Negeri Yogyakarta,Pendidikan Teknik Sipil Dan Perencanaan,S1,PTN,734/SK/LAMDIK/Ak/S/VI/2025,2025,s1pendidikantekniksipildanperencanaan@universitasnegeriyogyakarta.ac.id,Unggul,2030-06-04,Masih Berlaku
+Universitas Bangka Belitung,Perencanaan Wilayah Dan Kota,S1,PTN,6768/SK/BAN-PT/Ak.S/S/VI/2025,2025,s1perencanaanwilayahdankota@universitasbangkabelitung.ac.id,Baik,-,Masih Berlaku
 Universitas Muhammadiyah Barru,Perencanaan Wilayah Dan Kota,S1,9,2393/SK/BAN-PT/Ak.P/S1/VI/2025,2025,s1perencanaanwilayahdankota@universitasmuhammadiyahbarru.ac.id,Terakreditasi Sementara,2030-06-24,Masih Berlaku
 Universitas Islam Sultan Agung,Perencanaan Wilayah Dan Kota,S2,6,2408/SK/BAN-PT/Ak.P/S2/V/2025,2025,s2perencanaanwilayahdankota@universitasislamsultanagung.ac.id,Terakreditasi Sementara,2030-05-14,Masih Berlaku
 Universitas Muhammadiyah Sorong,Perencanaan Wilayah Dan Kota,S1,14,6847/SK/BAN-PT/Ak/S1/VII/2025,2025,s1perencanaanwilayahdankota@universitasmuhammadiyahsorong.ac.id,Baik,2030-06-24,Masih Berlaku
-Universitas Krisnadwipayana,Perencanaan Wilayah Dan Kota,S1,3,6871/SK/BAN-PT/Ak.S/S1/VII/2025,2026,s1perencanaanwilayahdankota@universitaskrisnadwipayana.ac.id,Baik Sekali,2031-01-13,Masih Berlaku
+Universitas Krisnadwipayana,Perencanaan Wilayah Dan Kota,S1,3,6871/SK/BAN-PT/Ak.S/S1/VII/2025,2025,s1perencanaanwilayahdankota@universitaskrisnadwipayana.ac.id,B,-,Masih Berlaku
 Universitas Sebelas Maret,Perencanaan Wilayah Dan Kota,S1,PTN,7091/SK/BAN-PT/Ak.Ppj/S1/VII/2025,2025,s1perencanaanwilayahdankota@universitassebelasmaret.ac.id,Unggul,2030-08-05,Masih Berlaku
 Universitas Pasundan,Perencanaan Wilayah Dan Kota,S1,4,7359/SK/BAN-PT/Ak.Ppj/S/VIII/2025,2025,s1perencanaanwilayahdankota@universitaspasundan.ac.id,Unggul,2030-09-02,Masih Berlaku
 Universitas Pembangunan Panca Budi,Perencanaan Wilayah Dan Kota,S2,1,7392/SK/BAN-PT/Ak/M/VIII/2025,2025,s2perencanaanwilayahdankota@universitaspembangunanpancabudi.ac.id,Baik Sekali,2030-08-26,Masih Berlaku
 Universitas Muhammadiyah Mataram,Perencanaan Wilayah Dan Kota,S1,8,7405/SK/BAN-PT/Ak/S/VIII/2025,2025,s1perencanaanwilayahdankota@universitasmuhammadiyahmataram.ac.id,Baik Sekali,2030-08-27,Masih Berlaku
 Universitas Muhammadiyah Banjarmasin,Perencanaan Wilayah Dan Kota,S1,11,7169/SK/BAN-PT/Ak.Ppj/S/VIII/2025,2025,s1perencanaanwilayahdankota@universitasmuhammadiyahbanjarmasin.ac.id,B,2030-07-29,Masih Berlaku
-Institut Teknologi Nasional Bandung,Perencanaan Wilayah Dan Kota,S1,4,7199/SK/BAN-PT/Ak.S/S/VIII/2025,2026,s1perencanaanwilayahdankota@institutteknologinasionalbandung.ac.id,Baik Sekali,2031-02-24,Masih Berlaku
+Institut Teknologi Nasional Bandung,Perencanaan Wilayah Dan Kota,S1,4,7199/SK/BAN-PT/Ak.S/S/VIII/2025,2025,s1perencanaanwilayahdankota@institutteknologinasionalbandung.ac.id,B,-,Masih Berlaku
+Universitas Jenderal Soedirman,Perencanaan Sumber Daya Lahan,D-III,PTN,7198/SK/BAN-PT/Ak.S/D3/VIII/2025,2025,diiiperencanaansumberdayalahan@universitasjenderalsoedirman.ac.id,B,-,Masih Berlaku
 Politeknik Pariwisata Medan,Perencanaan Dan Pengembangan Pariwisata,S2 Terapan,PTKL,7291/SK/BAN-PT/Ak/MTr/VIII/2025,2025,s2terapanperencanaandanpengembanganpariwisata@politeknikpariwisatamedan.ac.id,Baik Sekali,2030-08-13,Masih Berlaku
 Universitas Brawijaya,Perencanaan Wilayah Dan Kota,S3,PTN,7148/SK/BAN-PT/Ak.P/S3/VIII/2025,2025,s3perencanaanwilayahdankota@universitasbrawijaya.ac.id,Terakreditasi Sementara,2030-08-25,Masih Berlaku
 Institut Teknologi Bandung,Perencanaan Wilayah Dan Kota (Kampus Cirebon),S1,PTN,7177/SK/BAN-PT/Ak.P/2.0/S1/IX/2025,2025,s1perencanaanwilayahdankotakampuscirebon@institutteknologibandung.ac.id,Terakreditasi Sementara,2030-09-09,Masih Berlaku
-Universitas Sam Ratulangi,Ilmu Perencanaan Pembangunan Wilayah,S2,PTN,7569/SK/BAN-PT/Ak.S/M/IX/2025,2026,s2ilmuperencanaanpembangunanwilayah@universitassamratulangi.ac.id,Baik Sekali,2031-04-14,Masih Berlaku
+Universitas Sam Ratulangi,Ilmu Perencanaan Pembangunan Wilayah,S2,PTN,7569/SK/BAN-PT/Ak.S/M/IX/2025,2025,s2ilmuperencanaanpembangunanwilayah@universitassamratulangi.ac.id,B,-,Masih Berlaku
 Universitas Sumatera Utara,Perencanaan Wilayah Dan Kota,S2,PTN,7196/SK/BAN-PT/Ak.P/2.0/S2/IX/2025,2025,s2perencanaanwilayahdankota@universitassumaterautara.ac.id,Terakreditasi Sementara,2030-09-16,Masih Berlaku
 Universitas Sumatera Utara,Perencanaan Wilayah Dan Kota,S1,PTN,7195/SK/BAN-PT/Ak.P/2.0/S1/IX/2025,2025,s1perencanaanwilayahdankota@universitassumaterautara.ac.id,Terakreditasi Sementara,2030-09-16,Masih Berlaku
 Politeknik Negeri Bali,Perencanaan Pariwisata,S2 Terapan,PTN,7813/SK/BAN-PT/Ak/MTr/X/2025,2025,s2terapanperencanaanpariwisata@politekniknegeribali.ac.id,Unggul,2030-10-01,Masih Berlaku
@@ -531,9 +571,10 @@ Universitas PGRI Adi Buana,Perencanaan Wilayah Dan Kota,S1,7,7940/SK/BAN-PT/Ak.K
 Universitas Negeri Gorontalo,Perencanaan Wilayah Dan Kota,S1,PTN,8099/SK/BAN-PT/Ak.P/S/X/2025,2025,s1perencanaanwilayahdankota@universitasnegerigorontalo.ac.id,Baik,2027-10-28,Masih Berlaku
 Universitas Tarumanagara,Perencanaan Wilayah Dan Kota,S2,3,8192/SK/BAN-PT/Ak.Ppj/M/XI/2025,2025,s2perencanaanwilayahdankota@universitastarumanagara.ac.id,Baik Sekali,2030-09-05,Masih Berlaku
 Universitas Islam Sultan Agung,Perencanaan Wilayah Dan Kota,S1,6,8194/SK/BAN-PT/Ak.Ppj/S/XI/2025,2025,s1perencanaanwilayahdankota@universitasislamsultanagung.ac.id,Unggul,2030-10-28,Masih Berlaku
+Universitas Hasanuddin,Ekonomi Pembangunan Dan Perencanaan,S2,PTN,2663/DE/A.5/AR.10/VIII/2025,2025,s2ekonomipembangunandanperencanaan@universitashasanuddin.ac.id,Unggul,2030-11-17,Masih Berlaku
 Universitas Maritim Raja Ali Haji (UMRAH),Perencanaan Wilayah Dan Kota,S1,PTN,038/SK/BAN-PT/Ak.P/2.0/S1/X/2025,2025,s1perencanaanwilayahdankota@universitasmaritimrajaalihajiumrah.ac.id,Terakreditasi Sementara,2030-10-28,Masih Berlaku
 Universitas Mahasaraswati Denpasar,Perencanaan Wilayah Dan Perdesaan,S2,8,8391/SK/BAN-PT/Ak.Ppj/M/XI/2025,2025,s2perencanaanwilayahdanperdesaan@universitasmahasaraswatidenpasar.ac.id,Unggul,2030-09-30,Masih Berlaku
-Universitas Palangka Raya,Perencanaan Wilayah Dan Kota,S2,PTN,98/SK/BAN-PT/Ak.P/M/I/2024,2026,s2perencanaanwilayahdankota@universitaspalangkaraya.ac.id,Baik,9999-01-01,Masih Berlaku
+Universitas Palangka Raya,Perencanaan Wilayah Dan Kota,S2,PTN,98/SK/BAN-PT/Ak.P/M/I/2024,2024,s2perencanaanwilayahdankota@universitaspalangkaraya.ac.id,Baik,2026-01-16,37 hari lagi kadaluarsa
 Universitas Hindu Indonesia,Perencanaan Wilayah Dan Kota,S1,8,230/SK/BAN-PT/Ak.Ppj/S1/I/2024,2024,s1perencanaanwilayahdankota@universitashinduindonesia.ac.id,B,2029-01-24,Masih Berlaku
 Universitas 17 Agustus 1945 Samarinda,Perencanaan Wilayah Dan Kota,S1,11,193/SK/BAN-PT/Ak.P/S/I/2024,2024,s1perencanaanwilayahdankota@universitas17agustus1945samarinda.ac.id,Terakreditasi Sementara,2029-01-23,Masih Berlaku
 Universitas Trisakti,Perencanaan Wilayah Dan Kota,S1,3,553/SK/BAN-PT/Ak.KP/S/II/2024,2024,s1perencanaanwilayahdankota@universitastrisakti.ac.id,Unggul,2028-10-03,Masih Berlaku
@@ -547,72 +588,84 @@ Politeknik Pariwisata NHI Bandung,Perencanaan Dan Pengembangan Pariwisata,S2 Ter
 Universitas Islam Negeri Alauddin Makassar,Teknik Perencanaan Wilayah Dan Kota,S1,PTAN,6785/SK/BAN-PT/Ak.KP/S/XI/2024,2024,s1teknikperencanaanwilayahdankota@universitasislamnegerialauddinmakassar.ac.id,Baik Sekali,2028-03-21,Masih Berlaku
 Institut Pertanian Bogor,Ilmu Perencanaan Pembangunan Wilayah Dan Pedesaan,S3,PTN,6560/SK/BAN-PT/Ak.KP/D/XI/2024,2024,s3ilmuperencanaanpembangunanwilayahdanpedesaan@institutpertanianbogor.ac.id,Unggul,2028-01-04,Masih Berlaku
 Institut Pertanian Bogor,Ilmu Perencanaan Pembangunan Wilayah Dan Pedesaan,S2,PTN,6561/SK/BAN-PT/Ak.KP/M/XI/2024,2024,s2ilmuperencanaanpembangunanwilayahdanpedesaan@institutpertanianbogor.ac.id,Unggul,2027-08-16,Masih Berlaku
-Universitas Muhammadiyah Sinjai,Perencanaan Wilayah Dan Kota,S1,9,6619/SK/BAN-PT/Ak.P/S/XI/2024,2026,s1perencanaanwilayahdankota@universitasmuhammadiyahsinjai.ac.id,Baik,2031-05-12,Masih Berlaku
+Universitas Muhammadiyah Sinjai,Perencanaan Wilayah Dan Kota,S1,9,6619/SK/BAN-PT/Ak.P/S/XI/2024,2024,s1perencanaanwilayahdankota@universitasmuhammadiyahsinjai.ac.id,Baik,2026-11-05,Masih Berlaku
 Universitas Pakuan,Perencanaan Wilayah Dan Kota,S1,4,6492/SK/BAN-PT/Ak/S/X/2024,2024,s1perencanaanwilayahdankota@universitaspakuan.ac.id,Unggul,2029-10-29,Masih Berlaku
 Universitas Tadulako,Perencanaan Wilayah Dan Kota,S1,PTN,6443/SK/BAN-PT/Ak/S/X/2024,2024,s1perencanaanwilayahdankota@universitastadulako.ac.id,Baik,2029-10-22,Masih Berlaku
 Institut Teknologi Bandung,Perencanaan Wilayah Dan Kota,S1,PTN,6234/SK/BAN-PT/Ak.Ppj/S/X/2024,2024,s1perencanaanwilayahdankota@institutteknologibandung.ac.id,Unggul,2029-10-01,Masih Berlaku
 Universitas Sam Ratulangi,Perencanaan Wilayah Dan Kota,S1,PTN,6190/SK/BAN-PT/Ak.Ppj/S/X/2024,2024,s1perencanaanwilayahdankota@universitassamratulangi.ac.id,Unggul,2029-10-23,Masih Berlaku
 Universitas Islam Bandung,Perencanaan Wilayah Dan Kota,S2,4,4855/SK/BAN-PT/Ak/M/VII/2024,2024,s2perencanaanwilayahdankota@universitasislambandung.ac.id,Baik Sekali,2029-07-02,Masih Berlaku
-Universitas Gadjah Mada,Perencanaan Wilayah Dan Kota,S3,PTN,4746/SK/BAN-PT/Ak/D/VI/2024,2024,s3doktorperencanaanwilayahdankota@universitasgadjahmada.ac.id,Baik Sekali,2029-06-25,Masih Berlaku
+Universitas Gadjah Mada,Doktor Perencanaan Wilayah Dan Kota,S3,PTN,4746/SK/BAN-PT/Ak/D/VI/2024,2024,s3doktorperencanaanwilayahdankota@universitasgadjahmada.ac.id,Baik Sekali,2029-06-25,Masih Berlaku
 Universitas Islam Riau,Perencanaan Wilayah Dan Kota,S1,17,5542/SK/BAN-PT/Ak.KP/S/VIII/2024,2024,s1perencanaanwilayahdankota@universitasislamriau.ac.id,Baik Sekali,2028-02-28,Masih Berlaku
 Universitas Amikom Yogyakarta,Perencanaan Wilayah Dan Kota,S1,5,4683/SK/BAN-PT/Ak/S/VI/2024,2024,s1perencanaanwilayahdankota@universitasamikomyogyakarta.ac.id,Baik,2029-06-12,Masih Berlaku
 Institut Teknologi Bandung,Perencanaan Wilayah Dan Kota,S3,PTN,4647/SK/BAN-PT/Ak.Ppj/D/VI/2024,2024,s3perencanaanwilayahdankota@institutteknologibandung.ac.id,Unggul,2029-06-26,Masih Berlaku
-Universitas Winaya Mukti,Perencanaan Wilayah Dan Kota,S1,4,5044/SK/BAN-PT/Ak.Ppj/S/VII/2024,2025,s1perencanaanwilayahdankota@universitaswinayamukti.ac.id,Baik Sekali,2029-07-17,Masih Berlaku
+Universitas Winaya Mukti,Perencanaan Wilayah Dan Kota,S1,4,5044/SK/BAN-PT/Ak.Ppj/S/VII/2024,2024,s1perencanaanwilayahdankota@universitaswinayamukti.ac.id,B,2029-07-17,Masih Berlaku
 Universitas Sebelas Maret,Perencanaan Wilayah Dan Kota,S2,PTN,4601/SK/BAN-PT/Ak.P/M/VI/2024,2024,s2perencanaanwilayahdankota@universitassebelasmaret.ac.id,Terakreditasi Sementara,2029-06-06,Masih Berlaku
 Universitas Agung Podomoro,Perencanaan Wilayah Dan Kota,S1,3,4561/SK/BAN-PT/Ak/S/VI/2024,2024,s1perencanaanwilayahdankota@universitasagungpodomoro.ac.id,Baik Sekali,2029-06-04,Masih Berlaku
 Universitas Negeri Surabaya,Perencanaan Wilayah Dan Kota,S1,PTN,4447/SK/BAN-PT/Ak.P/S/V/2024,2024,s1perencanaanwilayahdankota@universitasnegerisurabaya.ac.id,Terakreditasi Sementara,2029-05-28,Masih Berlaku
 Institut Teknologi Dan Bisnis Karya Pembangunan Papua,Perencanaan Wilayah Dan Kota,S1,14,4052/SK/BAN-PT/Ak/S/V/2024,2024,s1perencanaanwilayahdankota@institutteknologidanbisniskaryapembangunanpapua.ac.id,Baik,2029-05-07,Masih Berlaku
 Institut Teknologi Bandung,Perencanaan Kepariwisataan,S2,PTN,3997/SK/BAN-PT/Ak.KP/M/V/2024,2024,s2perencanaankepariwisataan@institutteknologibandung.ac.id,Unggul,2027-07-07,Masih Berlaku
+Universitas Indonesia,Magister Perencanaan Ekonomi Dan Kebijakan Pembangunan,S2,PTN,3965/SK/BAN-PT/Ak-PNB/M/V/2024,2024,s2magisterperencanaanekonomidankebijakanpembangunan@universitasindonesia.ac.id,A,2028-09-19,Masih Berlaku
 Universitas Nahdlatul Ulama Kalimantan Selatan,Perencanaan Wilayah Dan Kota,S1,11,3907/SK/BAN-PT/Ak/S/IV/2024,2024,s1perencanaanwilayahdankota@universitasnahdlatululamakalimantanselatan.ac.id,Baik,2029-04-29,Masih Berlaku
 Universitas Sumatera Utara,Perencanaan Pembangunan Wilayah Dan Pedesaan,S2,PTN,3839/SK/BAN-PT/Ak.Ppj/M/IV/2024,2024,s2perencanaanpembangunanwilayahdanpedesaan@universitassumaterautara.ac.id,Unggul,2029-05-01,Masih Berlaku
 Universitas Hasanuddin,Perencanaan Dan Pengembangan Wilayah,S2,PTN,40/SK/BAN-PT/Ak.Ppj/M/I/2023,2023,s2perencanaandanpengembanganwilayah@universitashasanuddin.ac.id,Unggul,2028-01-10,Masih Berlaku
+Universitas Hasanuddin,Teknik Perencanaan Prasarana,S2,PTN,86/SK/BAN-PT/Ak.Ppj/M/I/2023,2023,s2teknikperencanaanprasarana@universitashasanuddin.ac.id,A,2028-01-17,Masih Berlaku
 Universitas Bosowa,Perencanaan Wilayah Dan Kota,S1,9,511/SK/BAN-PT/Ak.Ppj/S/II/2023,2023,s1perencanaanwilayahdankota@universitasbosowa.ac.id,Unggul,2027-12-13,Masih Berlaku
 Universitas Bosowa,Perencanaan Wilayah Dan Kota,S3,9,886/SK/BAN-PT/Ak/D/III/2023,2023,s3perencanaanwilayahdankota@universitasbosowa.ac.id,Baik Sekali,2028-03-14,Masih Berlaku
 Universitas Bina Taruna Gorontalo,Perencanaan Wilayah,S1,16,996/SK/BAN-PT/Ak/S/III/2023,2023,s1perencanaanwilayah@universitasbinatarunagorontalo.ac.id,Baik,2028-03-21,Masih Berlaku
 Politeknik Pariwisata Batam,Perencanaan Dan Pengembangan Pariwisata,S2 Terapan,17,1211/SK/BAN-PT/Ak/MTr/IV/2023,2023,s2terapanperencanaandanpengembanganpariwisata@politeknikpariwisatabatam.ac.id,Baik,2028-04-04,Masih Berlaku
+Politeknik Negeri Padang,Teknik Perencanaan Irigasi Dan Rawa,D-IV,PTN,0036/SK/LAM Teknik/VST/IV/2023,2023,divteknikperencanaanirigasidanrawa@politekniknegeripadang.ac.id,Unggul,2028-04-20,Masih Berlaku
 Universitas Bung Hatta,Perencanaan Wilayah Dan Kota,S1,10,1837/SK/BAN-PT/Ak.Ppj/S/V/2023,2023,s1perencanaanwilayahdankota@universitasbunghatta.ac.id,B,2028-05-31,Masih Berlaku
 Universitas Muhammadiyah Makassar,Perencanaan Wilayah Dan Kota,S1,9,2095/SK/BAN-PT/Ak/S/VI/2023,2023,s1perencanaanwilayahdankota@universitasmuhammadiyahmakassar.ac.id,Baik,2028-06-06,Masih Berlaku
 Universitas Hasanuddin,Perencanaan Wilayah Dan Kota,S1,PTN,2291/SK/BAN-PT/Akred-Itnl/S/VI/2023,2023,s1perencanaanwilayahdankota@universitashasanuddin.ac.id,Unggul,2027-09-30,Masih Berlaku
 Universitas Muhammadiyah Berau,Perencanaan Wilayah Dan Kota,S1,11,2341/SK/BAN-PT/Ak/S/VI/2023,2023,s1perencanaanwilayahdankota@universitasmuhammadiyahberau.ac.id,Baik,2028-06-20,Masih Berlaku
 Universitas Sumatera Utara,Perencanaan Wilayah,S3,PTN,2514/SK/BAN-PT/Ak.Ppj/D/VI/2023,2023,s3perencanaanwilayah@universitassumaterautara.ac.id,B,2028-07-11,Masih Berlaku
 Universitas Pohuwato,Perencanaan Wilayah,S1,16,3954/SK/BAN-PT/Ak/S/X/2023,2023,s1perencanaanwilayah@universitaspohuwato.ac.id,Baik,2028-10-03,Masih Berlaku
+Universitas Indonesia,Perencanaan Dan Kebijakan Publik,S2,PTN,4135/SK/BAN-PT/Ak.Ppj/M/X/2023,2023,s2perencanaandankebijakanpublik@universitasindonesia.ac.id,A,2028-09-19,Masih Berlaku
 Institut Teknologi Kalimantan,Perencanaan Wilayah Dan Kota,S1,PTN,4385/SK/BAN-PT/Ak.Ppj/S/X/2023,2023,s1perencanaanwilayahdankota@institutteknologikalimantan.ac.id,B,2028-04-04,Masih Berlaku
 Institut Sains Dan Teknologi Td Pardede,Perencanaan Wilayah Dan Kota,S1,1,4437/SK/BAN-PT/Ak/S/X/2023,2023,s1perencanaanwilayahdankota@institutsainsdanteknologitdpardede.ac.id,Baik,2028-10-31,Masih Berlaku
 Institut Teknologi Indonesia,Perencanaan Wilayah Dan Kota,S1,3,4410/SK/BAN-PT/Ak/S/X/2023,2023,s1perencanaanwilayahdankota@institutteknologiindonesia.ac.id,Baik Sekali,2028-10-31,Masih Berlaku
 Universitas Bosowa,Perencanaan Wilayah Dan Kota,S2,9,4995/SK/BAN-PT/Ak.Ppj/M/XI/2023,2023,s2perencanaanwilayahdankota@universitasbosowa.ac.id,Baik Sekali,2028-06-07,Masih Berlaku
 Institut Pertanian Bogor,Ilmu Perencanaan Wilayah,S2,PTN,4927/SK/BAN-PT/Ak.KP/M/XI/2023,2023,s2ilmuperencanaanwilayah@institutpertanianbogor.ac.id,Unggul,2028-05-09,Masih Berlaku
 Universitas Indonesia,Perencanaan Wilayah Dan Kota,S2,PTN,5053/SK/BAN-PT/Ak/M/XII/2023,2023,s2perencanaanwilayahdankota@universitasindonesia.ac.id,Baik Sekali,2028-12-05,Masih Berlaku
-Universitas Komputer Indonesia,Teknik Perencanaan Wilayah Dan Kota,S1,4,5323/SK/BAN-PT/PEPA-Ppj/S/XII/2023,2026,s1teknikperencanaanwilayahdankota@universitaskomputerindonesia.ac.id,Baik Sekali,2031-04-09,Masih Berlaku
+Universitas Komputer Indonesia,Teknik Perencanaan Wilayah Dan Kota,S1,4,5323/SK/BAN-PT/PEPA-Ppj/S/XII/2023,2023,s1teknikperencanaanwilayahdankota@universitaskomputerindonesia.ac.id,Baik,2028-12-21,Masih Berlaku
 Institut Teknologi Sains Bandung,Perencanaan Wilayah Dan Kota,S1,4,5318/SK/BAN-PT/PEPA-Ppj/S/XII/2023,2023,s1perencanaanwilayahdankota@institutteknologisainsbandung.ac.id,Baik,2028-07-25,Masih Berlaku
-Universitas Islam Kuantan Singingi,Perencanaan Wilayah Dan Kota,S1,17,652/SK/BAN-PT/Ak-PPJ/S/I/2022,2022,s1perencanaanwilayahdankota@universitasislamkuantansingingi.ac.id,Baik,2026-09-30,123 hari lagi kadaluarsa
+Universitas Islam Kuantan Singingi,Perencanaan Wilayah Dan Kota,S1,17,652/SK/BAN-PT/Ak-PPJ/S/I/2022,2022,s1perencanaanwilayahdankota@universitasislamkuantansingingi.ac.id,Baik,2026-09-30,Masih Berlaku
 Universitas Terbuka,Perencanaan Wilayah Dan Kota,S1,PTN,1063/SK/BAN-PT/Ak-PPJ/S/II/2022,2022,s1perencanaanwilayahdankota@universitasterbuka.ac.id,B,2027-03-01,Masih Berlaku
 Universitas Diponegoro,Perencanaan Tata Ruang Dan Pertanahan,D-IV,PTN,1327/SK/BAN-PT/Akred/ST/III/2022,2022,divperencanaantataruangdanpertanahan@universitasdiponegoro.ac.id,Baik,2027-03-01,Masih Berlaku
 Universitas Muhammadiyah Bulukumba,Perencanaan Wilayah Dan Kota,S1,9,1559/SK/BAN-PT/Akred/S/III/2022,2022,s1perencanaanwilayahdankota@universitasmuhammadiyahbulukumba.ac.id,Baik,2027-03-08,Masih Berlaku
 Universitas Sali Al-Aitaam,Perencanaan Wilayah Dan Kota,S1,4,2796/SK/BAN-PT/PB-PS/S/V/2022,2022,s1perencanaanwilayahdankota@universitassalialaitaam.ac.id,Baik,2026-12-07,Masih Berlaku
 Universitas Diponegoro,Perencanaan Wilayah Dan Kota,S1,PTN,3407/SK/BAN-PT/Akred-Itnl/S/V/2022,2022,s1perencanaanwilayahdankota@universitasdiponegoro.ac.id,Unggul,2027-05-31,Masih Berlaku
 Universitas Diponegoro,Perencanaan Wilayah Dan Kota,S2,PTN,3406/SK/BAN-PT/Akred-Itnl/M/V/2022,2022,s2perencanaanwilayahdankota@universitasdiponegoro.ac.id,Unggul,2027-05-31,Masih Berlaku
-Universitas Riau,Perencanaan Wilayah Dan Perdesaan,S2,PTN,4074/SK/BAN-PT/PB-PS/M/VII/2022,2022,s2perencanaanwilayahdanperdesaan@universitasriau.ac.id,Baik,2026-07-05,36 hari lagi kadaluarsa
-Institut Modern Arsitektur Dan Teknologi,Perencanaan Wilayah Dan Kota,S1,1,4072/SK/BAN-PT/PB-PS/S/VII/2022,2022,s1perencanaanwilayahdankota@institutmodernarsitekturdanteknologi.ac.id,Baik,2026-06-17,18 hari lagi kadaluarsa
+Universitas Riau,Perencanaan Wilayah Dan Perdesaan,S2,PTN,4074/SK/BAN-PT/PB-PS/M/VII/2022,2022,s2perencanaanwilayahdanperdesaan@universitasriau.ac.id,Baik,2026-07-05,Masih Berlaku
+Institut Modern Arsitektur Dan Teknologi,Perencanaan Wilayah Dan Kota,S1,1,4072/SK/BAN-PT/PB-PS/S/VII/2022,2022,s1perencanaanwilayahdankota@institutmodernarsitekturdanteknologi.ac.id,Baik,2026-06-17,Masih Berlaku
 Institut Teknologi Dan Bisnis Stikom Ambon,Perencanaan Wilayah Dan Kota,S1,12,4073/SK/BAN-PT/PB-PS/S/VII/2022,2022,s1perencanaanwilayahdankota@institutteknologidanbisnisstikomambon.ac.id,Baik,2027-05-24,Masih Berlaku
 Universitas Batam,Perencanaan Wilayah,S2,17,4637/SK/BAN-PT/Ak/M/VII/2022,2022,s2perencanaanwilayah@universitasbatam.ac.id,Baik,2027-07-20,Masih Berlaku
 Universitas Islam Bandung,Perencanaan Wilayah Dan Kota,S1,4,4955/SK/BAN-PT/Ak-PPJ/S/VII/2022,2022,s1perencanaanwilayahdankota@universitasislambandung.ac.id,Unggul,2027-08-02,Masih Berlaku
 Universitas Cenderawasih,Perencanaan Wilayah Dan Kota,S2,PTN,5079/SK/BAN-PT/Ak/M/VII/2022,2022,s2perencanaanwilayahdankota@universitascenderawasih.ac.id,Baik,2027-07-27,Masih Berlaku
 Universitas Indo Global Mandiri,Perencanaan Wilayah Dan Kota,S1,2,6537/SK/BAN-PT/Ak.Ppj/S/IX/2022,2022,s1perencanaanwilayahdankota@universitasindoglobalmandiri.ac.id,B,2027-10-11,Masih Berlaku
-Universitas Pattimura,Perencanaan Wilayah Dan Kota,S1,PTN,6843/SK/BAN-PT/Ak.KP/S/X/2022,2026,s1perencanaanwilayahdankota@universitaspattimura.ac.id,Baik,2031-04-29,Masih Berlaku
+Universitas Pattimura,Perencanaan Wilayah Dan Kota,S1,PTN,6843/SK/BAN-PT/Ak.KP/S/X/2022,2022,s1perencanaanwilayahdankota@universitaspattimura.ac.id,Baik,2026-04-28,139 hari lagi kadaluarsa
 Universitas Brawijaya,Perencanaan Wilayah Dan Kota,S2,PTN,7117/SK/BAN-PT/Ak/M/X/2022,2022,s2perencanaanwilayahdankota@universitasbrawijaya.ac.id,Unggul,2027-10-11,Masih Berlaku
 Universitas Amal Ilmiah Yapis Wamena,Perencanaan Wilayah Dan Kota,S1,14,8437/SK/BAN-PT/Ak/S/X/2022,2022,s1perencanaanwilayahdankota@universitasamalilmiahyapiswamena.ac.id,Baik,2027-10-25,Masih Berlaku
 Universitas Hasanuddin,Perencanaan Wilayah Dan Kota,S2,PTN,10086/SK/BAN-PT/Ak/M/XI/2022,2022,s2perencanaanwilayahdankota@universitashasanuddin.ac.id,Baik,2027-11-30,Masih Berlaku
-Universitas Tarumanagara,Perencanaan Wilayah Dan Kota,S1,3,10516/SK/BAN-PT/Ak-PPJ/S/VIII/2021,2025,s1perencanaanwilayahdankota@universitastarumanagara.ac.id,Baik Sekali,2026-08-27,89 hari lagi kadaluarsa
-Universitas Semarang,Perencanaan Wilayah Dan Kota,S1,6,884/SK/BAN-PT/Akred/S/II/2021,2026,s1perencanaanwilayahdankota@universitassemarang.ac.id,Baik,9999-01-01,Masih Berlaku
-Universitas Lampung,Perencanaan Wilayah Dan Kota,S2,PTN,1611/SK/BAN-PT/Akred/M/III/2021,2026,s2perencanaanwilayahdankota@universitaslampung.ac.id,Baik Sekali,2031-03-03,Masih Berlaku
-Universitas Teknologi Sulawesi Utara,Perencanaan Wilayah Dan Kota,S1,16,8953/SK/BAN-PT/Akred/S/VI/2021,2021,s1perencanaanwilayahdankota@universitasteknologisulawesiutara.ac.id,Baik,2026-06-22,23 hari lagi kadaluarsa
-Universitas Gadjah Mada,Perencanaan Wilayah Dan Kota,S1,PTN,10215/SK/BAN-PT/Akred-Itnl/S/VIII/2021,2021,s1perencanaanwilayahdankota@universitasgadjahmada.ac.id,Unggul,2026-08-18,80 hari lagi kadaluarsa
-Universitas Gadjah Mada,Perencanaan Wilayah Dan Kota,S2,PTN,10214/SK/BAN-PT/Akred-Itnl/M/VIII/2021,2021,s2magisterperencanaanwilayahdankota@universitasgadjahmada.ac.id,Unggul,2026-08-18,80 hari lagi kadaluarsa
-Universitas Pakuan,Perencanaan Wilayah Dan Kota,S2,4,10328/SK/BAN-PT/Akred/M/VIII/2021,2021,s2perencanaanwilayahdankota@universitaspakuan.ac.id,Baik,2026-08-24,86 hari lagi kadaluarsa
-Institut Teknologi Bandung,Perencanaan Wilayah Dan Kota,S2,PTN,10660/SK/BAN-PT/AK-ISK/M/IX/2021,2026,s2perencanaanwilayahdankota@institutteknologibandung.ac.id,Unggul,2031-04-23,Masih Berlaku
-Universitas Diponegoro,Perencanaan Tata Ruang Wilayah Dan Kota K. Pekalongan,D-III,PTN,12068/SK/BAN-PT/Akred/Dipl-III/XI/2021,2021,diiiperencanaantataruangwilayahdankotakpekalongan@universitasdiponegoro.ac.id,Baik,2026-11-02,156 hari lagi kadaluarsa
+Universitas Tarumanagara,Perencanaan Wilayah Dan Kota,S1,3,10516/SK/BAN-PT/Ak-PPJ/S/VIII/2021,2021,s1perencanaanwilayahdankota@universitastarumanagara.ac.id,B,2026-08-27,Masih Berlaku
+Politeknik Pariwisata Medan,Manajemen Perencanaan Dan Pemasaran Pariwisata,D-III,PTKL,390/SK/BAN-PT/Akred/Dipl-III/I/2021,2021,diiimanajemenperencanaandanpemasaranpariwisata@politeknikpariwisatamedan.ac.id,Unggul,2026-01-12,33 hari lagi kadaluarsa
+Universitas Diponegoro,Perencanaan Wilayah Dan Kota,D-III,PTN,708/SK/BAN-PT/Ak-PPJ/Dipl-III/II/2021,2021,diiiperencanaanwilayahdankota@universitasdiponegoro.ac.id,A,2026-02-05,57 hari lagi kadaluarsa
+Universitas Semarang,Perencanaan Wilayah Dan Kota,S1,6,884/SK/BAN-PT/Akred/S/II/2021,2021,s1perencanaanwilayahdankota@universitassemarang.ac.id,Baik,2026-02-16,68 hari lagi kadaluarsa
+Universitas Lakidende Unahaa,Perencanaan Wilayah Dan Kota,S1,9,1623/SK/BAN-PT/Akred/S/III/2021,2021,s1perencanaanwilayahdankota@universitaslakidendeunahaa.ac.id,Baik,2026-03-23,103 hari lagi kadaluarsa
+Universitas Lampung,Perencanaan Wilayah Dan Kota,S2,PTN,1611/SK/BAN-PT/Akred/M/III/2021,2021,s2perencanaanwilayahdankota@universitaslampung.ac.id,Baik,2026-03-23,103 hari lagi kadaluarsa
+Universitas Karimun,Perencanaan Wilayah Dan Kota,S1,17,1742/SK/BAN-PT/Akred/S/III/2021,2021,s1perencanaanwilayahdankota@universitaskarimun.ac.id,Baik,2026-03-30,110 hari lagi kadaluarsa
+Universitas Teknologi Sulawesi Utara,Perencanaan Wilayah Dan Kota,S1,16,8953/SK/BAN-PT/Akred/S/VI/2021,2021,s1perencanaanwilayahdankota@universitasteknologisulawesiutara.ac.id,Baik,2026-06-22,Masih Berlaku
+Universitas Gadjah Mada,Perencanaan Wilayah Dan Kota,S1,PTN,10215/SK/BAN-PT/Akred-Itnl/S/VIII/2021,2021,s1perencanaanwilayahdankota@universitasgadjahmada.ac.id,Unggul,2026-08-18,Masih Berlaku
+Universitas Gadjah Mada,Magister Perencanaan Wilayah Dan Kota,S2,PTN,10214/SK/BAN-PT/Akred-Itnl/M/VIII/2021,2021,s2magisterperencanaanwilayahdankota@universitasgadjahmada.ac.id,Unggul,2026-08-18,Masih Berlaku
+Universitas Pakuan,Perencanaan Wilayah Dan Kota,S2,4,10328/SK/BAN-PT/Akred/M/VIII/2021,2021,s2perencanaanwilayahdankota@universitaspakuan.ac.id,Baik,2026-08-24,Masih Berlaku
+Institut Teknologi Bandung,Perencanaan Wilayah Dan Kota,S2,PTN,10660/SK/BAN-PT/AK-ISK/M/IX/2021,2021,s2perencanaanwilayahdankota@institutteknologibandung.ac.id,Unggul,2026-04-22,133 hari lagi kadaluarsa
+Universitas Diponegoro,Perencanaan Tata Ruang Wilayah Dan Kota K. Pekalongan,D-III,PTN,12068/SK/BAN-PT/Akred/Dipl-III/XI/2021,2021,diiiperencanaantataruangwilayahdankotakpekalongan@universitasdiponegoro.ac.id,Baik,2026-11-02,Masih Berlaku
+Universitas Esa Unggul,Perencanaan Wilayah Dan Kota,S1,3,12921/SK/BAN-PT/Ak-PPJ/S/XII/2021,2021,s1perencanaanwilayahdankota@universitasesaunggul.ac.id,B,2026-12-21,Masih Berlaku
+Politeknik Negeri Pontianak,Perencanaan Perumahan Dan Pemukiman,D-IV,PTN,13838/SK/BAN-PT/Ak-PPJ/ST/XII/2021,2021,divperencanaanperumahandanpemukiman@politekniknegeripontianak.ac.id,B,2027-01-11,Masih Berlaku
+Universitas Pradita,Perencanaan Wilayah Dan Kota,S1,3,8335/SK/BAN-PT/Akred/S/XII/2020,2020,s1perencanaanwilayahdankota@universitaspradita.ac.id,Baik,2025-12-15,5 hari lagi kadaluarsa
+Universitas Karyadarma Kupang,Perencanaan Wilayah Dan Kota,S1,15,8339/SK/BAN-PT/Akred/S/XII/2020,2020,s1perencanaanwilayahdankota@universitaskaryadarmakupang.ac.id,Baik,2025-12-15,5 hari lagi kadaluarsa
 Universitas Indonesia,Kajian Pengembangan Perkotaan,S2,PTN,6470/SK/BAN-PT/Ak.KP/M/V/2025,2025,s2kajianpengembanganperkotaan@universitasindonesia.ac.id,Unggul,2029-11-20,Masih Berlaku
-Universitas Gadjah Mada,Rancang Kota,S2,PTN,370/SK/BAN-PT/Ak/M/II/2024,2024,s2magisterrancangkota@universitasgadjahmada.ac.id,Baik,2029-02-13,Masih Berlaku
+Universitas Gadjah Mada,Magister Rancang Kota,S2,PTN,370/SK/BAN-PT/Ak/M/II/2024,2024,s2magisterrancangkota@universitasgadjahmada.ac.id,Baik,2029-02-13,Masih Berlaku
 Institut Teknologi Bandung,Rancang Kota,S2,PTN,5363/SK/BAN-PT/Ak-PPJ/M/VIII/2022,2022,s2rancangkota@institutteknologibandung.ac.id,Unggul,2027-08-23,Masih Berlaku
 Institut Teknologi Yogyakarta,Ilmu Lingkungan,S2,5,4803/SK/BAN-PT/Ak.Ppj/M/VI/2024,2024,s2ilmulingkungan@institutteknologiyogyakarta.ac.id,Baik,2029-07-10,Masih Berlaku
 Universitas Al-Muslim,Ilmu Lingkungan,S1,13,7472/SK/BAN-PT/Ak.P/S/IX/2025,2025,s1ilmulingkungan@universitasalmuslim.ac.id,Baik,2027-09-02,Masih Berlaku
@@ -624,18 +677,20 @@ Universitas Caritas Indonesia,Ilmu Lingkungan,S1,14,5782/SK/BAN-PT/Ak.P/S/IX/202
 Universitas Diponegoro,Ilmu Lingkungan,S2,PTN,7476/SK/BAN-PT/Ak.Ppj/M/IX/2025,2025,s2ilmulingkungan@universitasdiponegoro.ac.id,Unggul,2030-09-05,Masih Berlaku
 Universitas Diponegoro,Ilmu Lingkungan,S3,PTN,518/SK/BAN-PT/Ak.Ppj/D/II/2023,2023,s3ilmulingkungan@universitasdiponegoro.ac.id,A,2028-02-21,Masih Berlaku
 Universitas Dumoga Kotamobagu,Ilmu Lingkungan,S1,16,7303/SK/BAN-PT/Ak.P/S/VIII/2025,2025,s1ilmulingkungan@universitasdumogakotamobagu.ac.id,Baik,2027-08-13,Masih Berlaku
-Universitas Gadjah Mada,Ilmu Lingkungan,S3,PTN,6881/SK/BAN-PT/Ak.Ppj/S3/VII/2025,2025,s3doktorilmulingkungan@universitasgadjahmada.ac.id,Unggul,2030-06-29,Masih Berlaku
-Universitas Gadjah Mada,Ilmu Lingkungan,S2,PTN,2848/SK/BAN-PT/AK-ISK/M/V/2022,2022,s2magisterilmulingkungan@universitasgadjahmada.ac.id,Unggul,2026-09-30,123 hari lagi kadaluarsa
-Universitas Halu Oleo,Ilmu Lingkungan,S1,PTN,7500/SK/BAN-PT/Ak.S/S/IX/2025,2026,s1ilmulingkungan@universitashaluoleo.ac.id,Baik Sekali,2031-05-18,Masih Berlaku
+Universitas Gadjah Mada,Doktor Ilmu Lingkungan,S3,PTN,6881/SK/BAN-PT/Ak.Ppj/S3/VII/2025,2025,s3doktorilmulingkungan@universitasgadjahmada.ac.id,Unggul,2030-06-29,Masih Berlaku
+Universitas Gadjah Mada,Magister Ilmu Lingkungan,S2,PTN,2848/SK/BAN-PT/AK-ISK/M/V/2022,2022,s2magisterilmulingkungan@universitasgadjahmada.ac.id,Unggul,2026-09-30,Masih Berlaku
+Universitas Halu Oleo,Ilmu Lingkungan,S1,PTN,7500/SK/BAN-PT/Ak.S/S/IX/2025,2025,s1ilmulingkungan@universitashaluoleo.ac.id,Baik Sekali,-,Masih Berlaku
 Universitas Hasanuddin,Ilmu Lingkungan,S3,PTN,7128/SK/BAN-PT/Ak/S3/VIII/2025,2025,s3ilmulingkungan@universitashasanuddin.ac.id,Baik Sekali,2030-08-05,Masih Berlaku
-Universitas Ibn Khaldun,Ilmu Lingkungan,S1,4,361/SK/BAN-PT/Ak.P/S/III/2025,2025,s1ilmulingkungan@universitasibnkhaldun.ac.id,Baik,2030-12-16,Masih Berlaku
+Universitas Ibn Khaldun,Ilmu Lingkungan,S1,4,361/SK/BAN-PT/Ak.P/S/III/2025,2025,s1ilmulingkungan@universitasibnkhaldun.ac.id,Baik,2027-03-04,Masih Berlaku
 Universitas Indonesia,Ilmu Lingkungan,S2,PTN,6763/SK/BAN-PT/Ak.Ppj/M/VI/2025,2025,s2ilmulingkungan@universitasindonesia.ac.id,Unggul,2030-06-29,Masih Berlaku
-Universitas Indonesia,Ilmu Lingkungan,S3,PTN,1772/SK/BAN-PT/Ak.KP/D/V/2023,2025,s3ilmulingkungan@universitasindonesia.ac.id,Unggul,2030-12-31,Masih Berlaku
+Universitas Indonesia,Ilmu Lingkungan,S3,PTN,1772/SK/BAN-PT/Ak.KP/D/V/2023,2023,s3ilmulingkungan@universitasindonesia.ac.id,Unggul,2025-12-30,20 hari lagi kadaluarsa
 Universitas Islam Negeri Antasari Banjarmasin,Ilmu Lingkungan,S1,PTAN,7171/SK/BAN-PT/Ak.P/2.0/S1/IX/2025,2025,s1ilmulingkungan@universitasislamnegeriantasaribanjarmasin.ac.id,Terakreditasi Sementara,2030-09-09,Masih Berlaku
+Universitas Islam Negeri Profesor Kiai Haji Saifuddin Zuhri Purwokerto,Ilmu Lingkungan,S1,PTAN,962/SK/BAN-PT/Ak.P/S/III/2024,2024,s1ilmulingkungan@universitasislamnegeriprofesorkiaihajisaifuddinzuhripurwokerto.ac.id,Baik,2026-03-19,99 hari lagi kadaluarsa
+Universitas Islam Negeri Raden Mas Said Surakarta,Ilmu Lingkungan,S1,PTAN,475/SK/BAN-PT/Ak.P/S/II/2024,2024,s1ilmulingkungan@universitasislamnegeriradenmassaidsurakarta.ac.id,Baik,2026-02-21,73 hari lagi kadaluarsa
 Universitas Ivet,Ilmu Lingkungan,S1,6,1335/SK/BAN-PT/Akred/S/III/2022,2022,s1ilmulingkungan@universitasivet.ac.id,Baik,2027-03-01,Masih Berlaku
 Universitas Jambi,Ilmu Lingkungan,S2,PTN,13752/SK/BAN-PT/Ak-PPJ/M/XII/2021,2021,s2ilmulingkungan@universitasjambi.ac.id,B,2027-01-11,Masih Berlaku
 Universitas Jenderal Soedirman,Ilmu Lingkungan,S2,PTN,3775/SK/BAN-PT/Akred/M/VI/2022,2022,s2ilmulingkungan@universitasjenderalsoedirman.ac.id,Baik Sekali,2027-06-21,Masih Berlaku
-Universitas Katolik Soegijapranata,Ilmu Lingkungan,S3,6,8945/SK/BAN-PT/Akred/D/VI/2021,2021,s3ilmulingkungan@universitaskatoliksoegijapranata.ac.id,Baik,2026-06-22,23 hari lagi kadaluarsa
+Universitas Katolik Soegijapranata,Ilmu Lingkungan,S3,6,8945/SK/BAN-PT/Akred/D/VI/2021,2021,s3ilmulingkungan@universitaskatoliksoegijapranata.ac.id,Baik,2026-06-22,Masih Berlaku
 Universitas Kuningan,Ilmu Lingkungan,S1,4,4126/SK/BAN-PT/Akred/S/VII/2022,2022,s1ilmulingkungan@universitaskuningan.ac.id,Baik,2027-07-05,Masih Berlaku
 Universitas Lambung Mangkurat,Ilmu Lingkungan,S1,PTN,2401/SK/BAN-PT/Ak.P/S1/IV/2025,2025,s1ilmulingkungan@universitaslambungmangkurat.ac.id,Terakreditasi Sementara,2030-04-14,Masih Berlaku
 Universitas Lambung Mangkurat,Ilmu Lingkungan,S3,PTN,601/SK/BAN-PT/Ak/D/II/2024,2024,s3ilmulingkungan@universitaslambungmangkurat.ac.id,Baik Sekali,2029-02-27,Masih Berlaku
@@ -647,32 +702,33 @@ Universitas Mataram,Ilmu Lingkungan,S1,PTN,3467/SK/BAN-PT/Akred/S/VI/2022,2022,s
 Universitas Muhammadiyah Madiun,Ilmu Lingkungan,S1,7,2103/SK/BAN-PT/Ak/S/VI/2023,2023,s1ilmulingkungan@universitasmuhammadiyahmadiun.ac.id,Baik,2028-06-06,Masih Berlaku
 Universitas Muhammadiyah Mataram,Ilmu Lingkungan,S2,8,696/SK/BAN-PT/Ak/M/III/2024,2024,s2ilmulingkungan@universitasmuhammadiyahmataram.ac.id,Baik Sekali,2029-03-05,Masih Berlaku
 Universitas Muhammadiyah Papua,Ilmu Lingkungan,S1,14,6326/SK/BAN-PT/Ak/S/V/2025,2025,s1ilmulingkungan@universitasmuhammadiyahpapua.ac.id,Baik,2030-05-06,Masih Berlaku
-Universitas Mulawarman,Ilmu Lingkungan,S1,PTN,6953/SK/BAN-PT/Ak.S/S1/VII/2025,2026,s1ilmulingkungan@universitasmulawarman.ac.id,Baik,2031-05-12,Masih Berlaku
+Universitas Mulawarman,Ilmu Lingkungan,S1,PTN,6953/SK/BAN-PT/Ak.S/S1/VII/2025,2025,s1ilmulingkungan@universitasmulawarman.ac.id,Baik,-,Masih Berlaku
 Universitas Mulawarman,Ilmu Lingkungan,S3,PTN,4207/SK/BAN-PT/Ak/D/X/2023,2023,s3ilmulingkungan@universitasmulawarman.ac.id,Baik Sekali,2028-10-17,Masih Berlaku
-Universitas Mulawarman,Ilmu Lingkungan,S2,PTN,447/SK/BAN-PT/Ak-PPJ/M/I/2022,2022,s2ilmulingkungan@universitasmulawarman.ac.id,B,2026-08-05,67 hari lagi kadaluarsa
+Universitas Mulawarman,Ilmu Lingkungan,S2,PTN,447/SK/BAN-PT/Ak-PPJ/M/I/2022,2022,s2ilmulingkungan@universitasmulawarman.ac.id,B,2026-08-05,Masih Berlaku
 Universitas Musi Rawas,Ilmu Lingkungan,S2,2,342/SK/BAN-PT/Ak/M/III/2025,2025,s2ilmulingkungan@universitasmusirawas.ac.id,Baik,2030-03-04,Masih Berlaku
 Universitas Musi Rawas,Ilmu Lingkungan,S1,2,7762/SK/BAN-PT/Ak/S/X/2025,2025,s1ilmulingkungan@universitasmusirawas.ac.id,Baik,2030-10-01,Masih Berlaku
-Universitas Negeri Gorontalo,Ilmu Lingkungan,S1,PTN,851/SK/BAN-PT/Ak.P/S/III/2024,2026,s1ilmulingkungan@universitasnegerigorontalo.ac.id,Baik,2031-05-12,Masih Berlaku
+Universitas Negeri Gorontalo,Ilmu Lingkungan,S1,PTN,851/SK/BAN-PT/Ak.P/S/III/2024,2024,s1ilmulingkungan@universitasnegerigorontalo.ac.id,Baik,2026-03-13,93 hari lagi kadaluarsa
 Universitas Negeri Gorontalo,Ilmu Lingkungan,S3,PTN,444/SK/BAN-PT/Ak.P/D/II/2024,2024,s3ilmulingkungan@universitasnegerigorontalo.ac.id,Terakreditasi Sementara,2029-02-20,Masih Berlaku
 Universitas Negeri Manado,Ilmu Lingkungan,S1,PTN,6579/SK/BAN-PT/Ak.P/S/XI/2024,2024,s1ilmulingkungan@universitasnegerimanado.ac.id,Terakreditasi Sementara,2029-11-05,Masih Berlaku
 Universitas Negeri Padang,Ilmu Lingkungan,S1,PTN,6132/SK/BAN-PT/Ak.P/S/III/2025,2025,s1ilmulingkungan@universitasnegeripadang.ac.id,Terakreditasi Sementara,2030-03-25,Masih Berlaku
-Universitas Negeri Padang,Ilmu Lingkungan,S3,PTN,7805/SK/BAN-PT/Ak.S/D/X/2025,2025,s3ilmulingkungan@universitasnegeripadang.ac.id,B,9999-01-01,Masih Berlaku
+Universitas Negeri Padang,Ilmu Lingkungan,S3,PTN,7805/SK/BAN-PT/Ak.S/D/X/2025,2025,s3ilmulingkungan@universitasnegeripadang.ac.id,B,-,Masih Berlaku
 Universitas Negeri Padang,Ilmu Lingkungan,S2,PTN,5153/SK/BAN-PT/Ak.Ppj/M/VII/2024,2024,s2ilmulingkungan@universitasnegeripadang.ac.id,A,2029-07-31,Masih Berlaku
 Universitas Negeri Semarang,Ilmu Lingkungan,S1,PTN,1085/SK/BAN-PT/Ak/S/III/2023,2023,s1ilmulingkungan@universitasnegerisemarang.ac.id,Baik,2028-03-28,Masih Berlaku
-Universitas Negeri Yogyakarta,Ilmu Lingkungan,S2,PTN,7012/SK/BAN-PT/Ak.P/S2/VII/2025,2026,s2ilmulingkungan@universitasnegeriyogyakarta.ac.id,Baik,2031-04-28,Masih Berlaku
+Universitas Negeri Yogyakarta,Ilmu Lingkungan,S2,PTN,7012/SK/BAN-PT/Ak.P/S2/VII/2025,2025,s2ilmulingkungan@universitasnegeriyogyakarta.ac.id,Baik,2027-07-08,Masih Berlaku
 Universitas Nusa Cendana,Ilmu Lingkungan,S3,PTN,6122/SK/BAN-PT/Ak.P/D/X/2024,2024,s3ilmulingkungan@universitasnusacendana.ac.id,Terakreditasi Sementara,2029-10-03,Masih Berlaku
 Universitas Padjadjaran,Ilmu Lingkungan,S3,PTN,192/SK/BAN-PT/Ak.Ppj/D/I/2023,2023,s3ilmulingkungan@universitaspadjadjaran.ac.id,B,2027-08-02,Masih Berlaku
 Universitas Padjadjaran,Ilmu Lingkungan,S2,PTN,1754/SK/BAN-PT/Ak.Ppj/M/V/2023,2023,s2ilmulingkungan@universitaspadjadjaran.ac.id,A,2028-05-23,Masih Berlaku
-Universitas Palangka Raya,Ilmu Lingkungan,S3,PTN,7317/SK/BAN-PT/Ak.S/D/VIII/2025,2025,s3ilmulingkungan@universitaspalangkaraya.ac.id,B,9999-01-01,Masih Berlaku
+Universitas Palangka Raya,Ilmu Lingkungan,S3,PTN,7317/SK/BAN-PT/Ak.S/D/VIII/2025,2025,s3ilmulingkungan@universitaspalangkaraya.ac.id,B,-,Masih Berlaku
 Universitas Papua,Ilmu Lingkungan,S3,PTN,1155/SK/BAN-PT/Akred/D/II/2022,2022,s3ilmulingkungan@universitaspapua.ac.id,Baik,2027-02-22,Masih Berlaku
-Universitas Pembangunan Nasional Veteran Jawa Timur,Ilmu Lingkungan,S2,PTN,8119/SK/BAN-PT/Ak.S/M/X/2025,2025,s2ilmulingkungan@universitaspembangunannasionalveteranjawatimur.ac.id,Baik,9999-01-01,Masih Berlaku
+Universitas Pembangunan Nasional Veteran Jawa Timur,Ilmu Lingkungan,S2,PTN,8119/SK/BAN-PT/Ak.S/M/X/2025,2025,s2ilmulingkungan@universitaspembangunannasionalveteranjawatimur.ac.id,Baik,-,Masih Berlaku
 Universitas Persatuan Islam,Ilmu Lingkungan,S1,4,361/SK/BAN-PT/Ak/S/II/2024,2024,s1ilmulingkungan@universitaspersatuanislam.ac.id,Baik,2029-02-06,Masih Berlaku
 Universitas Riau,Ilmu Lingkungan,S2,PTN,1167/SK/BAN-PT/Ak.Ppj/M/IV/2024,2024,s2ilmulingkungan@universitasriau.ac.id,B,2029-04-17,Masih Berlaku
+Universitas Riau,Ilmu Lingkungan,S3,PTN,3219/SK/BAN-PT/Ak-PPJ/D/V/2021,2021,s3ilmulingkungan@universitasriau.ac.id,B,2026-05-21,162 hari lagi kadaluarsa
 Universitas Sebelas Maret,Ilmu Lingkungan,S2,PTN,7431/SK/BAN-PT/Ak/M/IX/2025,2025,s2ilmulingkungan@universitassebelasmaret.ac.id,Unggul,2030-09-02,Masih Berlaku
 Universitas Sebelas Maret,Ilmu Lingkungan,S3,PTN,4125/SK/BAN-PT/Ak/D/V/2024,2024,s3ilmulingkungan@universitassebelasmaret.ac.id,Unggul,2029-05-14,Masih Berlaku
-Universitas Sebelas Maret,Ilmu Lingkungan,S1,PTN,11449/SK/BAN-PT/Akred/S/X/2021,2021,s1ilmulingkungan@universitassebelasmaret.ac.id,Baik,2026-10-06,129 hari lagi kadaluarsa
+Universitas Sebelas Maret,Ilmu Lingkungan,S1,PTN,11449/SK/BAN-PT/Akred/S/X/2021,2021,s1ilmulingkungan@universitassebelasmaret.ac.id,Baik,2026-10-06,Masih Berlaku
 Universitas Serasan,Ilmu Lingkungan,S1,2,8106/SK/BAN-PT/Ak.P/S/X/2025,2025,s1ilmulingkungan@universitasserasan.ac.id,Baik,2027-10-28,Masih Berlaku
-Universitas Sriwijaya,Ilmu Lingkungan,S3,PTN,12453/SK/BAN-PT/Akred/D/XI/2021,2021,s3ilmulingkungan@universitassriwijaya.ac.id,Baik Sekali,2026-11-17,171 hari lagi kadaluarsa
+Universitas Sriwijaya,Ilmu Lingkungan,S3,PTN,12453/SK/BAN-PT/Akred/D/XI/2021,2021,s3ilmulingkungan@universitassriwijaya.ac.id,Baik Sekali,2026-11-17,Masih Berlaku
 Universitas Tanjungpura,Ilmu Lingkungan,S2,PTN,917/SK/BAN-PT/Ak/M/III/2024,2024,s2ilmulingkungan@universitastanjungpura.ac.id,Baik Sekali,2029-03-19,Masih Berlaku
 Universitas Udayana,Ilmu Lingkungan,S2,PTN,6332/SK/BAN-PT/Ak.KP/M/V/2025,2025,s2ilmulingkungan@universitasudayana.ac.id,Unggul,2027-07-26,Masih Berlaku
 Universitas Udayana,Ilmu Lingkungan,S3,PTN,7299/SK/BAN-PT/Ak.Ppj/D/VIII/2025,2025,s3ilmulingkungan@universitasudayana.ac.id,B,2030-08-05,Masih Berlaku
@@ -680,50 +736,66 @@ Universitas Wira Bhakti,Ilmu Lingkungan,S1,9,69/SK/BAN-PT/Ak.P/S/I/2025,2025,s1i
 Institut Pertanian Bogor,Ilmu Pengelolaan Sumberdaya Alam Dan Lingkungan,S2,PTN,6350/SK/BAN-PT/Ak.KP/M/V/2025,2025,s2ilmupengelolaansumberdayaalamdanlingkungan@institutpertanianbogor.ac.id,Unggul,2028-08-17,Masih Berlaku
 Institut Pertanian Bogor,Manajemen Sumberdaya Perairan,S1,PTN,6484/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1manajemensumberdayaperairan@institutpertanianbogor.ac.id,Unggul,2028-04-04,Masih Berlaku
 Institut Pertanian Bogor,Pengelolaan Sumberdaya Pesisir Dan Lautan,S3,PTN,6652/SK/BAN-PT/Ak.KP/D/V/2025,2025,s3pengelolaansumberdayapesisirdanlautan@institutpertanianbogor.ac.id,Unggul,2030-03-30,Masih Berlaku
+Institut Pertanian Bogor,Ekonomi Sumberdaya Dan Lingkungan,S2,PTN,2743/DE/A.5/AR.10/VIII/2025,2025,s2ekonomisumberdayadanlingkungan@institutpertanianbogor.ac.id,Unggul,2030-08-25,Masih Berlaku
 Institut Pertanian Bogor,Konservasi Sumberdaya Hutan Dan Ekowisata,S1,PTN,6722/SK/BAN-PT/Ak.KP/S/XI/2024,2024,s1konservasisumberdayahutandanekowisata@institutpertanianbogor.ac.id,Unggul,2027-01-11,Masih Berlaku
-Institut Pertanian Bogor,Pengelolaan Sumberdaya Pesisir Dan Lautan,S2,PTN,6382/SK/BAN-PT/Ak.Ppj/M/X/2024,2025,s2pengelolaansumberdayapesisirdanlautan@institutpertanianbogor.ac.id,Unggul,2029-10-31,Masih Berlaku
+Institut Pertanian Bogor,Pengelolaan Sumberdaya Pesisir Dan Lautan,S2,PTN,6382/SK/BAN-PT/Ak.Ppj/M/X/2024,2024,s2pengelolaansumberdayapesisirdanlautan@institutpertanianbogor.ac.id,A,2029-10-31,Masih Berlaku
 Institut Pertanian Bogor,Manajemen Sumberdaya Lahan,S1,PTN,1141/SK/BAN-PT/Ak.KP/S/III/2023,2023,s1manajemensumberdayalahan@institutpertanianbogor.ac.id,Unggul,2027-07-05,Masih Berlaku
 Institut Pertanian Bogor,Pengelolaan Sumberdaya Perairan,S2,PTN,2498/SK/BAN-PT/Ak.KP/M/VI/2023,2023,s2pengelolaansumberdayaperairan@institutpertanianbogor.ac.id,Unggul,2027-09-27,Masih Berlaku
 Institut Pertanian Bogor,Pengelolaan Sumberdaya Perairan,S3,PTN,4297/SK/BAN-PT/Ak.KP/D/X/2023,2023,s3pengelolaansumberdayaperairan@institutpertanianbogor.ac.id,Unggul,2027-12-28,Masih Berlaku
+Institut Pertanian Bogor,Ekonomi Sumberdaya Kelautan Tropika,S2,PTN,2507/SK/BAN-PT/Ak-PPJ/M/IV/2022,2022,s2ekonomisumberdayakelautantropika@institutpertanianbogor.ac.id,A,2027-04-19,Masih Berlaku
 Institut Pertanian Bogor,Ilmu Pengelolaan Sumberdaya Alam Dan Lingkungan,S3,PTN,5309/SK/BAN-PT/Ak.KP/D/VIII/2022,2022,s3ilmupengelolaansumberdayaalamdanlingkungan@institutpertanianbogor.ac.id,Unggul,2027-08-16,Masih Berlaku
-Institut Teknologi Dan Bisnis Maritim Balik Diwa,Pemanfaatan Sumberdaya Perairan,S1,9,6095/SK/BAN-PT/Ak-PNB/S/IX/2022,2026,s1pemanfaatansumberdayaperairan@institutteknologidanbisnismaritimbalikdiwa.ac.id,B,2030-12-14,Masih Berlaku
+Institut Pertanian Bogor,Ekonomi Sumberdaya Dan Lingkungan,S1,PTN,11543/SK/BAN-PT/AK-ISK/S/X/2021,2021,s1ekonomisumberdayadanlingkungan@institutpertanianbogor.ac.id,Unggul,2026-05-21,162 hari lagi kadaluarsa
+Institut Teknologi Bandung,Pengelolaan Sumberdaya Air,S2,PTN,9749/SK/BAN-PT/AK-ISK/M/VII/2021,2021,s2pengelolaansumberdayaair@institutteknologibandung.ac.id,Unggul,2026-07-22,Masih Berlaku
+Institut Teknologi Dan Bisnis Maritim Balik Diwa,Pemanfaatan Sumberdaya Perairan,S1,9,6095/SK/BAN-PT/Ak-PNB/S/IX/2022,2021,s1pemanfaatansumberdayaperairan@institutteknologidanbisnismaritimbalikdiwa.ac.id,B,2025-12-13,3 hari lagi kadaluarsa
+Politeknik Ahli Usaha Perikanan,Pemanfaatan Sumberdaya Perikanan,S2 Terapan,PTKL,7002/SK/BAN-PT/Ak/MTr/XII/2024,2024,s2terapanpemanfaatansumberdayaperikanan@politeknikahliusahaperikanan.ac.id,Unggul,2029-12-11,Masih Berlaku
+Politeknik Ahli Usaha Perikanan,Teknologi Pengelolaan Sumberdaya Perairan,D-IV,PTKL,1200/SK/BAN-PT/Akred/ST/III/2021,2021,divteknologipengelolaansumberdayaperairan@politeknikahliusahaperikanan.ac.id,Baik,2026-03-02,82 hari lagi kadaluarsa
+Politeknik Negeri Ambon,"Manajemen Sumberdaya Perairan, K. Banda Naira",D-IV,PTN,9080/SK/BAN-PT/Ak/STr/XI/2022,2022,divmanajemensumberdayaperairankbandanaira@politekniknegeriambon.ac.id,Baik,2027-11-08,Masih Berlaku
 Politeknik Negeri Lampung,Teknik Sumberdaya Lahan Dan Lingkungan,D-III,PTN,0344/SK/LAM Teknik/VD3/VIII/2024,2024,diiitekniksumberdayalahandanlingkungan@politekniknegerilampung.ac.id,Baik Sekali,2029-08-20,Masih Berlaku
-Universitas Al-Muslim,Pengelolaan Sumberdaya Alam Dan Lingkungan,S2,13,6950/SK/BAN-PT/Ak.P/M/XII/2024,2025,s2pengelolaansumberdayaalamdanlingkungan@universitasalmuslim.ac.id,Baik Sekali,2030-12-16,Masih Berlaku
+Sekolah Tinggi Teknologi Kelautan Balik Diwa,Pemanfaatan Sumberdaya Perairan,S1,9,8284/SK/BAN-PT/Ak-PPJ/S/XII/2020,2020,s1pemanfaatansumberdayaperairan@sekolahtinggiteknologikelautanbalikdiwa.ac.id,B,2025-12-13,3 hari lagi kadaluarsa
+Universitas Al-Muslim,Pengelolaan Sumberdaya Alam Dan Lingkungan,S2,13,6950/SK/BAN-PT/Ak.P/M/XII/2024,2024,s2pengelolaansumberdayaalamdanlingkungan@universitasalmuslim.ac.id,Baik,2026-12-02,Masih Berlaku
 Universitas Brawijaya,Pengelolaan Sumberdaya Lingkungan Dan Pembangunan,S2,PTN,10371/SK/BAN-PT/Ak.Ppj/M/XII/2022,2022,s2pengelolaansumberdayalingkungandanpembangunan@universitasbrawijaya.ac.id,Unggul,2027-12-28,Masih Berlaku
 Universitas Cenderawasih,Pengelolaan Sumberdaya Alam Dan Lingkungan,S2,PTN,3054/SK/BAN-PT/Ak-PPJ/M/V/2022,2022,s2pengelolaansumberdayaalamdanlingkungan@universitascenderawasih.ac.id,B,2027-05-24,Masih Berlaku
 Universitas Diponegoro,Manajemen Sumberdaya Perairan,S3,PTN,4008/SK/BAN-PT/Ak.Ppj/D/V/2024,2024,s3manajemensumberdayaperairan@universitasdiponegoro.ac.id,Unggul,2029-05-16,Masih Berlaku
 Universitas Diponegoro,Manajemen Sumberdaya Perairan,S2,PTN,3731/SK/BAN-PT/Ak.KP/M/IV/2024,2024,s2manajemensumberdayaperairan@universitasdiponegoro.ac.id,Unggul,2029-03-06,Masih Berlaku
+Universitas Gadjah Mada,Manajemen Sumberdaya Akuatik,S1,PTN,6600/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1manajemensumberdayaakuatik@universitasgadjahmada.ac.id,Unggul,2029-06-13,Masih Berlaku
 Universitas Halmahera,Manajemen Sumberdaya Perairan,S1,12,3121/SK/BAN-PT/Ak/S/VIII/2023,2023,s1manajemensumberdayaperairan@universitashalmahera.ac.id,Baik,2028-08-08,Masih Berlaku
 Universitas Hasanuddin,Pengelolaan Sumberdaya Pesisir Terpadu,S2,PTN,1546/SK/BAN-PT/Akred/M/III/2022,2022,s2pengelolaansumberdayapesisirterpadu@universitashasanuddin.ac.id,Baik Sekali,2027-03-08,Masih Berlaku
 Universitas HKBP Nommensen Pematangsiantar,Manajemen Pengelolaan Sumberdaya Perairan,S1,1,3466/SK/BAN-PT/Akred/S/VI/2022,2022,s1manajemenpengelolaansumberdayaperairan@universitashkbpnommensenpematangsiantar.ac.id,Baik,2027-06-07,Masih Berlaku
+Universitas Jambi,Pemanfaatan Sumberdaya Perikanan,S1,PTN,7845/SK/BAN-PT/Ak/S/X/2025,2025,s1pemanfaatansumberdayaperikanan@universitasjambi.ac.id,Unggul,2030-10-07,Masih Berlaku
 Universitas Jember,Pengelolaan Sumberdaya Air Pertanian,S2,PTN,9676/SK/BAN-PT/Ak/M/XI/2022,2022,s2pengelolaansumberdayaairpertanian@universitasjember.ac.id,Baik Sekali,2027-11-22,Masih Berlaku
-Universitas Lambung Mangkurat,Pengelolaan Sumberdaya Alam & Lingkungan,S2,PTN,2835/SK/BAN-PT/Akred/M/V/2021,2026,s2pengelolaansumberdayaalamlingkungan@universitaslambungmangkurat.ac.id,Baik Sekali,2031-05-12,Masih Berlaku
+Universitas Khairun,Pemanfaatan Sumberdaya Perikanan,S1,PTN,8716/SK/BAN-PT/Ak-PPJ/S/VI/2021,2021,s1pemanfaatansumberdayaperikanan@universitaskhairun.ac.id,B,2026-06-11,Masih Berlaku
+Universitas Lambung Mangkurat,Pengelolaan Sumberdaya Alam & Lingkungan,S2,PTN,2835/SK/BAN-PT/Akred/M/V/2021,2021,s2pengelolaansumberdayaalamlingkungan@universitaslambungmangkurat.ac.id,Baik Sekali,2026-05-11,152 hari lagi kadaluarsa
+Universitas Lampung,Sumberdaya Akuatik,S1,PTN,6544/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1sumberdayaakuatik@universitaslampung.ac.id,Baik Sekali,2029-08-14,Masih Berlaku
 Universitas Mataram,Pengelolaan Sumberdaya Alam Dan Lingkungan,S2,PTN,6757/SK/BAN-PT/Ak.P/M/VI/2025,2025,s2pengelolaansumberdayaalamdanlingkungan@universitasmataram.ac.id,Baik,2027-06-04,Masih Berlaku
+Universitas Muhammadiyah Kendari,Pemanfaatan Sumberdaya Perikanan,S1,9,9027/SK/BAN-PT/Ak-PPJ/S/VI/2021,2021,s1pemanfaatansumberdayaperikanan@universitasmuhammadiyahkendari.ac.id,B,2026-06-24,Masih Berlaku
 Universitas Mulawarman,Pengelolaan Sumberdaya Perikanan,S1,PTN,621/SK/BAN-PT/Ak.Ppj/S/II/2024,2024,s1pengelolaansumberdayaperikanan@universitasmulawarman.ac.id,A,2029-02-27,Masih Berlaku
 Universitas Musamus Merauke,Manajemen Sumberdaya Perairan,S1,PTN,371/SK/BAN-PT/Ak/S/II/2024,2024,s1manajemensumberdayaperairan@universitasmusamusmerauke.ac.id,Baik Sekali,2029-02-13,Masih Berlaku
-Universitas Nusa Nipa,Manajemen Sumberdaya Perairan,S1,15,1467/SK/BAN-PT/Akred/S/III/2021,2026,s1manajemensumberdayaperairan@universitasnusanipa.ac.id,Terakreditasi,2026-09-16,109 hari lagi kadaluarsa
+Universitas Nusa Nipa,Manajemen Sumberdaya Perairan,S1,15,1467/SK/BAN-PT/Akred/S/III/2021,2021,s1manajemensumberdayaperairan@universitasnusanipa.ac.id,Baik,2026-03-16,96 hari lagi kadaluarsa
 Universitas Palangka Raya,Pengelolaan Sumberdaya Alam & Lingkungan,S2,PTN,3893/SK/BAN-PT/Ak.Ppj/M/IX/2023,2023,s2pengelolaansumberdayaalamlingkungan@universitaspalangkaraya.ac.id,Baik Sekali,2027-11-15,Masih Berlaku
 Universitas Panca Bhakti,Pengelolaan Sumberdaya Alam Dan Lingkungan,S2,11,6125/SK/BAN-PT/Ak.P/M/X/2024,2024,s2pengelolaansumberdayaalamdanlingkungan@universitaspancabhakti.ac.id,Terakreditasi Sementara,2029-10-03,Masih Berlaku
-Universitas Papua,Konservasi Sumberdaya Hutan,D-III,PTN,11199/SK/BAN-PT/Akred/Dipl-III/IX/2021,2021,diiikonservasisumberdayahutan@universitaspapua.ac.id,Baik,2026-09-29,122 hari lagi kadaluarsa
+Universitas Papua,Konservasi Sumberdaya Hutan,D-III,PTN,11199/SK/BAN-PT/Akred/Dipl-III/IX/2021,2021,diiikonservasisumberdayahutan@universitaspapua.ac.id,Baik,2026-09-29,Masih Berlaku
 Universitas Pattimura,Manajemen Sumberdaya Kelautan Dan Pulau-pulau Kecil,S2,PTN,1170/SK/BAN-PT/Ak.Ppj/M/IV/2024,2024,s2manajemensumberdayakelautandanpulaupulaukecil@universitaspattimura.ac.id,B,2029-04-10,Masih Berlaku
-Universitas Sam Ratulangi,Pengelolaan Sumberdaya Pembangunan,S2,PTN,6580/SK/BAN-PT/Ak.S/M/V/2025,2025,s2pengelolaansumberdayapembangunan@universitassamratulangi.ac.id,B,9999-01-01,Masih Berlaku
+Universitas Sam Ratulangi,Pengelolaan Sumberdaya Pembangunan,S2,PTN,6580/SK/BAN-PT/Ak.S/M/V/2025,2025,s2pengelolaansumberdayapembangunan@universitassamratulangi.ac.id,B,-,Masih Berlaku
 Universitas Serambi Mekkah,Pengelolaan Sumberdaya Alam Dan Lingkungan,S2,13,45/SK/BAN-PT/Ak.P/M/I/2025,2025,s2pengelolaansumberdayaalamdanlingkungan@universitasserambimekkah.ac.id,Terakreditasi Sementara,2030-01-14,Masih Berlaku
 Universitas Sumatera Utara,Manajemen Sumberdaya Perairan Kampus Kabupaten Nias Utara,S1,PTN,4553/SK/BAN-PT/Ak/S/VI/2024,2024,s1manajemensumberdayaperairankampuskabupatenniasutara@universitassumaterautara.ac.id,Baik,2029-06-04,Masih Berlaku
-Universitas Syiah Kuala,Pengelolaan Sumberdaya Pesisir Terpadu,S2,PTN,7571/SK/BAN-PT/Ak.S/M/IX/2025,2026,s2pengelolaansumberdayapesisirterpadu@universitassyiahkuala.ac.id,Baik Sekali,2031-05-12,Masih Berlaku
-Universitas Tadulako,Konservasi Sumberdaya Hutan,D-III,PTN,10245/SK/BAN-PT/Ak.KP/D3/XII/2022,2022,diiikonservasisumberdayahutan@universitastadulako.ac.id,Baik,9999-01-01,Masih Berlaku
+Universitas Syiah Kuala,Pemanfaatan Sumberdaya Perikanan,S1,PTN,354/SK/BAN-PT/Ak.Ppj/S/III/2025,2025,s1pemanfaatansumberdayaperikanan@universitassyiahkuala.ac.id,B,2030-03-16,Masih Berlaku
+Universitas Syiah Kuala,Pengelolaan Sumberdaya Pesisir Terpadu,S2,PTN,7571/SK/BAN-PT/Ak.S/M/IX/2025,2025,s2pengelolaansumberdayapesisirterpadu@universitassyiahkuala.ac.id,B,-,Masih Berlaku
+Universitas Tadulako,Konservasi Sumberdaya Hutan,D-III,PTN,10245/SK/BAN-PT/Ak.KP/D3/XII/2022,2022,diiikonservasisumberdayahutan@universitastadulako.ac.id,Baik,-,Masih Berlaku
 Universitas Tanjungpura,Manajemen Sumberdaya Perairan,S1,PTN,6526/SK/BAN-PT/Ak.KP/S/V/2025,2025,s1manajemensumberdayaperairan@universitastanjungpura.ac.id,Baik Sekali,2029-03-13,Masih Berlaku
 Universitas Trunojoyo,Manajemen Sumberdaya Perairan,S1,PTN,2407/SK/BAN-PT/Ak/S/VI/2023,2023,s1manajemensumberdayaperairan@universitastrunojoyo.ac.id,Baik Sekali,2028-06-20,Masih Berlaku
 Universitas Udayana,Manajemen Sumberdaya Perairan,S1,PTN,10173/SK/BAN-PT/Ak/S/XII/2022,2022,s1manajemensumberdayaperairan@universitasudayana.ac.id,Baik Sekali,2027-12-06,Masih Berlaku
 Universitas Al-azhar Indonesia,Pengelolaan Sumber Daya Alam,S2,3,7772/SK/BAN-PT/Ak.P/M/X/2025,2025,s2pengelolaansumberdayaalam@universitasalazharindonesia.ac.id,Baik,2027-10-01,Masih Berlaku
-Universitas Andalas,Pengelolaan Sumber Daya Alam,S2,PTN,6579/SK/BAN-PT/Ak.S/M/V/2025,2025,s2pengelolaansumberdayaalam@universitasandalas.ac.id,B,9999-01-01,Masih Berlaku
+Universitas Andalas,Pengelolaan Sumber Daya Alam,S2,PTN,6579/SK/BAN-PT/Ak.S/M/V/2025,2025,s2pengelolaansumberdayaalam@universitasandalas.ac.id,B,-,Masih Berlaku
 Universitas Bengkulu,Pengelolaan Sumber Daya Alam,S3,PTN,8267/SK/BAN-PT/Ak/D/XI/2025,2025,s3pengelolaansumberdayaalam@universitasbengkulu.ac.id,Baik Sekali,2030-11-11,Masih Berlaku
+Universitas Bengkulu,Pengelolaan Sumber Daya Alam,S2,PTN,2405/SK/BAN-PT/Akred/M/IV/2021,2021,s2pengelolaansumberdayaalam@universitasbengkulu.ac.id,Baik Sekali,2026-04-27,138 hari lagi kadaluarsa
 Universitas Muhammadiyah Bangka Belitung,Konservasi Sumber Daya Alam,S1,2,4219/SK/BAN-PT/Ak/S/X/2023,2023,s1konservasisumberdayaalam@universitasmuhammadiyahbangkabelitung.ac.id,Baik,2028-10-17,Masih Berlaku
 Universitas Sumatera Utara,Pengelolaan Sumber Daya Alam Dan Lingkungan,S2,PTN,4650/SK/BAN-PT/Ak/M/VI/2024,2024,s2pengelolaansumberdayaalamdanlingkungan@universitassumaterautara.ac.id,Baik Sekali,2029-06-11,Masih Berlaku
-Universitas Syiah Kuala,Pengelolaan Sumber Daya Alam,S2,PTN,6373/SK/BAN-PT/Ak.S/M/V/2025,2025,s2pengelolaansumberdayaalam@universitassyiahkuala.ac.id,B,9999-01-01,Masih Berlaku
+Universitas Sumatera Utara,Pengelolaan Sumber Daya Alam Dan Lingkungan,S3,PTN,2419/SK/BAN-PT/Akred/D/IV/2021,2021,s3pengelolaansumberdayaalamdanlingkungan@universitassumaterautara.ac.id,Baik Sekali,2026-04-27,138 hari lagi kadaluarsa
+Universitas Syiah Kuala,Pengelolaan Sumber Daya Alam,S2,PTN,6373/SK/BAN-PT/Ak.S/M/V/2025,2025,s2pengelolaansumberdayaalam@universitassyiahkuala.ac.id,B,-,Masih Berlaku
 Universitas Teknologi Sumbawa,Konservasi Sumber Daya Alam,S1,8,175/SK/BAN-PT/Ak.P/S/II/2025,2025,s1konservasisumberdayaalam@universitasteknologisumbawa.ac.id,Baik,2027-02-04,Masih Berlaku
 Universitas Trunojoyo,Pengelolaan Sumber Daya Alam,S3,PTN,006/SK/BAN-PT/Ak.P/2.0/S3/X/2025,2025,s3pengelolaansumberdayaalam@universitastrunojoyo.ac.id,Terakreditasi Sementara,2030-10-06,Masih Berlaku
 Universitas Trunojoyo,Pengelolaan Sumber Daya Alam,S2,PTN,5223/SK/BAN-PT/Ak/M/VIII/2024,2024,s2pengelolaansumberdayaalam@universitastrunojoyo.ac.id,Baik Sekali,2029-08-06,Masih Berlaku
 Politeknik Pertanian Negeri Samarinda,Pengelolaan Lingkungan,D-III,PTN,13352/SK/BAN-PT/Akred/Dipl-III/XII/2021,2021,diiipengelolaanlingkungan@politeknikpertaniannegerisamarinda.ac.id,Baik,2026-12-15,Masih Berlaku
 Universitas Hasanuddin,Pengelolaan Lingkungan Hidup,S2,PTN,4127/SK/BAN-PT/Ak.Ppj/M/V/2024,2024,s2pengelolaanlingkunganhidup@universitashasanuddin.ac.id,Unggul,2029-05-29,Masih Berlaku
-Universitas Syiah Kuala,Pengelolaan Lingkungan,S2,PTN,7896/SK/BAN-PT/Ak.S/M/X/2025,2026,s2pengelolaanlingkungan@universitassyiahkuala.ac.id,Unggul,2031-05-12,Masih Berlaku
-Universitas Sriwijaya,Pengelolaan Lingkungan,S2,PTN,8707/SK/BAN-PT/Akred/M/VI/2021,2021,s2pengelolaanlingkungan@universitassriwijaya.ac.id,Baik Sekali,2026-06-15,16 hari lagi kadaluarsa
+Universitas Syiah Kuala,Pengelolaan Lingkungan,S2,PTN,7896/SK/BAN-PT/Ak.S/M/X/2025,2025,s2pengelolaanlingkungan@universitassyiahkuala.ac.id,B,-,Masih Berlaku
+Universitas Sriwijaya,Pengelolaan Lingkungan,S2,PTN,8707/SK/BAN-PT/Akred/M/VI/2021,2021,s2pengelolaanlingkungan@universitassriwijaya.ac.id,Baik Sekali,2026-06-15,Masih Berlaku

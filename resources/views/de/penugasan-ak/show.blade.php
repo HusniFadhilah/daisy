@@ -628,26 +628,32 @@
 
 @push('scripts')
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
         $('#userId').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            placeholder: '-- Pilih User --',
-            allowClear: true,
-            ajax: {
-                url: '{{ route("ajax.users.search") }}',
-                dataType: 'json',
-                delay: 250,
-                cache: true,
-                data: function (params) {
-                    return { q: params.term, page: params.page || 1 };
-                },
-                processResults: function (data, params) {
+            theme: 'bootstrap-5'
+            , width: '100%'
+            , placeholder: '-- Pilih User --'
+            , allowClear: true
+            , ajax: {
+                url: '{{ route("ajax.users.search") }}'
+                , dataType: 'json'
+                , delay: 250
+                , cache: true
+                , data: function(params) {
+                    return {
+                        q: params.term
+                        , page: params.page || 1
+                    };
+                }
+                , processResults: function(data, params) {
                     params.page = params.page || 1;
-                    return { results: data.results, pagination: data.pagination };
-                },
-            },
-        });
+                    return {
+                        results: data.results
+                        , pagination: data.pagination
+                    };
+                }
+            , }
+        , });
     });
 
     const csrfToken = '{{ csrf_token() }}';
@@ -887,16 +893,20 @@
         const useValidatorDokumen = document.getElementById('useValidatorDokumen');
         const useExisting = useValidatorDokumen ? useValidatorDokumen.checked : false;
         const userSelection = document.getElementById('userSelectionContainer');
-        const userIdSelect = document.getElementById('userId');
 
         if (useExisting && validatorDokumenId) {
             userSelection.style.display = 'none';
-            userIdSelect.value = validatorDokumenId;
-            userIdSelect.required = false;
+            // Select2 AJAX: inject option then set value
+            const $userId = $('#userId');
+            if ($userId.find('option[value="' + validatorDokumenId + '"]').length === 0) {
+                $userId.append(new Option(validatorDokumenName, validatorDokumenId, true, true));
+            }
+            $userId.val(validatorDokumenId).trigger('change');
+            document.getElementById('userId').required = false;
         } else {
             userSelection.style.display = 'flex';
-            userIdSelect.value = '';
-            userIdSelect.required = true;
+            $('#userId').val(null).trigger('change');
+            document.getElementById('userId').required = true;
         }
     }
 

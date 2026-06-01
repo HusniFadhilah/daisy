@@ -234,52 +234,16 @@ request()->routeIs('de.permohonan-banding*')
         @endforeach
 </ul>
 
-@if(in_array($authUser->role_selected,['super_admin','sekretariat']))
+@if(in_array($authUser->role_selected,['super_admin']))
 <!-- Monitoring BAN-PT -->
 <a href="{{ route('admin.monitoring-banpt.index') }}" class="nav-link {{ request()->routeIs('admin.monitoring-banpt*') ? 'active' : '' }}">
     <span class="menu-icon"><i class="bi bi-radar"></i></span>
     <span>Monitoring BAN-PT</span>
     @php $banptPendingCount = \App\Models\BanptAccreditationChange::where('status', 'pending')->count(); @endphp
     @if($banptPendingCount > 0)
-        <span class="badge bg-warning text-dark menu-badge">{{ $banptPendingCount }}</span>
+    <span class="badge bg-warning text-dark menu-badge">{{ $banptPendingCount }}</span>
     @endif
 </a>
-@endif
-
-@if(in_array($authUser->role_selected,['super_admin']))
-<!-- Pedoman AK -->
-<a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
-    <span class="menu-icon"><i class="bi bi-question-circle"></i></span>
-    <span>Pedoman AK</span>
-</a>
-
-<!-- Dokumen Adm. AL -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'dokumen-submenu')">
-    <span class="menu-icon"><i class="bi bi-folder"></i></span>
-    <span>Dokumen Adm. AL</span>
-</a>
-<ul class="submenu nav flex-column" id="dokumen-submenu">
-    <li>
-        <a href="{{ route('dokumen.panduan') }}" class="nav-link">
-            Panduan Asesmen
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('dokumen.instrumen') }}" class="nav-link">
-            Instrumen Akreditasi
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('dokumen.template') }}" class="nav-link">
-            Templat Penilaian
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('dokumen.surat') }}" class="nav-link">
-            Surat Tugas
-        </a>
-    </li>
-</ul>
 @endif
 
 @if(in_array($authUser->role_selected,['super_admin']))
@@ -342,4 +306,29 @@ request()->routeIs('de.permohonan-banding*')
         </a>
     </li>
 </ul>
+
+<!-- Profil & Pengaturan -->
+@if(in_array($authUser->role_selected,['super_admin']))
+<a href="#" class="nav-link {{ request()->routeIs('profile*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'profil-submenu')">
+    <span class="menu-icon">👤</span>
+    <span>Profil & Pengaturan</span>
+</a>
+<ul class="submenu nav flex-column" id="profil-submenu">
+    <li>
+        <a href="{{ route('profile') }}" class="nav-link">
+            Profil Saya
+        </a>
+    </li>
+    <li>
+        <a href="{{ route('profile.password') }}" class="nav-link">
+            Ubah Password
+        </a>
+    </li>
+    <li>
+        <a href="{{ route('settings') }}" class="nav-link">
+            Preferensi
+        </a>
+    </li>
+</ul>
+@endif
 @endif

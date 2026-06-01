@@ -2,13 +2,14 @@
 
 - PDDikti public API yang tersedia saat audit berada dalam mode limited/timeout, sehingga verifikasi massal PDDikti belum bisa diselesaikan otomatis.
 - Audit ini memakai daftar selisih dari `260526 - Database Prodi.xlsx` vs `data_akreditasi_lengkap.csv`, lalu mencari ulang kecocokan di BAN-PT Bianglala.
+- Prodi/riwayat BAN-PT dengan `Aktif = Tidak` tidak dihitung sebagai kandidat dan tidak dimasukkan ke hasil.
 - Jika sebuah gap ditemukan di BAN-PT, besar kemungkinan datanya juga perlu dicek ulang di PDDikti saat endpoint PDDikti kembali stabil.
 
 ## Ringkasan Gap
 
-- Kombinasi prodi/jenjang yang kurang: 52
-- Total kekurangan berdasarkan detail cakupan: 97
-- Temuan BAN-PT kandidat: 141
+- Kombinasi prodi/jenjang yang kurang: 61
+- Total kekurangan berdasarkan detail cakupan: 132
+- Temuan BAN-PT kandidat: 125
 
 ## Extra Di Database Prodi Namun Bukan Cakupan
 
@@ -22,7 +23,7 @@
 
 | Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
 | --- | --- | --- | --- | --- |
-| Institut Pertanian Bogor | A | 2013-11-21 | Tidak | 54211 - S1 Arsitektur Lansekap |
+| Institut Pertanian Bogor | Unggul | 2029-07-03 | Ya | 54292 - S1 Arsitektur Lansekap |
 | Universitas Ichsan Gorontalo | Baik | 2027-10-25 | Ya | 23201 - S1 Arsitektur |
 | Universitas Komputer Indonesia | Baik Sekali | 2030-10-28 | Ya | 23201 - S1 Arsitektur |
 | Universitas Tribhuwana Tungga Dewi | Unggul | 2030-04-29 | Ya | 54211 - S1 Arsitektur Lansekap |
@@ -32,7 +33,6 @@
 | Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
 | --- | --- | --- | --- | --- |
 | Institut Pertanian Bogor | Unggul | 2029-01-17 | Ya | 54109 - S2 Arsitektur Lansekap |
-| Sekolah Tinggi Teknik Malang | B | 2020-01-09 | Tidak | 23101 - S2 Arsitektur |
 | Universitas Brawijaya | Unggul | 2028-03-28 | Ya | 23101 - S2 Arsitektur Lingkungan Binaan |
 | Universitas Kebangsaan Republik Indonesia | Terakreditasi Pertama | 2027-12-10 | Ya | 23101 - S2 Arsitektur |
 
@@ -84,20 +84,17 @@
 | Sekolah Tinggi Teknologi Cirebon | Baik | 2028-07-11 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Borobudur | Baik Sekali | 2031-03-10 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Brawijaya | Unggul | 2030-03-16 | Ya | 23201 - S1 Teknik Arsitektur |
-| Universitas Budi Luhur | Baik Sekali | 2026-04-29 | Tidak | 23201 - S1 Teknik Arsitektur |
 | Universitas Bung Karno | B | 2028-04-04 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Dwijendra | Baik Sekali | 2028-01-04 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Gunadarma | Unggul | 2026-06-18 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Jayabaya | B | 9999-01-01 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Katolik Musi Charitas | Baik | 2029-04-16 | Ya | 23201 - S1 Teknik Arsitektur |
-| Universitas Kristen Indonesia | Unggul | 2026-02-05 | Tidak | 23201 - S1 Teknik Arsitektur |
 | Universitas Kristen Petra | Unggul | 2030-09-05 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Lancang Kuning | B | 2026-12-28 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Langlang Buana | Baik Sekali | 2031-03-31 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Madako Tolitoli | Baik | 2030-07-22 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Medan Area | Baik Sekali | 2030-05-06 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Mercu Buana | Baik Sekali | 2029-06-25 | Ya | 23201 - S1 Teknik Arsitektur |
-| Universitas Merdeka Surabaya | Baik | 2026-04-29 | Tidak | 23201 - S1 Teknik Arsitektur |
 | Universitas Mpu Tantular | B | 9999-01-01 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Muhammadiyah Jakarta | Baik Sekali | 2029-10-19 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Muhammadiyah Kendari | Baik | 2030-10-06 | Ya | 23201 - S1 Teknik Arsitektur |
@@ -109,7 +106,6 @@
 | Universitas Riau Kepulauan | Baik | 2028-10-03 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Sains Alqur An | A | 2029-04-24 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Sains Dan Teknologi Jayapura | Baik Sekali | 2027-06-21 | Ya | 23201 - S1 Teknik Arsitektur |
-| Universitas Sriwijaya | A | 2023-09-25 | Tidak | 23201 - S1 Teknik Arsitektur |
 | Universitas Syiah Kuala | Baik Sekali | 2029-07-30 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Tadulako | Baik Sekali | 2028-06-27 | Ya | 23201 - S1 Teknik Arsitektur |
 | Universitas Tanjungpura | Baik Sekali | 2027-12-28 | Ya | 23201 - S1 Teknik Arsitektur |
@@ -125,17 +121,10 @@
 | Institut Teknologi Sepuluh Nopember | Baik | 2029-10-19 | Ya | 90021 - S2 Desain Interior |
 | Universitas Trisakti | A | 2028-05-03 | Ya | 90131 - S2 Desain Produk |
 
-### Desain - Desain Interaktif - S1
-
-| Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
-| --- | --- | --- | --- | --- |
-| Universitas Bunda Mulia | Baik | 2025-10-17 | Tidak | 90249 - S1 Desain Interaktif |
-
 ### Desain - Desain Interior - S1
 
 | Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
 | --- | --- | --- | --- | --- |
-| Institut Teknologi Sains Bandung | Baik | 2023-09-12 | Tidak | 90221 - S1 Desain Interior |
 | Universitas Presiden | Baik | 2031-03-31 | Ya | 90221 - S1 Desain Interior |
 
 ### Desain - Desain Mode - D4
@@ -157,14 +146,7 @@
 | --- | --- | --- | --- | --- |
 | Institut Seni Indonesia Surakarta | Terakreditasi Sementara | 2030-09-09 | Ya | 90233 - S1 Desain Produk Industri |
 | Institut Teknologi Nasional Bandung | Unggul | 2026-11-11 | Ya | 90231 - S1 Desain Produk |
-| Universitas Dinamika | Baik Sekali | 2025-11-24 | Tidak | 90242 - S1 Desain Produk |
 | Universitas Pendidikan Indonesia | Baik | 2029-01-30 | Ya | 90231 - S1 Desain Produk Industri Kampus Tasikmalaya |
-
-### Desain - Multimedia - D3
-
-| Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
-| --- | --- | --- | --- | --- |
-| Politeknik Bali Maha Werdhi | Baik | 2026-08-31 | Ya | 90448 - D-III Multimedia |
 
 ### Desain - Teknologi Industri Cetak Kemasan - D4
 
@@ -188,7 +170,6 @@
 
 | Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
 | --- | --- | --- | --- | --- |
-| Universitas Nusa Cendana | B | 2025-07-21 | Tidak | 95101 - S2 Ilmu Lingkungan |
 | Universitas Papua | Baik | 2031-01-27 | Ya | 95129 - S2 Ilmu Lingkungan |
 
 ### Lingkungan - Kajian Lingkungan dan Pembangunan - S3
@@ -202,18 +183,6 @@
 | Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
 | --- | --- | --- | --- | --- |
 | Universitas Negeri Gorontalo | B | 2026-10-07 | Ya | 95102 - S2 Kependudukan Dan Lingkungan Hidup |
-
-### Lingkungan - Manajemen Sumber Daya Hayati - S2
-
-| Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
-| --- | --- | --- | --- | --- |
-| Universitas Padjadjaran | B | 2025-09-01 | Tidak | 46105 - S2 Manajemen Sumber Daya Hayati |
-
-### Lingkungan - Pendidikan Kependudukan dan Lingkungan Hidup - S2
-
-| Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
-| --- | --- | --- | --- | --- |
-| Universitas Sebelas Maret | A | 2023-06-06 | Tidak | 95102 - S2 Pendidikan Kependudukan Dan Lingkungan Hidup |
 
 ### Lingkungan - Pengelolaan Lingkungan - S2
 
@@ -233,18 +202,6 @@
 | Universitas Palangka Raya | Baik Sekali | 2027-11-15 | Ya | 95101 - S2 Pengelolaan Sumberdaya Alam & Lingkungan |
 | Universitas Panca Bhakti | Terakreditasi Sementara | 2029-10-03 | Ya | 95119 - S2 Pengelolaan Sumberdaya Alam Dan Lingkungan |
 | Universitas Serambi Mekkah | Terakreditasi Sementara | 2030-01-14 | Ya | 95119 - S2 Pengelolaan Sumberdaya Alam Dan Lingkungan |
-
-### Lingkungan - Pengelolaan Sumberdaya Alam - S3
-
-| Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
-| --- | --- | --- | --- | --- |
-| Universitas Sumatera Utara | Baik Sekali | 2026-04-27 | Tidak | 95001 - S3 Pengelolaan Sumberdaya Alam Dan Lingkungan |
-
-### Lingkungan - Teknik dan Manajemen Lingkungan - D3
-
-| Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
-| --- | --- | --- | --- | --- |
-| Institut Pertanian Bogor | Baik | 2026-03-02 | Tidak | 54457 - D-III Teknik Dan Manajemen Lingkungan |
 
 ### Lingkungan - Teknik dan Manajemen Lingkungan - D4
 
@@ -275,14 +232,7 @@
 
 | Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
 | --- | --- | --- | --- | --- |
-| Universitas Mahasaraswati Denpasar | A | 2025-09-29 | Tidak | 35101 - S2 Perencanaan Pembangunan Wilayah Dan Pengelolaan Lingkungan |
 | Universitas Sumatera Utara | Unggul | 2029-05-01 | Ya | 95103 - S2 Perencanaan Pembangunan Wilayah Dan Pedesaan |
-
-### Perencanaan - Perencanaan Pembangunan Wilayah dan Pengelolaan Lingkungan - S2
-
-| Universitas | Peringkat | Kedaluwarsa | Aktif | BAN-PT PS |
-| --- | --- | --- | --- | --- |
-| Universitas Mahasaraswati Denpasar | A | 2025-09-29 | Tidak | 35101 - S2 Perencanaan Pembangunan Wilayah Dan Pengelolaan Lingkungan |
 
 ### Perencanaan - Perencanaan Wilayah - S2
 
@@ -323,47 +273,56 @@
 
 | Sheet | Prodi | Jenjang | Kurang | Temuan BAN-PT |
 | --- | --- | --- | ---: | ---: |
-| Arsitektur | Arsitektur | S1 | 1 | 4 |
-| Arsitektur | Arsitektur | S2 | 1 | 4 |
+| Arsitektur | Arsitektur | S1 | 8 | 4 |
+| Arsitektur | Arsitektur | S2 | 1 | 3 |
+| Arsitektur | Arsitektur Lanskap | S1 | 1 | 0 |
+| Arsitektur | Ilmu Arsitektur dan Perkotaan | S3 | 1 | 0 |
+| Arsitektur | Ilmu Seni dan Arsitektur Islam | S1 | 1 | 0 |
 | Arsitektur | Pendidikan Profesi Arsitek | Profesi | 18 | 19 |
 | Arsitektur | Pertamanan | S1 | 1 | 0 |
 | Arsitektur | Profesi Arsitek | Profesi | 5 | 6 |
-| Arsitektur | Teknik Arsitektur | S1 | 1 | 42 |
+| Arsitektur | Teknik Arsitektur | S1 | 1 | 38 |
 | Desain | Desain | S2 | 1 | 2 |
+| Desain | Desain Busana | D3 | 1 | 0 |
 | Desain | Desain Digital | D2 | 1 | 0 |
-| Desain | Desain Interaktif | S1 | 1 | 1 |
-| Desain | Desain Interior | S1 | 1 | 2 |
-| Desain | Desain Mode | D4 | 2 | 2 |
+| Desain | Desain Grafis | S1 | 1 | 0 |
+| Desain | Desain Interaktif | S1 | 1 | 0 |
+| Desain | Desain Interior | S1 | 3 | 1 |
+| Desain | Desain Komunikasi Visual | D3 | 1 | 0 |
+| Desain | Desain Komunikasi Visual | S1 | 7 | 0 |
+| Desain | Desain Mode | D4 | 3 | 2 |
 | Desain | Desain Mode Batik | D4 | 1 | 1 |
-| Desain | Desain Produk | S1 | 1 | 4 |
+| Desain | Desain Produk | S1 | 2 | 3 |
 | Desain | Desain Produk Kulit, Karet, dan Plastik | D4 | 1 | 0 |
+| Desain | Desain Produk Tekstil | D3 | 2 | 0 |
 | Desain | Ergonomi Fisiologi Kerja | S2 | 1 | 0 |
-| Desain | Multimedia | D3 | 1 | 1 |
+| Desain | Multimedia | D3 | 1 | 0 |
 | Desain | Produksi Garmen | D4 | 1 | 0 |
 | Desain | Teknologi Industri Cetak Kemasan | D4 | 1 | 1 |
 | Desain | Teknologi Rekayasa Cetak dan Grafis 3 Dimensi | D4 | 1 | 1 |
 | Lingkungan | Geografi Lingkungan | S1 | 1 | 1 |
-| Lingkungan | Ilmu Lingkungan | S1 | 2 | 0 |
-| Lingkungan | Ilmu Lingkungan | S2 | 1 | 2 |
+| Lingkungan | Ilmu Lingkungan | S1 | 4 | 0 |
+| Lingkungan | Ilmu Lingkungan | S2 | 1 | 1 |
+| Lingkungan | Ilmu Lingkungan | S3 | 1 | 0 |
 | Lingkungan | Kajian Lingkungan dan Pembangunan | S3 | 1 | 1 |
 | Lingkungan | Kependudukan dan Lingkungan Hidup | S2 | 1 | 1 |
 | Lingkungan | Manajemen Lingkungan | S2 | 4 | 0 |
-| Lingkungan | Manajemen Sumber Daya Hayati | S2 | 1 | 1 |
+| Lingkungan | Manajemen Sumber Daya Hayati | S2 | 1 | 0 |
 | Lingkungan | Manajemen Sumberdaya Lahan | S1 | 1 | 0 |
-| Lingkungan | Pendidikan Kependudukan dan Lingkungan Hidup | S2 | 1 | 1 |
+| Lingkungan | Pendidikan Kependudukan dan Lingkungan Hidup | S2 | 1 | 0 |
 | Lingkungan | Pendidikan Kependudukan dan Lingkungan Hidup | S3 | 1 | 0 |
 | Lingkungan | Pendidikan Lingkungan | S2 | 1 | 0 |
 | Lingkungan | Pengelolaan dan Pemberdayaan Sumberdaya Alam dan Lingkungan | S2 | 1 | 0 |
 | Lingkungan | Pengelolaan Lingkungan | S2 | 2 | 1 |
 | Lingkungan | Pengelolaan Lingkungan dan Pembangunan | S2 | 1 | 0 |
-| Lingkungan | Pengelolaan Sumberdaya Alam | S2 | 5 | 8 |
-| Lingkungan | Pengelolaan Sumberdaya Alam | S3 | 2 | 1 |
+| Lingkungan | Pengelolaan Sumberdaya Alam | S2 | 6 | 8 |
+| Lingkungan | Pengelolaan Sumberdaya Alam | S3 | 2 | 0 |
 | Lingkungan | Sains Keberlanjutan | S2 | 1 | 0 |
 | Lingkungan | Sains Lingkungan | S1 | 2 | 0 |
 | Lingkungan | Sains Lingkungan Kelautan | S1 | 1 | 0 |
 | Lingkungan | Studi Lingkungan | S2 | 3 | 0 |
 | Lingkungan | Studi Lingkungan dan Perkotaan | S2 | 1 | 0 |
-| Lingkungan | Teknik dan Manajemen Lingkungan | D3 | 1 | 1 |
+| Lingkungan | Teknik dan Manajemen Lingkungan | D3 | 1 | 0 |
 | Lingkungan | Teknik dan Manajemen Lingkungan | D4 | 1 | 1 |
 | Lingkungan | Teknik dan Pengelolaan Sumber Daya Air | S1 | 1 | 0 |
 | Perencanaan | Kajian Pembangunan Perkotaan dan Wilayah | S2 | 2 | 1 |
@@ -371,7 +330,7 @@
 | Perencanaan | Pembangunan Wilayah | S1 | 1 | 1 |
 | Perencanaan | Pembangunan Wilayah dan Pedesaan | S2 | 2 | 2 |
 | Perencanaan | Perencanaan dan Pengembangan Pariwisata | S2 | 7 | 0 |
-| Perencanaan | Perencanaan Pembangunan | S2 | 2 | 2 |
-| Perencanaan | Perencanaan Pembangunan Wilayah dan Pengelolaan Lingkungan | S2 | 1 | 1 |
+| Perencanaan | Perencanaan Pembangunan | S2 | 2 | 1 |
+| Perencanaan | Perencanaan Pembangunan Wilayah dan Pengelolaan Lingkungan | S2 | 1 | 0 |
 | Perencanaan | Perencanaan Wilayah | S2 | 1 | 23 |
-| Perencanaan | Perencanaan Wilayah dan Kota | S1 | 2 | 2 |
+| Perencanaan | Perencanaan Wilayah dan Kota | S1 | 7 | 2 |

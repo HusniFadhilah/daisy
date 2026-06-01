@@ -51,31 +51,6 @@ $authUser = Auth::user();
         </a>
         @endif
 
-        <!-- Profil & Pengaturan -->
-        @if(in_array($authUser->role_selected,['super_admin']))
-        <a href="#" class="nav-link {{ request()->routeIs('profile*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'profil-submenu')">
-            <span class="menu-icon">👤</span>
-            <span>Profil & Pengaturan</span>
-        </a>
-        <ul class="submenu nav flex-column" id="profil-submenu">
-            <li>
-                <a href="{{ route('profile') }}" class="nav-link">
-                    Profil Saya
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('profile.password') }}" class="nav-link">
-                    Ubah Password
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('settings') }}" class="nav-link">
-                    Preferensi
-                </a>
-            </li>
-        </ul>
-        @endif
-
         <!-- Keluar -->
         <a href="{{ route('logout') }}" class="nav-link text-danger" onclick="event.preventDefault(); document.getElementById('logout-form-sidebar').submit();">
             <span class="menu-icon">🚪</span>

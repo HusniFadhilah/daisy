@@ -885,16 +885,20 @@
         const useValidatorDokumen = document.getElementById('useValidatorDokumen');
         const useExisting = useValidatorDokumen ? useValidatorDokumen.checked : false;
         const userSelection = document.getElementById('userSelectionContainer');
-        const userIdSelect = document.getElementById('userId');
 
         if (useExisting && validatorDokumenId) {
             userSelection.style.display = 'none';
-            userIdSelect.value = validatorDokumenId;
-            userIdSelect.required = false;
+            // Select2 AJAX: inject option then set value
+            const $userId = $('#userId');
+            if ($userId.find('option[value="' + validatorDokumenId + '"]').length === 0) {
+                $userId.append(new Option(validatorDokumenName, validatorDokumenId, true, true));
+            }
+            $userId.val(validatorDokumenId).trigger('change');
+            document.getElementById('userId').required = false;
         } else {
             userSelection.style.display = 'flex';
-            userIdSelect.value = '';
-            userIdSelect.required = true;
+            $('#userId').val(null).trigger('change');
+            document.getElementById('userId').required = true;
         }
     }
 
