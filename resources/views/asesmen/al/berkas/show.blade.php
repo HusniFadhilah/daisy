@@ -2046,6 +2046,37 @@ $isComplete = $progress['percentage'] == 100;
         /**
          * Show import result (success)
          */
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, function(char) {
+                return {
+                    '&': '&amp;'
+                    , '<': '&lt;'
+                    , '>': '&gt;'
+                    , '"': '&quot;'
+                    , "'": '&#039;'
+                } [char];
+            });
+        }
+
+        function toArray(value) {
+            if (Array.isArray(value)) return value;
+            if (value === null || value === undefined || value === '') return [];
+            return [value];
+        }
+
+        function getPublicImportErrors(data) {
+            const messages = toArray(data.errors_message);
+            const fallbackErrors = toArray(data.errors)
+                .map(error => String(error).replace(/^Job failed:\s*/i, '').trim())
+                .filter(error => error && !/^File:/i.test(error) && !/^Line:/i.test(error));
+
+            const publicErrors = messages.length > 0 ? messages : fallbackErrors;
+
+            return publicErrors.length > 0 ?
+                publicErrors :
+                ['Terjadi kegagalan saat membaca file Excel. Mohon periksa format file dan coba upload ulang.'];
+        }
+
         function showImportResult(data) {
             // Close import modal
             const modal = bootstrap.Modal.getInstance(importModal);
@@ -2092,7 +2123,7 @@ $isComplete = $progress['percentage'] == 100;
                         <strong>⚠️ Peringatan:</strong>
                         <p class="mb-2">Beberapa baris gagal diproses:</p>
                         <ul class="mb-0 small">
-                            ${data.errors.slice(0, 5).map(err => `<li>${err}</li>`).join('')}
+                            ${toArray(data.errors).slice(0, 5).map(err => `<li>${escapeHtml(err)}</li>`).join('')}
                             ${data.errors.length > 5 ? `<li><em>...dan ${data.errors.length - 5} error lainnya</em></li>` : ''}
                         </ul>
                     </div>
@@ -2116,6 +2147,8 @@ $isComplete = $progress['percentage'] == 100;
             const modal = bootstrap.Modal.getInstance(importModal);
             if (modal) modal.hide();
 
+            const publicErrors = getPublicImportErrors(data);
+
             // Prepare error content
             const errorContent = `
                 <div class="text-center mb-4">
@@ -2128,7 +2161,7 @@ $isComplete = $progress['percentage'] == 100;
                 <div class="alert alert-danger alert-permanent">
                     <strong>Error:</strong>
                     <ul class="mb-0 mt-2">
-                        ${data.errors.map(err => `<li>${err}</li>`).join('')}
+                        ${publicErrors.map(err => `<li>${escapeHtml(err)}</li>`).join('')}
                     </ul>
                 </div>
             `;
@@ -2230,8 +2263,8 @@ $isComplete = $progress['percentage'] == 100;
                         </small>
                     </td>
                     <td>
-                        ${log.status === 'failed' && log.errors
-                            ? `<small class="text-danger">${log.errors}</small>`
+                        ${log.status === 'failed'
+                            ? `<small class="text-danger">${getPublicImportErrors(log).map(escapeHtml).join('<br>')}</small>`
                             : '-'}
                     </td>
                 </tr>
@@ -2273,13 +2306,17 @@ $isComplete = $progress['percentage'] == 100;
          * Show import errors (global function for onclick)
          */
         window.showImportErrors = function(errors) {
+            const publicErrors = getPublicImportErrors({
+                errors_message: errors
+            });
+
             Swal.fire({
                 icon: 'warning'
                 , title: 'Upload excel error'
                 , html: `
                     <div class="text-start">
                         <ul class="mb-0">
-                            ${errors.map(err => `<li>${err}</li>`).join('')}
+                            ${publicErrors.map(err => `<li>${escapeHtml(err)}</li>`).join('')}
                         </ul>
                     </div>
                 `

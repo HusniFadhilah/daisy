@@ -331,7 +331,7 @@ class PemetaanAkreditasiController extends Controller
             if ($request->filled('university_id')) {
                 $ids = array_filter((array) $request->university_id);
                 if (!empty($ids)) {
-                    $query->whereIn('id_univ', $ids);
+                    $query->whereIn('id_university', $ids);
                 }
             }
 

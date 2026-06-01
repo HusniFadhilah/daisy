@@ -5,6 +5,9 @@
 
 @section('content')
 <div class="container-fluid py-3">
+    @php
+    $hasActiveDocs = $docs->where('status_persetujuan_de', 'approved')->count() > 0;
+    @endphp
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
@@ -46,6 +49,11 @@
                         <p class="mb-0">
                             Anda dapat menambah, mengedit, atau menghapus file berita acara sampai proses finalisasi dilakukan.
                         </p>
+                        @if(!$hasActiveDocs)
+                        <p class="mb-0 small text-warning fw-semibold">
+                            File sudah diupload, namun belum difinalisasi. Silakan klik tombol Finalisasi dan Kirim.
+                        </p>
+                        @endif
                         <small class="text-muted">
                             <i class="bi bi-clock"></i> Pertama kali diupload: {{ $firstUpload->uploaded_at->locale('id')->translatedFormat('d M Y, H:i') }}
                         </small>

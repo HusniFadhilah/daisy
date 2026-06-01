@@ -110,15 +110,19 @@ class ImportPenilaianExcelJob implements ShouldQueue
             }
 
             if ($foundSheetName === null) {
+                $targetSheetMessage = implode(', ', $possibleTargets);
+                $existingSheetMessage = implode(', ', $existingSheetNames);
+
                 Log::error(
-                    'Tidak ditemukan sheet yang valid. Kandidat: ' . implode(', ', $possibleTargets) .
-                        '. Sheet tersedia: ' . implode(', ', $existingSheetNames)
+                    'Tidak ditemukan sheet yang valid. Kandidat: ' . $targetSheetMessage .
+                        '. Sheet tersedia: ' . $existingSheetMessage
                 );
 
                 throw new \Exception(
-                    'Sheet valid tidak ditemukan. ' .
-                        'Kandidat yang dicari: ' . implode(', ', $possibleTargets) . '. ' .
-                        'Sheet tersedia di file: ' . implode(', ', $existingSheetNames)
+                    'File Excel yang diupload tidak sesuai dengan template penilaian ' . $this->penilaianName . '. ' .
+                        'Sistem membutuhkan sheet: ' . $targetSheetMessage . '. ' .
+                        'Sheet yang ditemukan di file: ' . ($existingSheetMessage ?: 'tidak ada sheet terbaca') . '. ' .
+                        'Silahkan download template penilaian terbaru, isi pada sheet yang benar, lalu upload ulang.'
                 );
             }
 
@@ -259,8 +263,8 @@ class ImportPenilaianExcelJob implements ShouldQueue
 
             $importLog->update([
                 'status'       => 'failed',
-                'errors_message' => 'Terjadi kegagalan, silahkan coba lagi atau hubungi administrator',
-                'errors'       => ['General error: ' . $e->getMessage()],
+                'errors_message' => [$this->getPublicErrorMessage($e)],
+                'errors'       => [$this->getPublicErrorMessage($e)],
                 'completed_at' => now(),
             ]);
 
@@ -354,17 +358,43 @@ class ImportPenilaianExcelJob implements ShouldQueue
         if ($importLog) {
             $importLog->update([
                 'status'       => 'failed',
-                'errors_message' => 'Terjadi kegagalan, silahkan coba lagi atau hubungi administrator',
-                'errors'       => [
-                    'Job failed: ' . $exception->getMessage(),
-                    'File: ' . $exception->getFile(),
-                    'Line: ' . $exception->getLine(),
-                ],
+                'errors_message' => [$this->getPublicErrorMessage($exception)],
+                'errors'       => [$this->getPublicErrorMessage($exception)],
                 'completed_at' => now(),
             ]);
         }
 
         Log::error('Import job failed: ' . $exception->getMessage());
         Log::error('Stack trace: ' . $exception->getTraceAsString());
+    }
+
+    private function getPublicErrorMessage(\Throwable $exception): string
+    {
+        $message = trim($exception->getMessage());
+        $fallbackMessage = 'Terjadi kegagalan saat membaca file Excel. Mohon periksa format file dan coba upload ulang.';
+
+        if ($message === '') {
+            return $fallbackMessage;
+        }
+
+        $message = preg_replace('/[A-Za-z]:\\\\[^\s,;]+/', '[path]', $message);
+        $message = preg_replace('#/(?:[^/\s,;]+/)+[^/\s,;]+#', '[path]', $message);
+
+        $safeImportMessages = [
+            'File Excel yang diupload tidak sesuai',
+            'Sistem membutuhkan sheet',
+            'Kandidat yang dicari',
+            'Sheet tersedia di file',
+            'Sheet yang ditemukan di file',
+            'gagal dibuka',
+        ];
+
+        foreach ($safeImportMessages as $safeMessage) {
+            if (stripos($message, $safeMessage) !== false) {
+                return $message;
+            }
+        }
+
+        return $fallbackMessage;
     }
 }

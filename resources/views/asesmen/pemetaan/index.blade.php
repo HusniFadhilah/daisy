@@ -998,7 +998,7 @@ Sekretariat LAMDEPILAR</textarea>
                 <div class="row g-2 mb-2">
                     <div class="col-md-3">
                         <label class="form-label small fw-bold mb-1">Target (bulan dari sekarang)</label>
-                        <select class="form-select form-select-sm" id="reminderTargetMonths">
+                        <select class="form-select form-select-sm" id="reminderTargetMonths" data-no-select2>
                             <option value="">- Pilih -</option>
                             <option value="3">3 bulan</option>
                             <option value="6">6 bulan</option>
@@ -1009,7 +1009,7 @@ Sekretariat LAMDEPILAR</textarea>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold mb-1">Window periode (bulan)</label>
-                        <select class="form-select form-select-sm" id="reminderWindowMonths">
+                        <select class="form-select form-select-sm" id="reminderWindowMonths" data-no-select2>
                             <option value="">- Pilih -</option>
                             <option value="1" selected>1 bulan (hanya bulan target)</option>
                             <option value="3">3 bulan</option>
@@ -2282,6 +2282,18 @@ Sekretariat LAMDEPILAR</textarea>
         $('#reminderTahunFilter').select2(cfg);
         $('#reminderPeringkatFilter').select2(cfg);
         $('#reminderStatusFilter').select2(cfg);
+
+        // Target & Window — single-select, bisa kosong
+        const cfgSingle = {
+            theme: 'bootstrap-5'
+            , dropdownParent: $('#reminderModal')
+            , allowClear: true
+            , width: '100%'
+            , placeholder: '- Pilih -'
+            , language: { noResults: () => 'Tidak ada hasil' }
+        };
+        $('#reminderTargetMonths').select2(cfgSingle);
+        $('#reminderWindowMonths').select2(cfgSingle);
 
         // Auto-apply saat filter berubah
         $('#reminderUniversitasFilter, #reminderBulanFilter, #reminderTahunFilter, #reminderPeringkatFilter, #reminderStatusFilter')

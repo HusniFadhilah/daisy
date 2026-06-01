@@ -24,12 +24,14 @@ class ALDocumentController extends Controller
 
         $docs = \App\Models\AsesmenDocument::where('id_asesmen', $idAsesmen)
             ->where('type', 'berita_acara_al')
+            ->where('is_active', true)
             ->orderBy('sort_order')->orderBy('id')
             ->get();
 
         // ✅ Cek apakah sudah ada yang upload
         $firstUpload = \App\Models\AsesmenDocument::where('id_asesmen', $idAsesmen)
             ->where('type', 'berita_acara_al')
+            ->where('is_active', true)
             ->with('uploader')
             ->orderBy('uploaded_at', 'asc')
             ->first();
@@ -57,6 +59,7 @@ class ALDocumentController extends Controller
 
         $docs = AsesmenDocument::where('id_asesmen', $idAsesmen)
             ->where('type', 'berita_acara_al')
+            ->where('is_active', true)
             ->with(['uploader'])
             ->orderBy('sort_order')
             ->orderBy('id')
@@ -98,6 +101,7 @@ class ALDocumentController extends Controller
 
         $docs = AsesmenDocument::where('id_asesmen', $idAsesmen)
             ->where('type', 'berita_acara_al')
+            ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
@@ -113,6 +117,7 @@ class ALDocumentController extends Controller
             // ✅ CEK: Apakah sudah ada yang upload sebelumnya
             $existingDoc = AsesmenDocument::where('id_asesmen', $idAsesmen)
                 ->where('type', 'berita_acara_al')
+                ->where('is_active', true)
                 ->first();
 
             $currentUserId = Auth::id();
@@ -125,6 +130,29 @@ class ALDocumentController extends Controller
                 ], 403);
             }
 
+            $isFinalized = AsesmenDocument::where('id_asesmen', $idAsesmen)
+                ->where('type', 'berita_acara_al')
+                ->where('is_active', true)
+                ->where('status_persetujuan_de', 'approved')
+                ->exists();
+
+            if ($isFinalized) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Berita acara sudah difinalisasi dan tidak dapat diganti.',
+                ], 422);
+            }
+
+            $replaceExisting = $request->boolean('replace_existing');
+
+            if ($existingDoc && !$replaceExisting) {
+                return response()->json([
+                    'success' => false,
+                    'requires_confirmation' => true,
+                    'message' => 'Berita acara sebelumnya sudah ada. Konfirmasi diperlukan untuk mengganti file.',
+                ], 409);
+            }
+
             $request->validate([
                 'files' => 'required|array|min:1',
                 'files.*' => 'file|mimes:pdf|max:20480', // 20MB per file
@@ -133,8 +161,17 @@ class ALDocumentController extends Controller
             $user = Auth::user();
 
             $baseDir = "asesmen/document/{$idAsesmen}";
+            $oldDocs = collect();
+            if ($existingDoc && $replaceExisting) {
+                $oldDocs = AsesmenDocument::where('id_asesmen', $idAsesmen)
+                    ->where('type', 'berita_acara_al')
+                    ->where('is_active', true)
+                    ->get();
+            }
+
             $maxSort = (int) AsesmenDocument::where('id_asesmen', $idAsesmen)
                 ->where('type', 'berita_acara_al')
+                ->where('is_active', true)
                 ->max('sort_order');
 
             $created = [];
@@ -162,9 +199,19 @@ class ALDocumentController extends Controller
                 ]);
             }
 
+            foreach ($oldDocs as $oldDoc) {
+                if ($oldDoc->path) {
+                    Storage::disk('public')->delete($oldDoc->path);
+                }
+
+                $oldDoc->update(['is_active' => false]);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Hasil dan Berita Acara Asesmen Lapangan (AL) berhasil diupload',
+                'message' => $oldDocs->isNotEmpty()
+                    ? 'Hasil dan Berita Acara Asesmen Lapangan (AL) berhasil diganti'
+                    : 'Hasil dan Berita Acara Asesmen Lapangan (AL) berhasil diupload',
                 'data' => $created,
             ]);
         } catch (\Exception $e) {

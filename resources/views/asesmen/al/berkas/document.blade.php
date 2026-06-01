@@ -5,6 +5,9 @@
 
 @section('content')
 <div class="container-fluid py-3">
+    @php
+    $hasActiveDocs = $docs->where('status_persetujuan_de', 'approved')->count() > 0;
+    @endphp
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
@@ -46,6 +49,11 @@
                         <p class="mb-0">
                             Anda dapat menambah, mengedit, atau menghapus file berita acara sampai proses finalisasi dilakukan.
                         </p>
+                        @if(!$hasActiveDocs)
+                        <p class="mb-0 small text-warning fw-semibold">
+                            File sudah diupload, namun belum difinalisasi. Silakan klik tombol Finalisasi dan Kirim.
+                        </p>
+                        @endif
                         <small class="text-muted">
                             <i class="bi bi-clock"></i> Pertama kali diupload: {{ $firstUpload->uploaded_at->locale('id')->translatedFormat('d M Y, H:i') }}
                         </small>
@@ -322,6 +330,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const canUpload = @json($canUpload);
+        const hasExistingDocs = @json($docs->count() > 0);
+        const isFinalized = @json($hasActiveDocs);
 
         // Jika tidak bisa upload, disable semua fungsi upload
         if (!canUpload) {
@@ -413,10 +423,37 @@
 
         // AJAX FORM SUBMIT
         if (uploadForm) {
-            uploadForm.addEventListener('submit', function(e) {
+            uploadForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
+                if (hasExistingDocs && !isFinalized) {
+                    const confirmReplace = await Swal.fire({
+                        icon: 'warning'
+                        , title: 'Ganti File Sebelumnya?'
+                        , html: `
+                            <div class="text-start">
+                                <p class="mb-2">Sudah ada file berita acara yang diupload sebelumnya.</p>
+                                <p class="mb-0">Jika dilanjutkan, file lama akan diganti dengan file yang baru dipilih.</p>
+                            </div>
+                        `
+                        , showCancelButton: true
+                        , confirmButtonText: 'Ya, Ganti File'
+                        , cancelButtonText: 'Tidak'
+                        , confirmButtonColor: '#198754'
+                        , cancelButtonColor: '#6c757d'
+                        , reverseButtons: true
+                    });
+
+                    if (!confirmReplace.isConfirmed) {
+                        resetFile();
+                        return;
+                    }
+                }
+
                 var formData = new FormData(uploadForm);
+                if (hasExistingDocs && !isFinalized) {
+                    formData.append('replace_existing', '1');
+                }
 
                 btnUploadSubmit.disabled = true;
                 btnUploadSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';

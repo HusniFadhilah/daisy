@@ -572,22 +572,48 @@
             if (el.progressText) el.progressText.textContent = percentage + '%';
         }
 
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, function(char) {
+                return {
+                    '&': '&amp;'
+                    , '<': '&lt;'
+                    , '>': '&gt;'
+                    , '"': '&quot;'
+                    , "'": '&#039;'
+                } [char];
+            });
+        }
+
+        function toArray(value) {
+            if (Array.isArray(value)) return value;
+            if (value === null || value === undefined || value === '') return [];
+            return [value];
+        }
+
+        function getPublicImportErrors(log) {
+            const messages = toArray(log.errors_message);
+            const fallbackErrors = toArray(log.errors)
+                .map(error => String(error).replace(/^Job failed:\s*/i, '').trim())
+                .filter(error => error && !/^File:/i.test(error) && !/^Line:/i.test(error));
+
+            const publicErrors = messages.length > 0 ? messages : fallbackErrors;
+
+            return publicErrors.length > 0 ?
+                publicErrors :
+                ['Terjadi kegagalan saat membaca file Excel. Mohon periksa format file dan coba upload ulang.'];
+        }
+
         async function showResult(log) {
             if (log.status !== 'completed') {
                 // ── Error tetap sama seperti sebelumnya ────────────────
-                let errHtml = '';
-                if (Array.isArray(log.errors)) {
-                    console.log(log.errors)
-                    errHtml = `<div class="text-start">
-              <p class="mb-2">Proses pembacaan data gagal karena:</p>
-              <ul style="text-align:left; padding-left:18px;">
-                <li>Terjadi kesalahan saat membaca file</li>
-              </ul>
-              <p class="mt-2">Mohon lakukan pengecekan template excel dan coba upload ulang.</p>
-            </div>`;
-                } else {
-                    errHtml = `<p>${log.errors || 'Terjadi kesalahan saat memproses file'}</p>`;
-                }
+                const publicErrors = getPublicImportErrors(log);
+                const errHtml = `<div class="text-start">
+                    <p class="mb-2">Proses pembacaan data gagal karena:</p>
+                    <ul style="text-align:left; padding-left:18px;">
+                        ${publicErrors.map(error => `<li>${escapeHtml(error)}</li>`).join('')}
+                    </ul>
+                    <p class="mt-2">Mohon lakukan pengecekan template excel dan coba upload ulang.</p>
+                </div>`;
                 await Swal.fire({
                     icon: 'error'
                     , title: 'Proses Upload Gagal'
