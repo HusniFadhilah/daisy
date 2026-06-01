@@ -113,7 +113,7 @@
                     </h5>
                     <p class="text-muted mb-0">
                         @php
-                        $peringkatFinal = $hasil->getPeringkatFromSkor($hasil->skor_final);
+                        $peringkatFinal = $hasil->getPeringkatFromSkor($hasil->skor_final, 'final');
                         @endphp
                         Hasil masih dalam status <strong>MENUNGGU PENETAPAN</strong> dengan skor akhir yaitu: {{ number_format($hasil->skor_final, 0) }},
                         dan masuk ke kategori:
@@ -676,7 +676,10 @@
 </div>
 
 {{-- Catatan Validasi --}}
-@if($hasil->catatan_validasi)
+@php
+$catatanValidasiFinal = $hasil->catatan_penetapan ?? $hasil->catatan_validasi_banding ?? $hasil->catatan_validasi;
+@endphp
+@if($catatanValidasiFinal)
 <div class="card mb-4">
     <div class="card-header bg-secondary text-white">
         <h5 class="mb-0">
@@ -685,10 +688,109 @@
         </h5>
     </div>
     <div class="card-body">
-        <pre class="mb-0" style="white-space: pre-wrap;">{{ $hasil->catatan_validasi }}</pre>
+        <pre class="mb-0" style="white-space: pre-wrap;">{{ $catatanValidasiFinal }}</pre>
     </div>
 </div>
 @endif
+
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8 mb-4">
+        <!-- Informasi Hasil Akreditasi -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Informasi Penetapan Hasil Akreditasi
+                </h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th>Program Studi</th>
+                        <td>: {{ $pengajuan->studyProgram->name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Universitas</th>
+                        <td>: {{ $pengajuan->studyProgram->university->name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Jenis Permohonan Akreditasi</th>
+                        <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
+                    </tr>
+                    <tr>
+                        <th>Tanggal Penetapan Hasil Akreditasi</th>
+                        <td>
+                            : {{ $pengajuan->tanggal_penetapan
+                                    ? $pengajuan->tanggal_penetapan->locale('id')->translatedFormat('d M Y H:i')
+                                    : '-' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Status Penetapan Hasil Akreditasi</th>
+                        <td>: {!! $pengajuan->getCustomBadgeLastStatus('penetapan_hasil', 'de','label_long_for','text-dark') !!}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Ringkasan Hasil -->
+
+        <!-- Timeline -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Riwayat Status
+                </h5>
+            </div>
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                @php
+                $filterStatuses = [
+                \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+                \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+                ];
+
+                $logs = $pengajuan->statusLog
+                ->whereIn('status_to', $filterStatuses)
+                ->sortBy('created_at')
+                ->unique('status_to')
+                ->values();
+                @endphp
+
+                @if($logs->count() > 0)
+                <div class="timeline">
+                    @foreach($logs as $log)
+                    <div class="timeline-item mb-3">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-circle-fill text-success" style="font-size: 8px;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <strong>
+                                    {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                                </strong>
+                                <br>
+                                <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
+
+                                {{-- @if($log->keterangan)
+                                    <br>
+                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                                @endif --}}
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <p class="text-muted text-center mb-0">Belum ada riwayat</p>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>
 @endsection
 

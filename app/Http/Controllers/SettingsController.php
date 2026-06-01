@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AppSetting;
+use App\Models\PengajuanPembayaran;
 use App\Support\PanduanLinks;
 use Illuminate\Http\Request;
 
@@ -14,6 +15,10 @@ class SettingsController extends Controller
 
         return view('admin.settings', [
             'panduanLinks' => PanduanLinks::all(),
+            'paymentSettings' => [
+                'biaya_akreditasi' => PengajuanPembayaran::biayaAkreditasi(),
+                'biaya_banding' => PengajuanPembayaran::biayaBanding(),
+            ],
         ]);
     }
 
@@ -26,6 +31,9 @@ class SettingsController extends Controller
             ->mapWithKeys(fn (string $key) => ["panduan_links.{$key}" => ['required', 'url', 'max:2048']])
             ->all();
 
+        $rules['biaya.akreditasi'] = ['required', 'integer', 'min:0'];
+        $rules['biaya.banding'] = ['required', 'integer', 'min:0'];
+
         $validated = $request->validate($rules);
 
         foreach ($validated['panduan_links'] as $key => $url) {
@@ -35,6 +43,16 @@ class SettingsController extends Controller
             );
         }
 
-        return back()->with('success', 'Link panduan berhasil disimpan.');
+        AppSetting::updateOrCreate(
+            ['key' => PengajuanPembayaran::SETTING_BIAYA_AKREDITASI],
+            ['value' => (string) $validated['biaya']['akreditasi']]
+        );
+
+        AppSetting::updateOrCreate(
+            ['key' => PengajuanPembayaran::SETTING_BIAYA_BANDING],
+            ['value' => (string) $validated['biaya']['banding']]
+        );
+
+        return back()->with('success', 'Pengaturan berhasil disimpan.');
     }
 }

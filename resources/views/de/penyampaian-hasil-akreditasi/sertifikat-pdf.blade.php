@@ -1292,7 +1292,7 @@
 <body>
 
     @php
-    $peringkatFinal = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0));
+    $peringkatFinal = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0), 'al');
     $verifikasiUrl = url("/verifikasi-sertifikat/{$nomorSertifikat}");
     $verifikasiUrlShort = parse_url($verifikasiUrl, PHP_URL_HOST) . '/verifikasi-sertifikat';
     $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" . urlencode($verifikasiUrl);

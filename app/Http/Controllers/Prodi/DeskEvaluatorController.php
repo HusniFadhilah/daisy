@@ -790,7 +790,7 @@ class DeskEvaluatorController extends Controller
 
         // 2. Check pembayaran (harus verified)
         if (!$pengajuan->pembayaran || $pengajuan->pembayaran->status_pembayaran !== 'terverifikasi') {
-            return back()->with('error', 'Pembayaran belum diverifikasi.');
+            return back()->with('error', 'Pembayaran belum divalidasi.');
         }
 
         // 3. Optional: Check if validator approved (not just validated)

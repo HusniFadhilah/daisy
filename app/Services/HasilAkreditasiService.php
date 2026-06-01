@@ -262,12 +262,13 @@ class HasilAkreditasiService
 
             // ── Gunakan status non-Unggul sebagai placeholder draft ──
             // Syarat perlu baru bisa dicek saat finalize, bukan di sini.
+            $syarat = $this->cekSyaratUnggul($hasil, $calc['skor_total'], 'al');
             $skorTotal = (int)$calc['skor_total'];
-            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorTotal);
+            $hasil->al_memenuhi_syarat_unggul = $syarat['memenuhi'];
+            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorTotal, 'al');
 
             $peringkat  = $resolved['peringkat'];
             $idStatusDraft = $resolved['status_id'];
-            $syarat = $this->cekSyaratUnggul($hasil, $calc['skor_total'], 'al');
             $hasil->update([
                 'id_status_al'             => $idStatusDraft,
                 'skor_al'                  => $calc['skor_total'],
@@ -329,7 +330,7 @@ class HasilAkreditasiService
             // ── Set atribut SEBELUM getPeringkatFromSkor() dipanggil ──
             // Model membaca $this->al_memenuhi_syarat_unggul, bukan parameter eksternal
             $hasil->al_memenuhi_syarat_unggul = $syarat['memenuhi'];
-            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorALFinal);
+            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorALFinal, 'al');
 
             $peringkat  = $resolved['peringkat'];
             $idStatusAL = $resolved['status_id'];
@@ -417,11 +418,12 @@ class HasilAkreditasiService
                     'source'        => 'al_banding',
                 ],
             ];
-            $resolved = $this->resolvePeringkatDanStatus($hasil, (int)$calc['skor_total']);
+            $syarat = $this->cekSyaratUnggul($hasil, $calc['skor_total'], 'al_banding');
+            $hasil->al_banding_memenuhi_syarat_unggul = $syarat['memenuhi'];
+            $resolved = $this->resolvePeringkatDanStatus($hasil, (int)$calc['skor_total'], 'al_banding');
 
             $peringkat  = $resolved['peringkat'];
             $idStatusDraft = $resolved['status_id'];
-            $syarat = $this->cekSyaratUnggul($hasil, $calc['skor_total'], 'al_banding');
             $hasil->update([
                 'id_status_al_banding'             => $idStatusDraft,
                 'skor_al_banding'                  => $calc['skor_total'],
@@ -432,6 +434,7 @@ class HasilAkreditasiService
                 'peringkat_akreditasi_banding'     => null,
                 'status'                           => 'draft_al_banding',
                 'al_banding_memenuhi_syarat_unggul'        => $syarat['memenuhi'],
+                'catatan_validasi_banding'         => implode("\n", $this->buildCatatanSyaratUnggul($syarat, $peringkat, (float)$calc['skor_total'])),
             ]);
 
             DB::commit();
@@ -459,7 +462,7 @@ class HasilAkreditasiService
 
             // ── Set atribut sebelum getPeringkatFromSkor ──
             $hasil->al_banding_memenuhi_syarat_unggul = $syarat['memenuhi'];
-            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorALBanding);
+            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorALBanding, 'al_banding');
 
             $peringkat  = $resolved['peringkat'];
             $idStatus = $resolved['status_id'];
@@ -468,6 +471,7 @@ class HasilAkreditasiService
                 'id_status_al_banding'          => $idStatus,
                 'peringkat_akreditasi_banding'  => $peringkat,
                 'al_banding_memenuhi_syarat_unggul'        => $syarat['memenuhi'],
+                'catatan_validasi_banding'       => implode("\n", $this->buildCatatanSyaratUnggul($syarat, $peringkat, $skorALBanding)),
                 'tanggal_finalisasi_al_banding' => now(),
                 'finalized_al_banding_by'       => $userId ?? auth()->id(),
                 'status'                        => 'final_al_banding',
@@ -510,7 +514,7 @@ class HasilAkreditasiService
 
             // ── Set atribut sebelum getPeringkatFromSkor ──
             $hasil->final_memenuhi_syarat_unggul = $syarat['memenuhi'];
-            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorFinal);
+            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorFinal, 'final');
 
             $peringkat  = $resolved['peringkat'];
             $idStatusFinal = $resolved['status_id'];
@@ -525,6 +529,7 @@ class HasilAkreditasiService
                 'id_status_final'            => $idStatusFinal,
                 'peringkat_akreditasi_final' => $peringkat,
                 'final_memenuhi_syarat_unggul'     => $syarat['memenuhi'],
+                'catatan_penetapan'          => implode("\n", $this->buildCatatanSyaratUnggul($syarat, $peringkat, $skorFinal)),
                 'metadata'                   => array_merge(
                     (array)($hasil->metadata ?? []),
                     ['sumber_penetapan' => $pakaiBanding ? 'al_banding' : 'al']
@@ -568,7 +573,7 @@ class HasilAkreditasiService
             // Tidak perlu re-compute peringkat — sudah tersimpan di draft_penetapan.
             // Tapi lakukan re-check untuk validasi konsistensi:
             $skorFinal = (float)$hasil->skor_final;
-            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorFinal);
+            $resolved = $this->resolvePeringkatDanStatus($hasil, $skorFinal, 'final');
 
             $peringkatRecheck  = $resolved['peringkat'];
             $idStatusFinal = $resolved['status_id'];
@@ -714,9 +719,9 @@ class HasilAkreditasiService
      * cari id status yang string-nya match persis dengan peringkat tersebut.
      * Ini menjamin id_status_* dan peringkat_akreditasi_* selalu konsisten.
      */
-    private function resolvePeringkatDanStatus(HasilAkreditasi $hasil, float $skor): array
+    private function resolvePeringkatDanStatus(HasilAkreditasi $hasil, float $skor, ?string $type = null): array
     {
-        $peringkat = $hasil->getPeringkatFromSkor($skor);
+        $peringkat = $hasil->getPeringkatFromSkor($skor, $type);
 
         $status = $this->getAllStatusAkreditasi()
             ->filter(function ($item) use ($skor, $peringkat) {
@@ -727,7 +732,16 @@ class HasilAkreditasiService
             ->sortByDesc('skor_min')
             ->first();
 
-        // fallback kalau tidak ketemu exact match nama + skor
+        // Jika skor masuk rentang Unggul tapi syarat tidak terpenuhi, peringkat bisa
+        // turun ke status non-Unggul yang rentang skornya tidak mencakup skor aktual.
+        if (!$status) {
+            $status = $this->getAllStatusAkreditasi()
+                ->filter(fn($item) => strcasecmp(trim($item->status), trim($peringkat)) === 0)
+                ->sortByDesc('skor_max')
+                ->first();
+        }
+
+        // fallback terakhir kalau konfigurasi nama status tidak ditemukan
         if (!$status) {
             $status = $this->getAllStatusAkreditasi()
                 ->filter(fn($item) => $item->skor_min <= $skor && $item->skor_max >= $skor)
@@ -740,6 +754,35 @@ class HasilAkreditasiService
             'status_id' => $status?->id,
             'status'    => $status,
         ];
+    }
+
+    private function buildCatatanSyaratUnggul(array $syarat, string $peringkat, float $skor): array
+    {
+        $catatan = $syarat['keterangan'];
+
+        if (!$syarat['memenuhi'] && $skor >= $syarat['skor_minimum']) {
+            $catatan[] = "⚠️ Peringkat diturunkan menjadi: {$peringkat}.";
+            $p1 = $syarat['syarat_p1'];
+
+            if (!$p1['rasio']['memenuhi']) {
+                $catatan[] = "⚠️ " . $p1['rasio']['keterangan'];
+            }
+            if (!$p1['jabatan']['memenuhi']) {
+                $catatan[] = "⚠️ " . $p1['jabatan']['keterangan'];
+            }
+            if (!$p1['lulusan']['memenuhi']) {
+                $catatan[] = "⚠️ " . $p1['lulusan']['keterangan'];
+            }
+            if (!$syarat['pelampauan_memenuhi'] && !empty($syarat['missing_kriteria'])) {
+                $catatan[] = "⚠️ Kriteria tanpa elemen "
+                    . JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI . ": "
+                    . implode(', ', $syarat['missing_kriteria']) . ".";
+            }
+        } elseif ($syarat['memenuhi']) {
+            $catatan[] = "☑ Semua syarat Terakreditasi Unggul terpenuhi.";
+        }
+
+        return $catatan;
     }
 
     /**

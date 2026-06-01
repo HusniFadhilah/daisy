@@ -120,8 +120,8 @@
                         <tr>
                             <th>Tanggal Hasil Ditetapkan</th>
                             <td>
-                                : {{ $pengajuan->tanggal_hasil_akreditasi_dikirim
-                                        ? $pengajuan->tanggal_hasil_akreditasi_dikirim->locale('id')->translatedFormat('d M Y H:i')
+                                : {{ $pengajuan->tanggal_penetapan
+                                        ? $pengajuan->tanggal_penetapan->locale('id')->translatedFormat('d M Y H:i')
                                         : '-' }}
                             </td>
                         </tr>

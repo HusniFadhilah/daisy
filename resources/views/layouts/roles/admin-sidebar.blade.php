@@ -309,7 +309,7 @@ request()->routeIs('de.permohonan-banding*')
 
 <!-- Profil & Pengaturan -->
 @if(in_array($authUser->role_selected,['super_admin']))
-<a href="#" class="nav-link {{ request()->routeIs('profile*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'profil-submenu')">
+<a href="#" class="nav-link {{ request()->routeIs('profile*') || request()->routeIs('settings*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'profil-submenu')">
     <span class="menu-icon">👤</span>
     <span>Profil & Pengaturan</span>
 </a>
@@ -325,8 +325,8 @@ request()->routeIs('de.permohonan-banding*')
         </a>
     </li>
     <li>
-        <a href="{{ route('settings') }}" class="nav-link">
-            Preferensi
+        <a href="{{ route('settings') }}" class="nav-link {{ request()->routeIs('settings*') ? 'active' : '' }}">
+            Pengaturan Sistem
         </a>
     </li>
 </ul>

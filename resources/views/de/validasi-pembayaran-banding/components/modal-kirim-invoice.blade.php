@@ -69,9 +69,9 @@ $pengajuanInModal = $pengajuanBelumInvoice ?? collect();
                             <label class="form-label fw-bold">
                                 Jumlah Pembayaran (Rp) <span class="text-danger">*</span>
                             </label>
-                            <input type="number" name="jumlah_pembayaran" class="form-control" min="1000000" step="100000" value="{{ \App\Models\PengajuanPembayaran::BIAYA_BANDING ?? 30000000 }}" required>
+                            <input type="number" name="jumlah_pembayaran" class="form-control" min="1000000" step="100000" value="{{ \App\Models\PengajuanPembayaran::biayaBanding() }}" required>
                             <small class="text-muted">
-                                Default: Rp {{ number_format(\App\Models\PengajuanPembayaran::BIAYA_BANDING ?? 30000000, 0, ',', '.') }}
+                                Default: Rp {{ number_format(\App\Models\PengajuanPembayaran::biayaBanding(), 0, ',', '.') }}
                             </small>
                         </div>
 

@@ -71,6 +71,7 @@ class HasilAkreditasi extends Model
         'al_banding_memenuhi_syarat_unggul',
         'final_memenuhi_syarat_unggul',
         'catatan_validasi',
+        'catatan_validasi_banding',
         'catatan_penetapan',         // ← tambah
         'draft_resume_asesmen',
         'final_resume_asesmen',
@@ -393,7 +394,7 @@ class HasilAkreditasi extends Model
      * Jika belum pernah diset (default false di DB), tidak akan pernah
      * mengembalikan Unggul — ini behaviour yang aman.
      */
-    public function getPeringkatFromSkor(float $skor): string
+    public function getPeringkatFromSkor(float $skor, ?string $type = null): string
     {
         $allStatus = $this->getAllStatusAkreditasi();
 
@@ -411,10 +412,8 @@ class HasilAkreditasi extends Model
             return $statusMatch->status;
         }
 
-        // ── Status match = Unggul ──
-        // Baca dari atribut model (diset service sebelum memanggil method ini,
-        // atau sudah tersimpan di DB dari finalisasi sebelumnya)
-        if ($this->al_memenuhi_syarat_unggul) {
+        // Baca flag syarat unggul sesuai sumber nilai yang sedang dihitung.
+        if ($this->memenuhiSyaratUnggulUntuk($type)) {
             return $statusMatch->status; // "Terakreditasi Unggul"
         }
 
@@ -436,7 +435,22 @@ class HasilAkreditasi extends Model
      */
     public function getPeringkatFromSkorAL(float $skor): string
     {
-        return $this->getPeringkatFromSkor($skor);
+        return $this->getPeringkatFromSkor($skor, 'al');
+    }
+
+    private function memenuhiSyaratUnggulUntuk(?string $type): bool
+    {
+        return match ($type) {
+            'final' => (bool)$this->final_memenuhi_syarat_unggul,
+            'al_banding' => (bool)$this->al_banding_memenuhi_syarat_unggul,
+            'ak_banding' => (bool)$this->ak_banding_memenuhi_syarat_unggul,
+            'al', 'hasil' => (bool)$this->al_memenuhi_syarat_unggul,
+            default => match (true) {
+                in_array($this->status, ['draft_penetapan', 'final_penetapan', 'published'], true) => (bool)$this->final_memenuhi_syarat_unggul,
+                in_array($this->status, ['draft_al_banding', 'final_al_banding'], true) => (bool)$this->al_banding_memenuhi_syarat_unggul,
+                default => (bool)$this->al_memenuhi_syarat_unggul,
+            },
+        };
     }
 
     private function isStatusUnggul(StatusAkreditasi $status): bool
@@ -454,13 +468,33 @@ class HasilAkreditasi extends Model
     // TAMPILAN
     // =========================================================
 
-    public function getPeringkatColor(): string
+    public function getPeringkatColor(?string $peringkat = null, ?string $type = null): string
     {
-        // Log::error($this->statusFinal);
-        // Log::error($this->statusBanding);
-        // Log::error($this->statusHasil);
-        // Log::error($this->statusAl);
-        // Log::error($this->statusAk);
+        $statusByType = match ($type) {
+            'final' => $this->statusFinal,
+            'hasil' => $this->statusHasil,
+            'al' => $this->statusAl,
+            'ak' => $this->statusAk,
+            'al_banding' => $this->statusAlBanding,
+            'ak_banding' => $this->statusAkBanding,
+            default => null,
+        };
+
+        if ($statusByType?->warna) {
+            return $statusByType->warna;
+        }
+
+        if ($peringkat) {
+            $status = $this->getAllStatusAkreditasi()
+                ->where('status', $peringkat)
+                ->sortByDesc('skor_max')
+                ->first();
+
+            if ($status?->warna) {
+                return $status->warna;
+            }
+        }
+
         return $this->statusFinal?->warna
             ?? $this->statusAlBanding?->warna ?? $this->statusAkBanding?->warna ?? $this->statusHasil?->warna
             ?? $this->statusAl?->warna

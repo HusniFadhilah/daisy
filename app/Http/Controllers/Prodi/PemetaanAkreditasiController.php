@@ -60,7 +60,7 @@ class PemetaanAkreditasiController extends Controller
         $stats = $this->calculateStatistics($reminderMonths);
 
         // Get filter data
-        $universities = University::nonExample()->orderBy('name')->get();
+        $universities = University::where('is_active', true)->orderBy('name')->get();
         $degreeLevels = DegreeLevel::orderBy('code')->get();
 
         // Get urgent items (kedaluwarsa dalam 6 bulan)

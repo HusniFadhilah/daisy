@@ -1997,7 +1997,7 @@ class PengajuanAkreditasi extends Model
                 ),
 
                 default =>
-                $badge('bg-secondary', 'Menunggu Hasil Ditetapkan'),
+                $badge('bg-light', 'Menunggu Hasil Ditetapkan'),
             },
 
             /**

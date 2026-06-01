@@ -114,7 +114,7 @@
                         <h5 class="mt-3 text-muted">Menunggu Invoice dari LAMDEPILAR</h5>
                         <p class="text-muted mb-0">
                             Invoice pembayaran banding akan dibuat oleh LAMDEPILAR setelah
-                            permohonan banding diterima dan diverifikasi.
+                            permohonan banding diterima dan divalidasi.
                         </p>
                     </div>
 

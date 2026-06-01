@@ -80,7 +80,7 @@
                 <div class="card-body text-center py-4">
                     <i class="bi bi-send fs-1 text-warning mb-2 d-block"></i>
                     <h5>Invoice Pembayaran Banding Belum Dikirim</h5>
-                    <p class="text-muted">Kirim invoice pembayaran banding (Rp 30.000.000) ke PS agar proses dapat dilanjutkan.</p>
+                    <p class="text-muted">Kirim invoice pembayaran banding (Rp {{ number_format(\App\Models\PengajuanPembayaran::biayaBanding(), 0, ',', '.') }}) ke PS agar proses dapat dilanjutkan.</p>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalKirimInvoiceBanding">
                         <i class="bi bi-send"></i> Kirim Invoice Banding
                     </button>

@@ -97,6 +97,15 @@ class PenetapanHasilAkreditasiController extends Controller
 
         $pengajuans = $query->latest()->paginate(15);
 
+        $pengajuans->getCollection()->each(function ($pengajuan) {
+            $hasil = $pengajuan->asesmen?->hasil;
+
+            if ($hasil && !$pengajuan->tanggal_penetapan && !$hasil->isPenetapanFinalized()) {
+                $this->hasilService->saveHasilPenetapan($hasil, auth()->id());
+                $pengajuan->asesmen->load('hasil.statusFinal');
+            }
+        });
+
         $stats = $this->calculateStatistics($scopeStatuses);
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -206,14 +215,6 @@ class PenetapanHasilAkreditasiController extends Controller
 
             $canTetapkan = $beritaAcaraPenetapan !== null;
 
-            // Get validation summary for Unggul
-            $validationSummary = $this->hasilService->getValidationSummary($hasil, 'final');
-
-            // Parse detail skor
-            $detailSkorAL = $hasil->detail_skor_al ?? [];
-            $kriteriaList = $detailSkorAL['kriteria'] ?? [];
-            $elemenList = $detailSkorAL['elemen'] ?? [];
-
             // ✅ Check if already penetapan
             $sudahDitetapkan = $pengajuan->tanggal_penetapan !== null
                 || in_array($pengajuan->status, [
@@ -223,11 +224,20 @@ class PenetapanHasilAkreditasiController extends Controller
                     PengajuanAkreditasi::STATUS_SELESAI,
                 ]);
 
-            // Siapkan data final (boleh recalculate di sini)
-            if (is_null($hasil->skor_final)) {
+            // Siapkan data final. Selama penetapan belum dikunci, gunakan snapshot terbaru.
+            if (!$sudahDitetapkan && !$hasil->isPenetapanFinalized()) {
                 $this->hasilService->saveHasilPenetapan($hasil, $authId);
                 $hasil->refresh();
             }
+
+            // Get validation summary for Unggul dari snapshot final terbaru.
+            $validationSummary = $this->hasilService->getValidationSummary($hasil, 'final');
+
+            // Parse detail skor dari snapshot final. Jika ada banding, ini berisi hasil AL banding.
+            $detailSkorFinal = $hasil->detail_skor_final ?? $hasil->detail_skor_al ?? [];
+            $kriteriaList = $detailSkorFinal['kriteria'] ?? [];
+            $elemenList = $detailSkorFinal['elemen'] ?? [];
+
             $rentangSkor = $this->syaratRepo->getRentangSkor();
             return view('de.penetapan-hasil-akreditasi.show', compact(
                 'pengajuan',

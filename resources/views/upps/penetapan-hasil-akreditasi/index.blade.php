@@ -98,7 +98,7 @@
                                     <td>
                                         @if($hasil && $hasil->skor_final)
                                         @php
-                                        $peringkatFinal = $hasil->getPeringkatFromSkor($hasil->skor_final);
+                                        $peringkatFinal = $hasil->getPeringkatFromSkor($hasil->skor_final, 'final');
                                         @endphp
                                         <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkatFinal) }}; color:#222">
                                             {{ $peringkatFinal }}

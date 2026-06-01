@@ -50,7 +50,7 @@
                 <div class="card-body text-center">
                     <h6 class="text-muted mb-2">Status Akreditasi (yang disampaikan ke PS)</h6>
                     @if($hasil->peringkat_akreditasi_hasil)
-                    <span class="badge p-2 px-3 my-3 fs-6" style="background-color: {{ $hasil->getPeringkatColor() }}; color:#222">
+                    <span class="badge p-2 px-3 my-3 fs-6" style="background-color: {{ $hasil->getPeringkatColor(null, 'hasil') }}; color:#222">
                         {{ $hasil->peringkat_akreditasi_hasil }}
                     </span>
                     @if($hasil->statusAl->siklus_tahun)
@@ -109,10 +109,10 @@
                         Status Draft
                     </h5>
                     <p class="text-muted mb-0">
-                        @php $peringkatAL = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0)); @endphp
+                        @php $peringkatAL = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0), 'al'); @endphp
                         Hasil masih dalam status <strong>DRAFT</strong> dengan skor akhir yaitu: {{ number_format($hasil->skor_al, 0) }},
                         dan masuk ke kategori:
-                        <span class="badge p-2 px-3 my-2" style="background-color: {{ $hasil->getPeringkatColor() }}; color:#222">
+                        <span class="badge p-2 px-3 my-2" style="background-color: {{ $hasil->getPeringkatColor($peringkatAL, 'al') }}; color:#222">
                             {{ $peringkatAL }}
                         </span>
                         <br>Anda dapat menghitung ulang atau melakukan finalisasi.

@@ -80,7 +80,7 @@
                         <td class="text-center">
                             @if($hasil && $hasil->skor_al)
                             @php
-                            $peringkatAL = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0));
+                            $peringkatAL = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0), 'al');
                             @endphp
                             <span class="badge bg-light text-dark fs-6 p-2 px-3">{{ number_format($hasil->skor_al, 0) }}</span>
                             {{-- <span class="badge p-1 px-2 my-2" style="background-color: {{ $hasil->getPeringkatColor($peringkatAL) }}; color:#222">{{ $peringkatAL }}</span> --}}
@@ -91,7 +91,7 @@
 
                         <td class="text-center">
                             @if($peringkat)
-                            <span class="badge p-1 px-2 my-2" style="background-color: {{ $hasil->getPeringkatColor() }}; color:#222">{{ $peringkat }}</span>
+                            <span class="badge p-1 px-2 my-2" style="background-color: {{ $hasil->getPeringkatColor(null, 'hasil') }}; color:#222">{{ $peringkat }}</span>
                             @else
                             <span class="text-muted">Belum difinalisasi</span>
                             @endif

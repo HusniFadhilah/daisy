@@ -40,7 +40,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Jumlah Pembayaran</label>
-                                <input type="number" name="jumlah_pembayaran" class="form-control" placeholder="Contoh: {{ \App\Models\PengajuanPembayaran::BIAYA_AKREDITASI }}" required min="0" step="100000" value="{{ \App\Models\PengajuanPembayaran::BIAYA_AKREDITASI }}">
+                                <input type="number" name="jumlah_pembayaran" class="form-control" placeholder="Contoh: {{ \App\Models\PengajuanPembayaran::biayaAkreditasi() }}" required min="0" step="100000" value="{{ \App\Models\PengajuanPembayaran::biayaAkreditasi() }}">
                                 <small class="text-muted">Dalam Rupiah</small>
                             </div>
                         </div>

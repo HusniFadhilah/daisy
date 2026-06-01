@@ -418,7 +418,7 @@ class PenugasanAKBandingController extends Controller
             ])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Pengajuan harus dalam status "Pembayaran Banding Diverifikasi" untuk bisa lanjut ke AK.'
+                    'message' => 'Pengajuan harus dalam status "Pembayaran Banding Divalidasi" untuk bisa lanjut ke AK.'
                 ], 422);
             }
 

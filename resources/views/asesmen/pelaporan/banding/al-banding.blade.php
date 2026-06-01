@@ -354,10 +354,10 @@
     window.PELAPORAN_CFG = {
         al_banding: {
             title: 'Pelaporan AL Banding'
-            , label: 'Laporan Hasil Asesmen Lapangan'
+            , label: 'Laporan Hasil Asesmen Lapangan Banding'
             , upload: @json(route('pelaporan.banding.al.upload', ['assignment' => '__ID__']))
             , finalize: @json(route('pelaporan.banding.al.finalize', ['assignment' => '__ID__']))
-            , fileLabel: 'Laporan Hasil Asesmen Lapangan'
+            , fileLabel: 'Laporan Hasil Asesmen Lapangan Banding'
             , finalizeLabel: 'Pelaporan AL Banding Telah Selesai'
             , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
             • Penunjukan tugas Asesor untuk melaksanakan Penilaian LED

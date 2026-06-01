@@ -278,7 +278,10 @@
 </div>
 
 {{-- Catatan Validasi --}}
-@if($hasil->catatan_validasi)
+@php
+$catatanValidasiFinal = $hasil->catatan_penetapan ?? $hasil->catatan_validasi_banding ?? $hasil->catatan_validasi;
+@endphp
+@if($catatanValidasiFinal)
 <div class="card mb-4">
     <div class="card-header bg-info text-white">
         <h5 class="mb-0">
@@ -287,7 +290,7 @@
         </h5>
     </div>
     <div class="card-body">
-        <pre class="mb-0" style="white-space: pre-wrap;">{{ $hasil->catatan_validasi }}</pre>
+        <pre class="mb-0" style="white-space: pre-wrap;">{{ $catatanValidasiFinal }}</pre>
     </div>
 </div>
 @endif

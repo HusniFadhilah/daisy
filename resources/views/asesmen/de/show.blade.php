@@ -365,14 +365,14 @@
                                         <label class="form-label fw-bold">
                                             Biaya Pembayaran Akreditasi (Rp) <span class="text-danger">*</span>
                                         </label>
-                                        <input type="number" name="jumlah_pembayaran" class="form-control @error('jumlah_pembayaran') is-invalid @enderror" value="{{ old('jumlah_pembayaran', \App\Models\PengajuanPembayaran::BIAYA_AKREDITASI) }}" step="100000" min="0">
+                                        <input type="number" name="jumlah_pembayaran" class="form-control @error('jumlah_pembayaran') is-invalid @enderror" value="{{ old('jumlah_pembayaran', \App\Models\PengajuanPembayaran::biayaAkreditasi()) }}" step="100000" min="0">
                                         @error('jumlah_pembayaran')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
                                         @enderror
                                         <small class="text-muted">
-                                            Default: Rp 53.000.000,- (sesuai ketentuan)
+                                            Default: Rp {{ number_format(\App\Models\PengajuanPembayaran::biayaAkreditasi(), 0, ',', '.') }},- (sesuai ketentuan)
                                         </small>
                                     </div>
                                 </div>
@@ -450,7 +450,7 @@
                         Aksi Diperlukan: Approve Lanjut ke Tahap AK
                     </h5>
                     <p class="mb-3">
-                        Pembayaran telah diverifikasi oleh bagian keuangan, Dokumen final telah diterima, serta Laporan Kesiapan LED Program Studi (LKLED) telah selesai diproses. Selanjutnya, dapat dilanjutkan untuk tahap penugasan Asesor untuk Asesmen Kecukupan (AK)
+                        Pembayaran telah divalidasi oleh bagian keuangan, Dokumen final telah diterima, serta Laporan Kesiapan LED Program Studi (LKLED) telah selesai diproses. Selanjutnya, dapat dilanjutkan untuk tahap penugasan Asesor untuk Asesmen Kecukupan (AK)
                         Silahkan setujui untuk melanjutkan ke tahap AK/Asesmen Dokumen.
                     </p>
 
@@ -840,7 +840,7 @@
                         @endif
                         @if($pengajuan->pembayaran->verified_by)
                         <div class="col-md-6 mb-2">
-                            <label class="text-muted small">Diverifikasi Oleh</label>
+                            <label class="text-muted small">Divalidasi Oleh</label>
                             <p class="fw-bold mb-0">
                                 {{ $pengajuan->pembayaran->verifier->name }}
                             </p>

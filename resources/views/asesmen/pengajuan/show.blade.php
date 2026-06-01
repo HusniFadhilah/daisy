@@ -389,7 +389,7 @@
             @if(($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'terverifikasi')||$pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Terima kasih telah melakukan pembayaran akreditasi. Pembayaran Anda telah berhasil diverifikasi oleh bagian keuangan LAMDEPILAR.
+                Terima kasih telah melakukan pembayaran akreditasi. Pembayaran Anda telah berhasil divalidasi oleh bagian keuangan LAMDEPILAR.
             </div>
             <div class="card action-card mb-4">
                 <div class="card-body">
@@ -643,7 +643,7 @@
                     @endif
                     @if($pengajuan->pembayaran->verified_by)
                     <div class="col-md-6 mb-2">
-                        <label class="text-muted small">Diverifikasi Oleh</label>
+                        <label class="text-muted small">Divalidasi Oleh</label>
                         <p class="fw-bold mb-0">
                             {{ $pengajuan->pembayaran->verifier->name }}
                         </p>

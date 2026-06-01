@@ -404,13 +404,13 @@ class EmailPreviewController extends Controller
 
         return new ReminderContextMail(
             recipientName: $namaProdi,
-            pesanReminder: 'Bukti pembayaran yang Anda upload sebelumnya perlu diperbaiki. Mohon segera upload ulang bukti pembayaran yang lebih jelas agar dapat diverifikasi oleh bagian keuangan.',
+            pesanReminder: 'Bukti pembayaran yang Anda upload sebelumnya perlu diperbaiki. Mohon segera upload ulang bukti pembayaran yang lebih jelas agar dapat divalidasi oleh bagian keuangan.',
             subject: 'Pengingat Upload Ulang Bukti Pembayaran',
             actionUrl: route('upps.validasi-pembayaran.show', $pembayaran->id),
             actionLabel: 'Upload Ulang Bukti',
             contextInfo: $contextInfo,
             headerTitle: 'Upload Ulang Bukti Pembayaran',
-            preheader: 'Bukti pembayaran Anda perlu diupload ulang agar dapat diverifikasi.',
+            preheader: 'Bukti pembayaran Anda perlu diupload ulang agar dapat divalidasi.',
         );
     }
 

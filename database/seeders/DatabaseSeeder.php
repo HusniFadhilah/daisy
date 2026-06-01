@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
         $this->clearStorageFolders();
         $this->call([
             RoleSeeder::class,
+            AppSettingSeeder::class,
             StudyProgramCategorySeeder::class,
             DegreeLevelSeeder::class,
             UniversitySeeder::class,

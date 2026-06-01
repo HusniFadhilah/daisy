@@ -9,6 +9,8 @@ class PengajuanPembayaran extends Model
 {
     protected $table = 'pengajuan_pembayaran';
 
+    public const SETTING_BIAYA_AKREDITASI = 'biaya.akreditasi';
+    public const SETTING_BIAYA_BANDING    = 'biaya.banding';
     public const BIAYA_AKREDITASI = 59500000;
     public const BIAYA_BANDING    = 30000000; // 30 juta
 
@@ -47,6 +49,27 @@ class PengajuanPembayaran extends Model
     public function verifier()
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    public static function biayaAkreditasi(): int
+    {
+        return self::getConfiguredBiaya(self::SETTING_BIAYA_AKREDITASI, self::BIAYA_AKREDITASI);
+    }
+
+    public static function biayaBanding(): int
+    {
+        return self::getConfiguredBiaya(self::SETTING_BIAYA_BANDING, self::BIAYA_BANDING);
+    }
+
+    private static function getConfiguredBiaya(string $key, int $default): int
+    {
+        $value = AppSetting::where('key', $key)->value('value');
+
+        if ($value === null || $value === '') {
+            return $default;
+        }
+
+        return max(0, (int) $value);
     }
 
     public function getStatusPembayaranLabelAttribute()

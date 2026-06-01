@@ -51,7 +51,7 @@
                         </p>
                         @if($pengajuan->peringkat_hasil)
                         Status Akreditasi:
-                        <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">{{ $peringkat }}</span>
+                        <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor(null, 'hasil') }}; color:#222">{{ $peringkat }}</span>
                         @endif
                     </div>
                 </div>
@@ -120,7 +120,7 @@
                         <tr>
                             <th>Status Akreditasi Disampaikan</th>
                             <td>
-                                : <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">{{ $peringkat }}</span>
+                                : <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor(null, 'hasil') }}; color:#222">{{ $peringkat }}</span>
                             </td>
                         </tr>
                         <tr>

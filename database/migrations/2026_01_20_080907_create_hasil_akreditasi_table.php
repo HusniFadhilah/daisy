@@ -272,6 +272,8 @@ return new class extends Migration
 
             $table->text('catatan_validasi')->nullable()
                 ->comment('Keterangan lengkap hasil cek syarat Unggul');
+            $table->text('catatan_validasi_banding')->nullable()
+                ->comment('Keterangan lengkap hasil cek syarat Unggul saat banding');
 
             $table->text('catatan_perhitungan')->nullable();
             $table->json('metadata')->nullable()

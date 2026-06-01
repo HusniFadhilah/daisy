@@ -1693,7 +1693,7 @@ class PengajuanAkreditasiController extends Controller
                     'bukti_path'         => $formulirPath,
                     'formulir_path'      => $formulirPath,
                     'nomor_invoice'      => $pengajuan->pembayaran->nomor_invoice ?? 'INV-' . Auth::id(),
-                    'jumlah_pembayaran'  => $pengajuan->pembayaran->jumlah_pembayaran ?? PengajuanPembayaran::BIAYA_AKREDITASI,
+                    'jumlah_pembayaran'  => $pengajuan->pembayaran->jumlah_pembayaran ?? PengajuanPembayaran::biayaAkreditasi(),
                     'catatan_pembayaran'  => $request->catatan_pembayaran,
                 ]
             );
@@ -1746,7 +1746,7 @@ class PengajuanAkreditasiController extends Controller
                 $pengajuan->status !== PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI ||
                 $pengajuan->pembayaran->status_pembayaran !== 'terverifikasi'
             ) {
-                return back()->with('error', 'Pembayaran harus diverifikasi terlebih dahulu.');
+                return back()->with('error', 'Pembayaran harus divalidasi terlebih dahulu.');
             }
 
             DB::beginTransaction();
