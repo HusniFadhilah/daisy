@@ -51,11 +51,16 @@ class AkreditasiSeeder extends Seeder
                 // Use status as-is from CSV
                 $status = !empty($statusKedaluwarsa) && $statusKedaluwarsa !== '-' ? $statusKedaluwarsa : null;
                 // Konversi status dari CSV ke enum database
-                if ($status === 'Masih Berlaku') {
+                $statusNormalized = $status ? strtolower($status) : '';
+                if ($statusNormalized === 'masih berlaku') {
                     $status = 'Aktif';
-                } elseif (strpos($status, 'kedaluwarsa') !== false || strpos($status, 'kedaluwarsa') !== false || strpos($status, 'hari lagi') !== false) {
+                } elseif (
+                    strpos($statusNormalized, 'kedaluwarsa') !== false ||
+                    strpos($statusNormalized, 'kadaluarsa') !== false ||
+                    strpos($statusNormalized, 'hari lagi') !== false
+                ) {
                     $status = 'Kedaluwarsa';
-                } elseif ($status === 'Tidak Ada Data' || $status === '' || $status === '-') {
+                } elseif ($statusNormalized === 'tidak ada data' || $status === '' || $status === '-') {
                     $status = 'Belum Terakreditasi';
                 }
 
@@ -193,6 +198,8 @@ class AkreditasiSeeder extends Seeder
             'STr' => 'd4',
             'S2 Terapan' => 's2-terapan',
             'S3 Terapan' => 's3-terapan',
+            'Profesi' => 'profesi',
+            'PROFESI' => 'profesi',
         ];
 
         return $mappings[$jenjang] ?? $jenjang;

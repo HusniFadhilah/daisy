@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             AkreditasiSeeder::class,
             UserSeeder::class,
             StudyProgramUserSeeder::class,
+            UniversityUserSeeder::class,
             KriteriaSeeder::class,
             ElemenStandarSeeder::class,
             PernyataanSeeder::class,
