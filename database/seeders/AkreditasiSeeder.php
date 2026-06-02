@@ -34,13 +34,13 @@ class AkreditasiSeeder extends Seeder
 
         while (($data = fgetcsv($file)) !== false) {
             try {
-                $universitas = $data[0];
-                $programStudi = $data[1];
-                $jenjang = $data[2];
-                $email = $data[6];
-                $peringkatAkreditasi = $data[7];
-                $tanggalKedaluwarsa = $data[8];
-                $statusKedaluwarsa = $data[9];
+                $universitas = trim($data[0] ?? '');
+                $programStudi = trim($data[1] ?? '');
+                $jenjang = trim($data[2] ?? '');
+                $email = trim($data[6] ?? '');
+                $peringkatAkreditasi = trim($data[7] ?? '');
+                $tanggalKedaluwarsa = trim($data[8] ?? '');
+                $statusKedaluwarsa = trim($data[9] ?? '');
 
                 // Use data as-is from CSV
                 $peringkat = !empty($peringkatAkreditasi) && $peringkatAkreditasi !== '-' ? $peringkatAkreditasi : null;
@@ -55,6 +55,8 @@ class AkreditasiSeeder extends Seeder
                     $status = 'Aktif';
                 } elseif (strpos($status, 'kedaluwarsa') !== false || strpos($status, 'kedaluwarsa') !== false || strpos($status, 'hari lagi') !== false) {
                     $status = 'Kedaluwarsa';
+                } elseif ($status === 'Tidak Ada Data' || $status === '' || $status === '-') {
+                    $status = 'Belum Terakreditasi';
                 }
 
                 // Map university name variations to exact database names

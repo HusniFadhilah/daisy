@@ -93,15 +93,21 @@
                     @endif
                 </td>
                 <td>
-                    {{ \App\Libraries\Date::tglIndo($prog->tanggal_kedaluwarsa) }}
-                    <br>
-                    <small class="{{ now()->diffInDays($prog->tanggal_kedaluwarsa, false) < 0 ? 'text-muted' : 'text-danger' }}">
-                        @php
-                        $diff = now()->diff($prog->tanggal_kedaluwarsa);
-                        @endphp
+                    @if($prog->tanggal_kedaluwarsa)
+                        {{ \App\Libraries\Date::tglIndo($prog->tanggal_kedaluwarsa) }}
+                        <br>
+                        <small class="{{ now()->diffInDays($prog->tanggal_kedaluwarsa, false) < 0 ? 'text-muted' : 'text-danger' }}">
+                            @php
+                            $diff = now()->diff($prog->tanggal_kedaluwarsa);
+                            @endphp
 
-                        {{ $diff->y }} tahun {{ $diff->m }} bulan {{ $diff->d }} hari
-                    </small>
+                            {{ $diff->y }} tahun {{ $diff->m }} bulan {{ $diff->d }} hari
+                        </small>
+                    @else
+                        <span class="text-muted">-</span>
+                        <br>
+                        <small class="text-muted">Tanggal belum tersedia</small>
+                    @endif
                 </td>
                 <td>
                     <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalKirimPengingat" data-id-study-program="{{ $prog->id }}" data-text-study-program="{{ $prog->full_name ?? $prog->name }}">

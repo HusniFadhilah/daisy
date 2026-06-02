@@ -147,6 +147,8 @@ class StudyProgramSeeder extends Seeder
                     $statusKedaluwarsa = 'Aktif';
                 } elseif (strpos($statusKedaluwarsa, 'kedaluwarsa') !== false || strpos($statusKedaluwarsa, 'kedaluwarsa') !== false || strpos($statusKedaluwarsa, 'hari lagi') !== false) {
                     $statusKedaluwarsa = 'Kedaluwarsa';
+                } elseif ($statusKedaluwarsa === 'Tidak Ada Data' || $statusKedaluwarsa === '' || $statusKedaluwarsa === '-') {
+                    $statusKedaluwarsa = 'Belum Terakreditasi';
                 }
 
                 // Parse tanggal

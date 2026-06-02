@@ -327,6 +327,20 @@
         color: #fff;
     }
 
+    #reminderModal,
+    #modalKirimPengingat {
+        z-index: 1065 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 1060 !important;
+    }
+
+    #reminderModal .modal-dialog {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
 </style>
 @endpush
 
@@ -1130,6 +1144,12 @@ Sekretariat LAMDEPILAR</textarea>
     let reminderSelect2Initialized = false;
 
     document.addEventListener('DOMContentLoaded', function() {
+        ['modalKirimPengingat', 'reminderModal'].forEach(id => {
+            const modal = document.getElementById(id);
+            if (modal && modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+        });
 
         // Initialize from URL params
         initializeFiltersFromURL();
@@ -2174,7 +2194,31 @@ Sekretariat LAMDEPILAR</textarea>
     let reminderFiltersInitialized = false;
 
     function openReminderModal() {
-        const modal = new bootstrap.Modal(document.getElementById('reminderModal'));
+        const modalEl = document.getElementById('reminderModal');
+        if (!modalEl) {
+            console.error('reminderModal element tidak ditemukan');
+            return;
+        }
+
+        if (modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+
+        modalEl.style.display = '';
+        modalEl.style.zIndex = '1065';
+        const dialog = modalEl.querySelector('.modal-dialog');
+        if (dialog) {
+            dialog.style.transform = 'none';
+            dialog.style.opacity = '1';
+            dialog.style.visibility = 'visible';
+        }
+
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
 
         // Initialize filters on first open
