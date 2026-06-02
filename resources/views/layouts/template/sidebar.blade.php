@@ -45,7 +45,7 @@ $authUser = Auth::user();
 
         <!-- Bantuan Layanan -->
         @if(in_array($authUser->role_selected,['super_admin','validator','asesor']))
-        <a href="mailto:sekretariat@lamdepilar.or.id" class="nav-link {{ request()->routeIs('bantuan') ? 'active' : '' }}">
+        <a href="{{ route('kontak.sekretariat') }}" class="nav-link {{ request()->routeIs('kontak.sekretariat') ? 'active' : '' }}">
             <span class="menu-icon">🚨</span>
             <span>Kontak Sekretariat</span>
         </a>

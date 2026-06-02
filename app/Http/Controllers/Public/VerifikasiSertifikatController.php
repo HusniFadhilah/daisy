@@ -9,6 +9,22 @@ use Illuminate\Http\Request;
 
 class VerifikasiSertifikatController extends Controller
 {
+    public function index(Request $request)
+    {
+        $nomor = trim($request->query('nomor', ''));
+
+        if ($nomor !== '') {
+            return redirect()->route('public.verifikasi-sertifikat', ['nomorSertifikat' => $nomor]);
+        }
+
+        return view('public.verifikasi-sertifikat', [
+            'mode'           => 'search',
+            'valid'          => null,
+            'nomorSertifikat' => null,
+            'pengajuan'      => null,
+        ]);
+    }
+
     public function show(string $nomorSertifikat)
     {
         $pengajuan = PengajuanAkreditasi::with([

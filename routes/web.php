@@ -70,6 +70,8 @@ Route::prefix('direktori')->name('public.')->group(function () {
 });
 
 // Verifikasi sertifikat akreditasi (publik, tanpa login)
+Route::get('/verifikasi-sertifikat', [\App\Http\Controllers\Public\VerifikasiSertifikatController::class, 'index'])
+    ->name('public.verifikasi-sertifikat.index');
 Route::get('/verifikasi-sertifikat/{nomorSertifikat}', [\App\Http\Controllers\Public\VerifikasiSertifikatController::class, 'show'])
     ->name('public.verifikasi-sertifikat')
     ->where('nomorSertifikat', '.*');
@@ -77,6 +79,7 @@ Route::get('/verifikasi-sertifikat/{nomorSertifikat}', [\App\Http\Controllers\Pu
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::view('/kontak-sekretariat', 'kontak-sekretariat')->name('kontak.sekretariat');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/select-role', [AuthController::class, 'showRoleSelection'])->name('select.role');
     Route::post('/select-role', [AuthController::class, 'selectRole'])->name('select.role.post');

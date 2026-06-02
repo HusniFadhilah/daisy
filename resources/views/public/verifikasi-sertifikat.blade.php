@@ -45,16 +45,16 @@
         }
 
         .brand-text {
-            font-size: 1.1rem;
-            font-weight: 800;
-            letter-spacing: 3px;
+            margin-top: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
             color: #9B0F1B;
             line-height: 1;
         }
 
         .brand-sub {
             font-size: 0.7rem;
-            color: #666;
+            color: #222;
             letter-spacing: 0.5px;
             margin-top: 2px;
         }
@@ -143,24 +143,76 @@
             margin-top: 1.5rem;
             line-height: 1.6;
         }
+
+        .search-input {
+            border: 1.5px solid #C18A2A;
+            border-radius: 8px;
+            padding: 0.65rem 1rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            width: 100%;
+            outline: none;
+            transition: box-shadow 0.2s;
+        }
+
+        .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(193, 138, 42, 0.2);
+            border-color: #a57520;
+        }
+
+        .btn-cari {
+            background: #8E101A;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.65rem 1.5rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-cari:hover {
+            background: #6b0c14;
+        }
+
     </style>
 </head>
 <body>
     <div class="verify-card">
         {{-- Header --}}
-        <div class="brand-header">
-            <img src="{{ asset('assets/images/logo-square.png') }}" alt="Logo" class="brand-logo">
-            <div>
-                <div class="brand-text">DEPILAR</div>
-                <div class="brand-sub">LEMBAGA AKREDITASI MANDIRI — LAMDEPILAR</div>
+        <a href="{{ route('dashboard') }}" class="text-decoration-none">
+            <div class="brand-header">
+                <img src="{{ asset('assets/images/logo-square.png') }}" alt="Logo" class="brand-logo">
+                <div>
+                    <div class="brand-sub">LEMBAGA AKREDITASI MANDIRI</div>
+                    <div class="brand-sub">DESAIN PERENCANAAN LINGKUNGAN ARSITEKTUR</div>
+                    <div class="brand-text">(LAMDEPILAR)</div>
+                </div>
             </div>
-        </div>
+        </a>
 
         <h5 class="mb-3" style="font-weight:700; color:#222; letter-spacing:0.5px;">
             <i class="bi bi-patch-check"></i> Verifikasi Sertifikat Akreditasi
         </h5>
 
-        @if(!$valid)
+        @if(($mode ?? null) === 'search')
+        {{-- FORM PENCARIAN --}}
+        <p class="text-muted mb-3" style="font-size:.88rem;">
+            Masukkan nomor sertifikat akreditasi untuk memverifikasi keaslian dan masa berlakunya.
+        </p>
+        <form method="GET" action="{{ route('public.verifikasi-sertifikat.index') }}">
+            <div class="d-flex gap-2 mb-2">
+                <input type="text" name="nomor" class="search-input" placeholder="Contoh: 0001/SK/LAM-DEPILAR/AK/VIII/2024" required autofocus>
+                <button type="submit" class="btn-cari">
+                    <i class="bi bi-search"></i> Cari
+                </button>
+            </div>
+        </form>
+
+        @elseif(!$valid)
         {{-- TIDAK DITEMUKAN --}}
         <div class="text-center py-4">
             <div class="status-badge-invalid mb-3">
@@ -171,6 +223,19 @@
             <p class="text-muted small mt-3">
                 Jika Anda yakin nomor ini benar, hubungi LAMDEPILAR untuk konfirmasi.
             </p>
+        </div>
+        <form method="GET" action="{{ route('public.verifikasi-sertifikat.index') }}" class="mt-2">
+            <div class="d-flex gap-2">
+                <input type="text" name="nomor" class="search-input" placeholder="Cari nomor sertifikat lain..." required autofocus>
+                <button type="submit" class="btn-cari">
+                    <i class="bi bi-search"></i> Cari
+                </button>
+            </div>
+        </form>
+        <div class="mt-3">
+            <a href="{{ route('public.verifikasi-sertifikat.index') }}" class="text-muted" style="font-size:.82rem; text-decoration:none;">
+                <i class="bi bi-arrow-left"></i> Kembali ke pencarian
+            </a>
         </div>
 
         @else
@@ -240,10 +305,10 @@
                 </td>
             </tr>
             @endif
-            <tr>
+            {{-- <tr>
                 <td>Jenis Akreditasi</td>
                 <td>{{ $pengajuan->jenis_akreditasi_title ?? '-' }}</td>
-            </tr>
+            </tr> --}}
         </table>
         @endif
 
