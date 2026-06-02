@@ -340,6 +340,7 @@ class PenetapanHasilAkreditasiController extends Controller
 
             $peringkat         = $hasil->peringkat_akreditasi_final ?? '-';
             $skor              = $hasil->skor_final ?? '-';
+            $masaBerlakuTahun  = $hasil->statusFinal?->siklus_tahun ?? $hasil->statusAl?->siklus_tahun ?? null;
             $tanggalPenetapan  = $pengajuan->tanggal_penetapan
                 ? \Carbon\Carbon::parse($pengajuan->tanggal_penetapan)->locale('id')->translatedFormat('d F Y')
                 : '-';
@@ -347,11 +348,15 @@ class PenetapanHasilAkreditasiController extends Controller
                 ? \Carbon\Carbon::parse($pengajuan->tanggal_kedaluwarsa_akhir)->locale('id')->translatedFormat('d F Y')
                 : '-';
 
+            $pesanMasaBerlaku = $masaBerlakuTahun
+                ? "Masa Berlaku        : {$masaBerlakuTahun} tahun\n"
+                : '';
+
             $this->mailDelivery->sendToEmails(
                 $emails,
                 new ReminderContextMail(
                     recipientName: 'Tim Akreditasi Program Studi <strong>' . $namaProdi . '</strong>',
-                    pesanReminder: "Hasil akreditasi program studi Anda telah ditetapkan oleh LAMDEPILAR.\nStatus Akreditasi : {$peringkat}\nTanggal Penetapan   : {$tanggalPenetapan}\n" . ($tanggalKedaluwarsa ? "Berlaku Hingga      : {$tanggalKedaluwarsa}\n" : '') . "\nSertifikat akreditasi akan segera diterbitkan dan disampaikan kepada program studi. Mohon pantau sistem untuk informasi lebih lanjut.",
+                    pesanReminder: "Hasil akreditasi program studi Anda telah ditetapkan oleh LAMDEPILAR.\nStatus Akreditasi : {$peringkat}\nTanggal Penetapan   : {$tanggalPenetapan}\n{$pesanMasaBerlaku}" . ($tanggalKedaluwarsa ? "Berlaku Hingga      : {$tanggalKedaluwarsa}\n" : '') . "\nSertifikat akreditasi akan segera diterbitkan dan disampaikan kepada program studi. Mohon pantau sistem untuk informasi lebih lanjut.",
                     subject: 'Hasil Akreditasi Ditetapkan',
                     actionUrl: route('upps.penetapan-hasil-akreditasi.show', $pengajuan->id),
                     actionLabel: 'Lihat Hasil Penetapan',

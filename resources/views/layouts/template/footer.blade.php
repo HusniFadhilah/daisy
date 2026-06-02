@@ -30,8 +30,10 @@
  * Called on page load and must be re-called after AJAX content injection.
  */
 function initSelect2All(container) {
-    $(container || document).find('select:not(.select2-hidden-accessible):not([data-no-select2])').each(function () {
+    $(container || document).find('select:not(.select2-hidden-accessible):not([data-no-select2]):not(.swal2-select)').each(function () {
         var $el     = $(this);
+        if ($el.closest('.swal2-container').length) return;
+
         var id      = $el.attr('id');
         var $label  = id ? $('label[for="' + id + '"]') : $();
         var firstEmpty  = $el.find('option[value=""]').first().text().trim();
