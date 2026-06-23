@@ -35,7 +35,7 @@ class SyaratAkreditasiSeeder extends Seeder
                 'kunci'      => 'skor_minimum_unggul',
                 'nilai'      => '281',
                 'tipe'       => 'integer',
-                'label'      => 'Skor Minimum untuk Status Unggul',
+                'label'      => 'Skor Minimum untuk Status Terakreditasi Unggul',
                 'keterangan' => 'Skor final AL (0–400) yang harus dicapai agar program studi '
                     . 'berpeluang mendapatkan status Terakreditasi Unggul.',
             ],

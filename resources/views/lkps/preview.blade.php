@@ -237,7 +237,7 @@
             statusHtml =
                 '<div class="alert alert-success mb-3">' +
                 '<i class="bi bi-shield-fill-check me-2"></i>' +
-                '<strong>Semua syarat LKPS terpenuhi.</strong> Program studi berpotensi mendapat status Unggul (tergantung skor AL).' +
+                '<strong>Semua syarat LKPS terpenuhi.</strong> Program studi berpotensi mendapat Status Terakreditasi Unggul (tergantung skor AL).' +
                 '</div>';
         } else {
             statusHtml =

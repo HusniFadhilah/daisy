@@ -70,7 +70,7 @@ $exportSkorMap = \App\Models\JenjangPenilaian::exportSkorMap(true)
     window.SkorJenjang = @json($exportSkorMap);
 
 </script>
-<script src="{{ asset('assets/js/utility.js') }}"></script>
+<script src="{{ asset('assets/js/utility.js') }}?v={{ filemtime(public_path('assets/js/utility.js')) }}"></script>
 
 <!-- Additional Scripts -->
 @stack('scripts')

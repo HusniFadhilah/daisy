@@ -90,7 +90,7 @@
         </div>
 
         <div class="col mb-3">
-            <x-stat-card title="Peringkat Unggul" :value="$stats['unggul']" description="Prodi unggul" icon="star-fill" iconBg="warning-subtle" />
+            <x-stat-card title="Terakreditasi Unggul" :value="$stats['unggul']" description="Prodi unggul" icon="star-fill" iconBg="warning-subtle" />
         </div>
 
         <div class="col mb-3">

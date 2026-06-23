@@ -1151,7 +1151,7 @@ class ALBandingController extends Controller
                 ->get()
                 ->first(function ($assignmentAL) use ($idAsesmen) {
                     return PenilaianElemenAl::where('id_asesmen', $idAsesmen)
-                        // ->where('id_asesor', $assignmentAL->id_user)
+                        ->where('id_asesor', $assignmentAL->id_user)
                         ->whereNotNull('skor')
                         ->exists();
                 });
@@ -1294,12 +1294,13 @@ class ALBandingController extends Controller
         DB::beginTransaction();
 
         try {
-            $hasAnyPenilaian = PenilaianElemenAlBanding::where('id_asesmen', $idAsesmen)
-                // ->where('id_asesor', $user->id)
+            $totalElemen = ElemenStandar::count();
+            $completedPenilaian = PenilaianElemenAlBanding::where('id_asesmen', $idAsesmen)
+                ->where('id_asesor', $user->id)
                 ->whereNotNull('skor')
-                ->exists();
+                ->count();
 
-            if (!$hasAnyPenilaian) {
+            if ($completedPenilaian < $totalElemen) {
                 $this->doInitFromAL($assignment->fresh());
             }
 

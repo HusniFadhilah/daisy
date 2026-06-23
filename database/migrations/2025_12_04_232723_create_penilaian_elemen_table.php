@@ -44,7 +44,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Unique constraint: satu user hanya bisa nilai 1 elemen 1x per asesmen
-            $table->unique(['id_asesmen', 'id_asesor', 'id_elemen'], 'unique_penilaian');
+            $table->unique(['id_asesmen', 'id_asesor', 'id_elemen'], 'unique_penilaian_ak');
 
             // Index untuk query cepat
             $table->index(['id_asesmen', 'id_asesor']);
@@ -65,7 +65,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Unique constraint: satu user hanya bisa nilai 1 elemen 1x per asesmen
-            $table->unique(['id_asesmen', 'id_asesor', 'id_elemen'], 'unique_penilaian');
+            $table->unique(['id_asesmen', 'id_asesor', 'id_elemen'], 'unique_penilaian_al');
 
             // Index untuk query cepat
             $table->index(['id_asesmen', 'id_asesor']);
@@ -105,7 +105,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Unique constraint: satu user hanya bisa nilai 1 elemen 1x per asesmen
-            $table->unique(['id_asesmen', 'id_asesor', 'id_elemen'], 'unique_penilaian');
+            $table->unique(['id_asesmen', 'id_asesor', 'id_elemen'], 'unique_penilaian_ak_banding');
 
             // Index untuk query cepat
             $table->index(['id_asesmen', 'id_asesor']);
@@ -126,7 +126,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Unique constraint: satu user hanya bisa nilai 1 elemen 1x per asesmen
-            $table->unique(['id_asesmen', 'id_asesor', 'id_elemen'], 'unique_penilaian');
+            $table->unique(['id_asesmen', 'id_asesor', 'id_elemen'], 'unique_penilaian_al_banding');
 
             // Index untuk query cepat
             $table->index(['id_asesmen', 'id_asesor']);

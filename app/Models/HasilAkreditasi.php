@@ -387,7 +387,7 @@ class HasilAkreditasi extends Model
     /**
      * Tentukan peringkat dari skor.
      *
-     * Untuk status Unggul, syarat perlu dicek dari $this->memenuhi_syarat_unggul.
+     * Untuk status Terakreditasi Unggul, syarat perlu dicek dari $this->memenuhi_syarat_unggul.
      * Sebelum memanggil method ini, service WAJIB set:
      *   $hasil->memenuhi_syarat_unggul = $semuaMemenuhi;
      *

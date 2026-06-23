@@ -208,6 +208,21 @@
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
 <script>
+    const bobotRoutes = {
+        destroy: @json(route('bobot-penilaian.destroy', ['bobot_penilaian' => '__ID__']))
+        , update: @json(route('bobot-penilaian.update', ['bobot_penilaian' => '__ID__']))
+        , toggle: @json(route('bobot-penilaian.toggle', ['id' => '__ID__']))
+        , calculate: @json(route('bobot-penilaian.calculate', ['asesmenId' => '__ASESMEN_ID__', 'categoryId' => '__CATEGORY_ID__']))
+    };
+
+    function buildRoute(template, replacements) {
+        Object.keys(replacements).forEach(function(key) {
+            template = template.replace(key, encodeURIComponent(replacements[key]));
+        });
+
+        return template;
+    }
+
     console.log('Script loaded');
     console.log('jQuery version:', typeof $ !== 'undefined' ? $.fn.jquery : 'jQuery not found');
     console.log('Select2 exists:', typeof $.fn.select2 !== 'undefined');
@@ -216,6 +231,13 @@
     // Initialize Select2
     $(document).ready(function() {
         console.log('Document ready - initializing components...');
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                , 'Accept': 'application/json'
+            }
+        });
+
         $('#filterElemen, #filterCategory, #filterDegreeLevel, #inputElemen, #inputCategory, #inputDegreeLevel').select2({
             theme: 'bootstrap-5'
             , width: '100%'
@@ -287,17 +309,19 @@
     async function deleteRecord(id) {
         if (await swalConfirmSubmit('warning', 'Yakin ingin menghapus bobot ini?')) {
             $.ajax({
-                url: '/bobot-penilaian/' + id
+                url: buildRoute(bobotRoutes.destroy, {
+                    '__ID__': id
+                })
                 , type: 'DELETE'
-                , data: {
-                    _token: '{{ csrf_token() }}'
-                }
                 , success: function(response) {
                     $('#bobotTable').DataTable().ajax.reload();
-                    Swal.fire('Berhasil', 'Data berhasil dihapus', 'success');
+                    Swal.fire('Berhasil', response.message || 'Data berhasil dihapus', 'success');
                 }
                 , error: function(xhr) {
-                    Swal.fire('Perhatian', 'Gagal menghapus data', 'error');
+                    const message = xhr.responseJSON && xhr.responseJSON.message
+                        ? xhr.responseJSON.message
+                        : 'Gagal menghapus data';
+                    Swal.fire('Perhatian', message, 'error');
                 }
             });
         }
@@ -305,11 +329,10 @@
 
     function toggleActive(id) {
         $.ajax({
-            url: '/bobot-penilaian/' + id + '/toggle'
+            url: buildRoute(bobotRoutes.toggle, {
+                '__ID__': id
+            })
             , type: 'POST'
-            , data: {
-                _token: '{{ csrf_token() }}'
-            }
             , success: function(response) {
                 $('#bobotTable').DataTable().ajax.reload();
             }
@@ -323,7 +346,9 @@
     function editBobot(id, elemenId, categoryId, degreeLevelId, bobot) {
         $('#modalTitle').text('Edit Bobot Penilaian');
         $('#formMethod').val('PUT');
-        $('#formBobot').attr('action', `/bobot-penilaian/${id}`);
+        $('#formBobot').attr('action', buildRoute(bobotRoutes.update, {
+            '__ID__': id
+        }));
         $('#bobotId').val(id);
         $('#inputElemen').val(elemenId).trigger('change');
         $('#inputCategory').val(categoryId).trigger('change');
@@ -360,7 +385,10 @@
         $('#hasilHitung').show();
 
         $.ajax({
-            url: `/bobot-penilaian/hitung/${asesmenId}/${categoryId}`
+            url: buildRoute(bobotRoutes.calculate, {
+                '__ASESMEN_ID__': asesmenId
+                , '__CATEGORY_ID__': categoryId
+            })
             , method: 'GET'
             , dataType: 'json'
             , timeout: 10000, // 10 second timeout

@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use App\Libraries\Date;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
 class StudyProgram extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'full_name',

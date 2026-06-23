@@ -783,7 +783,7 @@
         <div class="hero-stat-divider"></div>
         <div class="hero-stat-item">
             <div class="hero-stat-num">{{ $stats['unggul'] }}</div>
-            <div class="hero-stat-label">Peringkat Unggul</div>
+            <div class="hero-stat-label">Terakreditasi Unggul</div>
         </div>
         </div>
         </div>
@@ -1376,9 +1376,14 @@
 
         // ── Rumpun Bar ──
         (function() {
+            var chartRumpun = document.getElementById('chartRumpun');
+            if (!chartRumpun) {
+                return;
+            }
+
             var d = CHART_DATA.rumpun;
             var colors = ['#764ba2', '#11998e', '#d4a017', '#c0392b'];
-            new Chart(document.getElementById('chartRumpun'), {
+            new Chart(chartRumpun, {
                 type: 'bar'
                 , data: {
                     labels: Object.keys(d).map(function(k) {
@@ -1441,10 +1446,20 @@
         // =========================================================
         var table = null;
 
+        function emptyParams() {
+            return {
+                search_text: ''
+                , university_id: []
+                , degree_level_id: []
+                , peringkat: []
+                , status: ''
+                , tahun: []
+                , rumpun: ''
+            };
+        }
+
         function initTable(params) {
-            if (!params) {
-                params = {};
-            }
+            activeParams = Object.assign(emptyParams(), params || {});
 
             if (table) {
                 table.destroy();
@@ -1458,13 +1473,30 @@
                     url: ROUTE_AJAX
                     , type: 'GET'
                     , data: function(d) {
-                        d.search_text = activeParams.search_text || '';
-                        d.university_id = activeParams.university_id || [];
-                        d.degree_level_id = activeParams.degree_level_id || [];
-                        d.peringkat = activeParams.peringkat || [];
-                        d.status = activeParams.status || '';
-                        d.tahun = activeParams.tahun || [];
-                        d.rumpun = activeParams.rumpun || '';
+                        var params = Object.assign(emptyParams(), activeParams || {});
+
+                        if (params.search_text) {
+                            d.search_text = params.search_text;
+                        }
+                        if (params.university_id.length) {
+                            d.university_id = params.university_id;
+                        }
+                        if (params.degree_level_id.length) {
+                            d.degree_level_id = params.degree_level_id;
+                        }
+                        if (params.peringkat.length) {
+                            d.peringkat = params.peringkat;
+                        }
+                        if (params.status) {
+                            d.status = params.status;
+                        }
+                        if (params.tahun.length) {
+                            d.tahun = params.tahun;
+                        }
+                        if (params.rumpun) {
+                            d.rumpun = params.rumpun;
+                        }
+
                         return d;
                     }
                     , dataSrc: function(json) {
@@ -1614,8 +1646,9 @@
         // =========================================================
         // FILTER LOGIC
         // =========================================================
-        var activeParams = {};
+        var activeParams = emptyParams();
         var filterVisible = true;
+        var suppressFilterApply = false;
 
         function toggleFilter() {
             filterVisible = !filterVisible;
@@ -1650,11 +1683,14 @@
         }
 
         function resetFilter() {
+            suppressFilterApply = true;
             document.getElementById('globalSearch').value = '';
             document.getElementById('filterStatus').value = '';
             document.getElementById('filterRumpun').value = '';
             $('#filterUniv, #filterJenjang, #filterPeringkat, #filterTahun').val(null).trigger('change');
-            activeParams = {};
+            suppressFilterApply = false;
+
+            activeParams = emptyParams();
             updateChips();
             updateActiveCount();
 
@@ -1770,16 +1806,34 @@
         // ── Pilihan lain auto-apply ──
         ['filterStatus', 'filterRumpun'].forEach(function(id) {
             document.getElementById(id).addEventListener('change', function() {
+                if (suppressFilterApply) {
+                    return;
+                }
+
                 applyFilter();
             });
         });
         $('#filterUniv, #filterJenjang, #filterPeringkat, #filterTahun').on('change', function() {
+            if (suppressFilterApply) {
+                return;
+            }
+
             applyFilter();
         });
 
         // ── Init on load ──
         document.addEventListener('DOMContentLoaded', function() {
-            initTable({});
+            suppressFilterApply = true;
+            document.getElementById('globalSearch').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterRumpun').value = '';
+            $('#filterUniv, #filterJenjang, #filterPeringkat, #filterTahun').val(null).trigger('change');
+            suppressFilterApply = false;
+
+            activeParams = emptyParams();
+            updateChips();
+            updateActiveCount();
+            initTable(emptyParams());
         });
 
     </script>

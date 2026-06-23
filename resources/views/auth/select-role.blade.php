@@ -3,6 +3,7 @@
 @section('title', 'Login - DAISY LAMDEPILAR')
 
 @php
+if (!function_exists('getRoleIcon')) {
 function getRoleIcon($roleName) {
 $icons = [
 'super_admin' => 'shield-fill-check',
@@ -16,7 +17,9 @@ $icons = [
 ];
 return $icons[$roleName] ?? 'person';
 }
+}
 
+if (!function_exists('getRoleDescription')) {
 function getRoleDescription($roleName) {
 $descriptions = [
 'super_admin' => 'Akses penuh ke seluruh sistem',
@@ -31,6 +34,7 @@ $descriptions = [
 'default' => 'Pengguna umum',
 ];
 return $descriptions[$roleName] ?? 'User role';
+}
 }
 @endphp
 

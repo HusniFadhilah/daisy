@@ -818,7 +818,11 @@ class PemetaanAkreditasiController extends Controller
         $this->applyFilters($query, $request);
 
         // Get total records before filtering
-        $totalRecords = StudyProgram::count();
+        $totalQuery = StudyProgram::query();
+        if ($request->filled('is_example') && $request->is_example !== 'both') {
+            $totalQuery->where('is_example', $request->is_example === 'true');
+        }
+        $totalRecords = $totalQuery->count();
 
         // Get filtered records count
         $filteredRecords = $query->count();

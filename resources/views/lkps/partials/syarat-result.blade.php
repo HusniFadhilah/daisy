@@ -16,7 +16,7 @@ $tipeJabatan = ($jabatan['tipe'] ?? '') === 'sertifikat_profesi'
 <div class="alert alert-success alert-permanent mb-3">
     <i class="bi bi-shield-fill-check me-2"></i>
     <strong>Semua syarat LKPS terpenuhi.</strong>
-    Program studi berpotensi mendapat status Unggul (tergantung hasil skor AL).
+    Program studi berpotensi mendapat Status Terakreditasi Unggul (tergantung hasil skor AL).
 </div>
 @else
 <div class="alert alert-warning alert-permanent mb-3">

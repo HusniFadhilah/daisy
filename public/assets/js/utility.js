@@ -219,14 +219,17 @@ function alertConfirm(options) {
         button.addEventListener('click', e => {
             e.preventDefault();
 
-            const form = formId ? document.getElementById(formId) : document.getElementById(button.dataset.idForm);
+            const targetFormId = button.dataset.idForm || formId;
+            const form = targetFormId ? document.getElementById(targetFormId) : null;
             if (!form) return;
 
             const message = isMessage
                 ? button.dataset.message
                 : `Data ${button.dataset.text || ''} akan dihapus.`;
 
-            const href = isDataHref ? button.dataset.href : button.getAttribute('href');
+            const href = isDataHref
+                ? button.dataset.href
+                : (button.dataset.href || button.getAttribute('href') || form.getAttribute('action'));
             const hrefPermanent = isPermanent ? button.dataset.hrefpermanent : '';
 
             submitFormSwal(form, message, href, isPermanent, hrefPermanent);

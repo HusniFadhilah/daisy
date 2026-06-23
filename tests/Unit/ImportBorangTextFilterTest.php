@@ -10,7 +10,7 @@ class ImportBorangTextFilterTest extends TestCase
     /** @test */
     public function it_keeps_real_content()
     {
-        $job = new \App\Jobs\ImportBorangDocxJob(1, 'dummy.docx');
+        $job = new \App\Jobs\ImportBorangDocxJob(1, 1, 'dummy.docx');
 
         $realContent = [
             'Berikut merupakan deskripsinya dari D1',
@@ -27,7 +27,7 @@ class ImportBorangTextFilterTest extends TestCase
     /** @test */
     public function it_skips_placeholders()
     {
-        $job = new \App\Jobs\ImportBorangDocxJob(1, 'dummy.docx');
+        $job = new \App\Jobs\ImportBorangDocxJob(1, 1, 'dummy.docx');
 
         $placeholders = [
             'Deskripsi legalitas program dan tata pamong.',

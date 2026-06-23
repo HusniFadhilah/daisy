@@ -61,3 +61,14 @@ $authUser = Auth::user();
         </form>
     </nav>
 </aside>
+<script>
+    (function() {
+        var sidebar = document.getElementById('sidebar');
+        var active = sidebar ? sidebar.querySelector('.nav-link.active') : null;
+        if (sidebar && active) {
+            var offset = active.offsetTop - (sidebar.clientHeight / 2) + (active.offsetHeight / 2);
+            sidebar.scrollTop = offset;
+        }
+    })();
+
+</script>

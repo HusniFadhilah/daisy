@@ -129,7 +129,6 @@
 
     .table-hover tbody tr:hover {
         background-color: #f8f9fa;
-        transform: scale(1.01);
     }
 
     .action-btn {
@@ -138,6 +137,19 @@
 
     .action-btn:hover {
         transform: scale(1.05);
+    }
+
+    #programsDataTable {
+        table-layout: fixed;
+    }
+
+    #programsDataTable th,
+    #programsDataTable td {
+        vertical-align: middle;
+    }
+
+    #programsDataTable td {
+        white-space: normal;
     }
 
     .timeline-container {
@@ -333,7 +345,7 @@
     }
 
     .modal-backdrop {
-        z-index: 1060 !important;
+        z-index: 1050 !important;
     }
 
     #reminderModal .modal-dialog {
@@ -701,7 +713,7 @@
                                 {{-- Status Filter --}}
                                 <div class="mb-3">
                                     <label class="form-label text-white">
-                                        <i class="bi bi-check-circle"></i> Status Akreditasi
+                                        <i class="bi bi-check-circle"></i> Status Kedaluwarsa
                                         <span class="clear-single-filter float-end" onclick="clearSingleFilter('status_kedaluwarsa')" style="display: {{ request('status_kedaluwarsa') ? 'inline' : 'none' }};">
                                             <i class="bi bi-x-circle"></i>
                                         </span>
@@ -722,7 +734,7 @@
                                 {{-- Peringkat Filter --}}
                                 <div class="mb-3">
                                     <label class="form-label text-white">
-                                        <i class="bi bi-star"></i> Status Akreditasi
+                                        <i class="bi bi-star"></i> Peringkat Akreditasi
                                         <span class="clear-single-filter float-end" onclick="clearSingleFilter('peringkat')" style="display: {{ request('peringkat') ? 'inline' : 'none' }};">
                                             <i class="bi bi-x-circle"></i>
                                         </span>
@@ -897,7 +909,7 @@
 
                     <!-- Main Content -->
                     {{-- ✅ Urgent Programs Section --}}
-                    <div id="urgentSection">
+                    <div id="urgentSection" class="{{ $urgentPrograms->count() ? '' : 'd-none' }}">
                         @include('asesmen.pemetaan.components.urgent-cards', ['urgentPrograms' => $urgentPrograms])
                     </div>
 
@@ -922,14 +934,14 @@
                                 <table id="programsDataTable" class="table table-hover align-middle mb-0" style="width:100%">
                                     <thead class="table-light">
                                         <tr>
-                                            <th style="width: 50px;">#</th>
+                                            <th style="width: 56px;">#</th>
                                             <th>Program Studi</th>
-                                            <th style="width: 80px;">Jenjang</th>
-                                            <th style="width: 120px;">Status Akreditasi</th>
-                                            <th style="width: 150px;">Status Kedaluwarsa</th>
+                                            <th style="width: 90px;">Jenjang</th>
+                                            <th style="width: 140px;">Peringkat</th>
+                                            <th style="width: 150px;">Status</th>
                                             <th style="width: 150px;">Kedaluwarsa</th>
-                                            <th style="width: 100px;">Sisa Waktu</th>
-                                            <th style="width: 150px;">Aksi</th>
+                                            <th style="width: 130px;">Sisa Waktu</th>
+                                            <th style="width: 110px;">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1142,11 +1154,11 @@ Sekretariat LAMDEPILAR</textarea>
     let dataTable = null;
     let dataTableInitializing = false;
     let reminderSelect2Initialized = false;
+    let suppressFilterAutoApply = false;
 
     document.addEventListener('DOMContentLoaded', function() {
-        ['modalKirimPengingat', 'reminderModal'].forEach(id => {
-            const modal = document.getElementById(id);
-            if (modal && modal.parentElement !== document.body) {
+        document.querySelectorAll('.modal').forEach(modal => {
+            if (modal.parentElement !== document.body) {
                 document.body.appendChild(modal);
             }
         });
@@ -1191,22 +1203,19 @@ Sekretariat LAMDEPILAR</textarea>
             return;
         }
 
-        dataTableInitializing = true;
-
-        // Destroy existing instance
         if (dataTable) {
-            try {
-                dataTable.destroy();
-                dataTable = null;
-            } catch (e) {
-                console.warn('DataTable destroy error:', e);
-            }
+            dataTable.columns.adjust().draw(false);
+            return;
         }
+
+        dataTableInitializing = true;
 
         try {
             dataTable = $('#programsDataTable').DataTable({
                 processing: true
                 , serverSide: true
+                , autoWidth: false
+                , scrollX: true
                 , ajax: {
                     url: '{{ route("de.pemetaan.datatable.ajax") }}'
                     , type: 'GET'
@@ -1347,12 +1356,14 @@ Sekretariat LAMDEPILAR</textarea>
                         data: null
                         , orderable: false
                         , searchable: false
+                        , className: 'text-center'
                         , render: function(data, type, row) {
                             let buttons = `
                         <div class="btn-group btn-group-sm">
                             <a href="/de/pengingat-masa-akreditasi/${row.program_studi.id}"
-                               class="btn btn-outline-primary action-btn">
-                                <i class="bi bi-eye"></i>
+                               class="btn btn-outline-primary action-btn"
+                               title="Lihat Detail">
+                                <i class="bi bi-eye"></i> Detail
                             </a>
                     `;
 
@@ -1361,6 +1372,16 @@ Sekretariat LAMDEPILAR</textarea>
                         }
                     }
                 ]
+                , columnDefs: [{
+                    targets: 0,
+                    width: '56px'
+                }, {
+                    targets: 2,
+                    width: '90px'
+                }, {
+                    targets: 7,
+                    width: '110px'
+                }]
                 , order: [
                     [5, 'asc']
                 ]
@@ -1392,11 +1413,12 @@ Sekretariat LAMDEPILAR</textarea>
                 }
                 , drawCallback: function(settings) {
                     const info = this.api().page.info();
-                    $('#totalProgramsBadge').text(info.recordsTotal);
+                    $('#totalProgramsBadge').text(info.recordsDisplay);
                     updateURLWithDataTableState();
                 }
                 , initComplete: function() {
                     dataTableInitializing = false;
+                    this.api().columns.adjust();
                 }
             });
         } catch (error) {
@@ -1431,8 +1453,11 @@ Sekretariat LAMDEPILAR</textarea>
     // ========================================
     function refreshDataTable() {
         if (dataTable) {
+            dataTable.columns.adjust();
             dataTable.ajax.reload(null, false); // false = stay on current page
             showToast('success', 'Data berhasil direfresh');
+        } else {
+            initDataTable();
         }
     }
 
@@ -1467,17 +1492,15 @@ Sekretariat LAMDEPILAR</textarea>
 
             if (data.success) {
                 const urgentSection = document.getElementById('urgentSection');
-                const urgentContainer = document.getElementById('urgentCardsContainer');
 
                 if (data.count > 0) {
-                    if (urgentContainer) {
-                        urgentContainer.innerHTML = data.html;
-                    }
                     if (urgentSection) {
+                        urgentSection.innerHTML = data.html;
                         urgentSection.classList.remove('d-none');
                     }
                 } else {
                     if (urgentSection) {
+                        urgentSection.innerHTML = '';
                         urgentSection.classList.add('d-none');
                     }
                 }
@@ -1585,6 +1608,8 @@ Sekretariat LAMDEPILAR</textarea>
         $('#yearFilter, #monthFilter, #universityFilter, #degreeLevelFilter, #statusFilter, #peringkatFilter')
             .off('change') // Remove existing handlers
             .on('change', function() {
+                if (suppressFilterAutoApply) return;
+
                 updateActiveFilterDisplay();
                 applyFilters(); // Auto-apply
             });
@@ -1726,7 +1751,9 @@ Sekretariat LAMDEPILAR</textarea>
             };
 
             if (filterMap[filterName]) {
+                suppressFilterAutoApply = true;
                 $(`#${filterMap[filterName]}`).val(null).trigger('change');
+                suppressFilterAutoApply = false;
             }
         }
 
@@ -1766,25 +1793,7 @@ Sekretariat LAMDEPILAR</textarea>
     // ✅ UPDATE ACTIVE FILTER COUNT
     // ========================================
     function updateActiveFilterCount() {
-        let count = 0;
-
-        if ($('#yearFilter').val() && $('#yearFilter').val().length > 0) count++;
-        if ($('#monthFilter').val() && $('#monthFilter').val().length > 0) count++;
-        if ($('#universityFilter').val() && $('#universityFilter').val().length > 0) count++;
-        if ($('#degreeLevelFilter').val() && $('#degreeLevelFilter').val().length > 0) count++;
-        if ($('#statusFilter').val() && $('#statusFilter').val().length > 0) count++;
-        if ($('#peringkatFilter').val() && $('#peringkatFilter').val().length > 0) count++;
-        if ($('#searchInput').val().trim() !== '') count++;
-
-        const badge = $('#activeFiltersCount');
-        const countSpan = $('#filterCount');
-
-        if (count > 0) {
-            countSpan.text(count);
-            badge.removeClass('d-none');
-        } else {
-            badge.addClass('d-none');
-        }
+        updateActiveFilterDisplay();
     }
 
     // ========================================
@@ -2012,6 +2021,15 @@ Sekretariat LAMDEPILAR</textarea>
         const loadingOverlay = document.getElementById('tableLoading');
         const tableContainer = document.getElementById('tableContainer');
 
+        if (!loadingOverlay || !tableContainer) {
+            if (dataTable) {
+                dataTable.ajax.reload(null, false);
+            } else {
+                initDataTable();
+            }
+            return;
+        }
+
         try {
             loadingOverlay.classList.remove('d-none');
 
@@ -2110,8 +2128,10 @@ Sekretariat LAMDEPILAR</textarea>
         document.getElementById('isExampleFilter').value = 'both';
 
         // Clear Select2
+        suppressFilterAutoApply = true;
         $('#yearFilter, #monthFilter, #universityFilter, #degreeLevelFilter, #statusFilter, #peringkatFilter')
             .val(null).trigger('change');
+        suppressFilterAutoApply = false;
 
         updateActiveFilterDisplay();
 
@@ -2135,7 +2155,10 @@ Sekretariat LAMDEPILAR</textarea>
                 if (!dataTable && !dataTableInitializing) {
                     initDataTable();
                 } else if (dataTable) {
-                    dataTable.ajax.reload();
+                    setTimeout(() => {
+                        dataTable.columns.adjust();
+                        dataTable.ajax.reload(null, false);
+                    }, 50);
                 }
                 loadUrgentPrograms();
             }
@@ -2162,7 +2185,8 @@ Sekretariat LAMDEPILAR</textarea>
 
                 // Reload DataTable
                 if (dataTable) {
-                    dataTable.ajax.reload();
+                    dataTable.columns.adjust();
+                    dataTable.ajax.reload(null, false);
                 } else {
                     initDataTable();
                 }

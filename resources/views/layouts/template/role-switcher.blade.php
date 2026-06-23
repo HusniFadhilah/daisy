@@ -93,6 +93,7 @@
 @endif
 
 @php
+if (!function_exists('getRoleIcon')) {
 function getRoleIcon($roleName) {
 $icons = [
 'super_admin' => 'shield-fill-check',
@@ -105,5 +106,6 @@ $icons = [
 'default' => 'person',
 ];
 return $icons[$roleName] ?? 'person';
+}
 }
 @endphp
