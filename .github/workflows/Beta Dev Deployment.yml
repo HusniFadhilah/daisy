@@ -26,6 +26,17 @@ jobs:
             --exclude=".git/" \
             --exclude="node_modules/"
 
+      - name: Prepare remote directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 2222
+          script: |
+            mkdir -p /home/ubuntu/daisy/daisy-dev
+            test -w /home/ubuntu/daisy/daisy-dev
+
       - name: Sync files using SFTP
         uses: appleboy/scp-action@v1
         with:
@@ -38,3 +49,4 @@ jobs:
           overwrite: true
           rm: false
           strip_components: 1
+          debug: true

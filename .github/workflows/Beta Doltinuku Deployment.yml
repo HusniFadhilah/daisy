@@ -26,6 +26,17 @@ jobs:
             --exclude=".git/" \
             --exclude="node_modules/"
 
+      - name: Prepare remote directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SFTP_DOLTINUKU_SERVER }}
+          username: ${{ secrets.SFTP_DOLTINUKU_USERNAME }}
+          password: ${{ secrets.SFTP_DOLTINUKU_PASSWORD }}
+          port: 22
+          script: |
+            mkdir -p /home/doltinuku/daisy
+            test -w /home/doltinuku/daisy
+
       - name: Sync files using SFTP
         uses: appleboy/scp-action@v1
         with:
@@ -38,3 +49,4 @@ jobs:
           overwrite: true
           rm: false
           strip_components: 1
+          debug: true
