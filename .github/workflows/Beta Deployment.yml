@@ -23,27 +23,21 @@ jobs:
             --exclude=".git/" \
             --exclude="node_modules/"
 
-      - name: Prepare remote directory
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 2222
-          script: |
-            mkdir -p /home/ubuntu/daisy/daisy
-            test -w /home/ubuntu/daisy/daisy
+      - name: Install SFTP client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
 
       - name: Sync files using SFTP
-        uses: appleboy/scp-action@v1
-        with:
-          host: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 2222
-          source: ".deploy"
-          target: "/home/ubuntu/daisy/daisy"
-          overwrite: true
-          rm: false
-          strip_components: 1
-          debug: true
+        env:
+          SFTP_HOST: ${{ secrets.FTP_SERVER }}
+          SFTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          SFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          SFTP_REMOTE_DIR: /home/ubuntu/daisy/daisy
+        run: |
+          lftp -u "$SFTP_USERNAME","$SFTP_PASSWORD" -p 2222 "sftp://$SFTP_HOST" <<EOF
+          set sftp:auto-confirm yes
+          mkdir -p "$SFTP_REMOTE_DIR"
+          mirror -R --verbose .deploy "$SFTP_REMOTE_DIR"
+          bye
+          EOF
