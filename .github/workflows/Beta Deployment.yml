@@ -1,52 +1,24 @@
 name: Beta Deployment
-
 on:
   push:
     branches:
       - main
-
 jobs:
   web-deploy:
     name: Deploy
     runs-on: ubuntu-latest
-
     steps:
       - name: Get latest code
-        uses: actions/checkout@v4
-
-      - name: Prepare deployment files
-        run: |
-          mkdir -p .deploy
-          rsync -a ./ .deploy/ \
-            --exclude=".deploy/" \
-            --exclude="vendor/" \
-            --exclude=".vscode/" \
-            --exclude="public/assets/plugins/" \
-            --exclude="public/gs/" \
-            --exclude=".git/" \
-            --exclude="node_modules/"
-
-      - name: Prepare remote directory
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 2222
-          script: |
-            mkdir -p /home/ubuntu/daisy/daisy
-            test -w /home/ubuntu/daisy/daisy
+        uses: actions/checkout@v3
 
       - name: Sync files using SFTP
-        uses: appleboy/scp-action@v1
+        uses: sand4rt/ftp-deployer@v1.8
         with:
+          sftp: true
           host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          remote_folder: /home/ubuntu/daisy/daisy
+          local_folder: "./"
           port: 2222
-          source: ".deploy"
-          target: "/home/ubuntu/daisy/daisy"
-          overwrite: true
-          rm: false
-          strip_components: 1
-          debug: true
+          exclude: '["vendor/**", ".vscode/**", "public/assets/plugins/**", "public/gs/**", ".git/**", "node_modules/**"]'
