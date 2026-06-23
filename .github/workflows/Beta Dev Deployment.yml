@@ -14,6 +14,18 @@ jobs:
       - name: Get latest code
         uses: actions/checkout@v4
 
+      - name: Prepare deployment files
+        run: |
+          mkdir -p .deploy
+          rsync -a ./ .deploy/ \
+            --exclude=".deploy/" \
+            --exclude="vendor/" \
+            --exclude=".vscode/" \
+            --exclude="public/assets/plugins/" \
+            --exclude="public/gs/" \
+            --exclude=".git/" \
+            --exclude="node_modules/"
+
       - name: Sync files using SFTP
         uses: appleboy/scp-action@v1
         with:
@@ -21,8 +33,8 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: 2222
-          source: "."
+          source: ".deploy"
           target: "/home/ubuntu/daisy/daisy-dev"
           overwrite: true
           rm: false
-          exclude: '["vendor/**", ".vscode/**", "public/assets/plugins/**", "public/gs/**", ".git/**", "node_modules/**"]'
+          strip_components: 1
