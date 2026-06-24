@@ -1121,7 +1121,7 @@ Sekretariat LAMDEPILAR</textarea>
                 </div>
 
                 {{-- Tombol aksi filter --}}
-                <div class="d-flex gap-2 align-items-center">
+                <div class="d-flex gap-2 align-items-center flex-wrap">
                     <button class="btn btn-primary btn-sm" onclick="applyReminderFilters()">
                         <i class="bi bi-search"></i> Terapkan Filter
                     </button>
@@ -1131,6 +1131,9 @@ Sekretariat LAMDEPILAR</textarea>
                     <span id="reminderActiveFilterBadge" class="badge bg-danger d-none ms-1">
                         <i class="bi bi-funnel-fill"></i> <span id="reminderActiveFilterCount">0</span> filter aktif
                     </span>
+                    <button class="btn btn-success btn-sm ms-auto" onclick="exportReminderExcel()">
+                        <i class="bi bi-file-earmark-excel"></i> Export Excel
+                    </button>
                 </div>
             </div>
 
@@ -1373,14 +1376,14 @@ Sekretariat LAMDEPILAR</textarea>
                     }
                 ]
                 , columnDefs: [{
-                    targets: 0,
-                    width: '56px'
+                    targets: 0
+                    , width: '56px'
                 }, {
-                    targets: 2,
-                    width: '90px'
+                    targets: 2
+                    , width: '90px'
                 }, {
-                    targets: 7,
-                    width: '110px'
+                    targets: 7
+                    , width: '110px'
                 }]
                 , order: [
                     [5, 'asc']
@@ -2358,7 +2361,9 @@ Sekretariat LAMDEPILAR</textarea>
             , allowClear: true
             , width: '100%'
             , placeholder: '- Pilih -'
-            , language: { noResults: () => 'Tidak ada hasil' }
+            , language: {
+                noResults: () => 'Tidak ada hasil'
+            }
         };
         $('#reminderTargetMonths').select2(cfgSingle);
         $('#reminderWindowMonths').select2(cfgSingle);
@@ -2442,6 +2447,32 @@ Sekretariat LAMDEPILAR</textarea>
             .val(null).trigger('change');
         updateReminderActiveFilters();
         loadReminderDetail(1);
+    }
+
+    function appendReminderFilterParams(url) {
+        const targetMonths = document.getElementById('reminderTargetMonths').value;
+        const windowMonths = document.getElementById('reminderWindowMonths').value;
+        const filters = getReminderFilters();
+
+        if (targetMonths !== '') url.searchParams.set('target_months', targetMonths);
+        if (windowMonths !== '') url.searchParams.set('window_months', windowMonths);
+        if (filters.search) url.searchParams.set('search', filters.search);
+        if (filters.is_example !== 'both') url.searchParams.set('is_example', filters.is_example);
+        if (filters.date_start) url.searchParams.set('date_start', filters.date_start);
+        if (filters.date_end) url.searchParams.set('date_end', filters.date_end);
+        filters.university_id.forEach(v => url.searchParams.append('university_id[]', v));
+        filters.month.forEach(v => url.searchParams.append('month[]', v));
+        filters.year.forEach(v => url.searchParams.append('year[]', v));
+        filters.peringkat.forEach(v => url.searchParams.append('peringkat[]', v));
+        filters.status.forEach(v => url.searchParams.append('status[]', v));
+
+        return url;
+    }
+
+    function exportReminderExcel() {
+        const url = new URL('{{ route("de.pemetaan.export") }}', window.location.origin);
+        url.searchParams.set('scope', 'reminder');
+        window.location.href = appendReminderFilterParams(url).toString();
     }
 
     async function loadReminderDetail(page = 1) {

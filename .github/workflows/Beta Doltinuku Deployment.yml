@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Get latest code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare deployment files
         run: |
@@ -26,27 +26,21 @@ jobs:
             --exclude=".git/" \
             --exclude="node_modules/"
 
-      - name: Prepare remote directory
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SFTP_DOLTINUKU_SERVER }}
-          username: ${{ secrets.SFTP_DOLTINUKU_USERNAME }}
-          password: ${{ secrets.SFTP_DOLTINUKU_PASSWORD }}
-          port: 22
-          script: |
-            mkdir -p /home/doltinuku/daisy
-            test -w /home/doltinuku/daisy
+      - name: Install SFTP client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
 
       - name: Sync files using SFTP
-        uses: appleboy/scp-action@v1
-        with:
-          host: ${{ secrets.SFTP_DOLTINUKU_SERVER }}
-          username: ${{ secrets.SFTP_DOLTINUKU_USERNAME }}
-          password: ${{ secrets.SFTP_DOLTINUKU_PASSWORD }}
-          port: 22
-          source: ".deploy"
-          target: "/home/doltinuku/daisy"
-          overwrite: true
-          rm: false
-          strip_components: 1
-          debug: true
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_DOLTINUKU_SERVER }}
+          SFTP_USERNAME: ${{ secrets.SFTP_DOLTINUKU_USERNAME }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_DOLTINUKU_PASSWORD }}
+          SFTP_REMOTE_DIR: /home/doltinuku/daisy
+        run: |
+          lftp -u "$SFTP_USERNAME","$SFTP_PASSWORD" -p 22 "sftp://$SFTP_HOST" <<EOF
+          set sftp:auto-confirm yes
+          mkdir -p "$SFTP_REMOTE_DIR"
+          mirror -R --verbose .deploy "$SFTP_REMOTE_DIR"
+          bye
+          EOF

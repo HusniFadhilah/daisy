@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use App\Exports\ReminderStudyProgramsExport;
 use App\Http\Controllers\Controller;
 use App\Mail\PengingatAkreditasiMail;
 use App\Models\DegreeLevel;
@@ -17,6 +18,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PemetaanAkreditasiController extends Controller
 {
@@ -802,8 +804,107 @@ class PemetaanAkreditasiController extends Controller
      */
     public function export(Request $request)
     {
-        // TODO: Implement Excel export
-        return response()->json(['message' => 'Export feature coming soon']);
+        $query = $this->buildReminderDetailExportQuery($request);
+
+        $programs = $query->orderByRaw('CASE WHEN tanggal_kedaluwarsa IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('tanggal_kedaluwarsa', 'asc')
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $filename = 'detail_pengingat_masa_akreditasi_' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(new ReminderStudyProgramsExport($programs), $filename);
+    }
+
+    private function buildReminderDetailExportQuery(Request $request)
+    {
+        $targetMonths = $request->get('target_months');
+        $windowMonths = max(1, (int) $request->get('window_months', 1));
+        $dateStart = $request->get('date_start');
+        $dateEnd = $request->get('date_end');
+        $showAll = $targetMonths === null || $targetMonths === '';
+
+        $start = $end = null;
+
+        if ($dateStart || $dateEnd) {
+            $start = $dateStart ? Carbon::parse($dateStart)->startOfDay() : null;
+            $end = $dateEnd ? Carbon::parse($dateEnd)->endOfDay() : null;
+            $showAll = false;
+        } elseif (!$showAll) {
+            $base = now()->copy()->addMonths((int) $targetMonths);
+            $start = $base->copy()->startOfMonth();
+            $end = $base->copy()->addMonths($windowMonths - 1)->endOfMonth();
+        }
+
+        $query = StudyProgram::with(['university', 'degreeLevel']);
+
+        if (!$showAll) {
+            if ($start && $end) {
+                $query->whereBetween('tanggal_kedaluwarsa', [$start, $end]);
+            } elseif ($start) {
+                $query->where('tanggal_kedaluwarsa', '>=', $start);
+            } elseif ($end) {
+                $query->where('tanggal_kedaluwarsa', '<=', $end);
+            }
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhereHas('university', fn($s) => $s->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('university_id')) {
+            $ids = array_filter((array) $request->university_id);
+            if (!empty($ids)) {
+                $query->whereIn('id_university', $ids);
+            }
+        }
+
+        if ($request->filled('is_example') && $request->is_example !== 'both') {
+            $query->where('is_example', $request->is_example === 'true');
+        }
+
+        if ($request->filled('month')) {
+            $months = array_filter((array) $request->month);
+            if (!empty($months)) {
+                $query->where(function ($q) use ($months) {
+                    foreach ($months as $month) {
+                        $q->orWhereMonth('tanggal_kedaluwarsa', (int) $month);
+                    }
+                });
+            }
+        }
+
+        if ($request->filled('year')) {
+            $years = array_filter((array) $request->year);
+            if (!empty($years)) {
+                $query->where(function ($q) use ($years) {
+                    foreach ($years as $year) {
+                        $q->orWhereYear('tanggal_kedaluwarsa', (int) $year);
+                    }
+                });
+            }
+        }
+
+        if ($request->filled('peringkat')) {
+            $peringkats = array_filter((array) $request->peringkat);
+            if (!empty($peringkats)) {
+                $query->whereIn('peringkat_akreditasi', $peringkats);
+            }
+        }
+
+        if ($request->filled('status')) {
+            $statuses = array_filter((array) $request->status);
+            if (!empty($statuses)) {
+                $query->whereIn('status_kedaluwarsa', $statuses);
+            }
+        }
+
+        return $query;
     }
 
     /**
