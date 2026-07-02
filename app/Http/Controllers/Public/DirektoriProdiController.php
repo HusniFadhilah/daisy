@@ -8,6 +8,7 @@ use App\Models\DegreeLevel;
 use App\Models\StudyProgram;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
 
 class DirektoriProdiController extends Controller
 {
@@ -159,6 +160,8 @@ class DirektoriProdiController extends Controller
     // =========================================================
     public function ajax(Request $request)
     {
+        $hasNoSkColumn = Schema::hasColumn('study_programs', 'no_sk');
+
         $query = StudyProgram::query()
             ->where('study_programs.is_example', false)
             ->where('study_programs.is_active', true)
@@ -175,6 +178,10 @@ class DirektoriProdiController extends Controller
                 'universities.name as university_name',
                 'degree_levels.alias as jenjang_alias',
             ]);
+
+        if ($hasNoSkColumn) {
+            $query->addSelect('study_programs.no_sk');
+        }
 
         // ── Filter pencarian teks ──
         $search = trim($request->input('search_text', ''));
@@ -251,7 +258,7 @@ class DirektoriProdiController extends Controller
             1 => 'study_programs.name',
             2 => 'degree_levels.alias',
             3 => 'study_programs.peringkat_akreditasi',
-            4 => 'study_programs.status_kedaluwarsa',
+            4 => $hasNoSkColumn ? 'study_programs.no_sk' : 'study_programs.tanggal_kedaluwarsa',
             5 => 'study_programs.tanggal_kedaluwarsa',
         ];
         $orderColumn = $colMap[(int)$orderCol] ?? 'study_programs.tanggal_kedaluwarsa';
@@ -280,6 +287,7 @@ class DirektoriProdiController extends Controller
                 'university'         => $item->university_name,
                 'jenjang'            => $item->jenjang_alias,
                 'peringkat'          => $item->peringkat_akreditasi,
+                'no_sk'              => $item->no_sk ?? null,
                 'status'             => $item->status_kedaluwarsa,
                 'tanggal_kedaluwarsa' => $item->tanggal_kedaluwarsa
                     ? $item->tanggal_kedaluwarsa->translatedFormat('d M Y')

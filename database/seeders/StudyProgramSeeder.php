@@ -139,13 +139,16 @@ class StudyProgramSeeder extends Seeder
 
                 // Data akreditasi
                 $peringkatAkreditasi = $data['Peringkat_Akreditasi'] ?? null;
-                $tanggalKedaluwarsa = $data['Tanggal_Kedaluwarsa'] ?? null;
-                $statusKedaluwarsa = $data['Status_Kedaluwarsa'] ?? 'Belum Terakreditasi';
+                $noSk = $data['Nomor SK'] ?? null;
+                $tanggalKedaluwarsa = $data['Tanggal_Kedaluwarsa'] ?? $data['Tanggal_Kadaluarsa'] ?? null;
+                $statusKedaluwarsa = $data['Status_Kedaluwarsa'] ?? $data['Status_Kadaluarsa'] ?? null;
 
                 // Konversi status
-                if ($statusKedaluwarsa === 'Masih Berlaku') {
+                if ($statusKedaluwarsa === null || $statusKedaluwarsa === '') {
+                    $statusKedaluwarsa = $tanggalKedaluwarsa ? 'Aktif' : 'Belum Terakreditasi';
+                } elseif ($statusKedaluwarsa === 'Masih Berlaku') {
                     $statusKedaluwarsa = 'Aktif';
-                } elseif (strpos($statusKedaluwarsa, 'kedaluwarsa') !== false || strpos($statusKedaluwarsa, 'kedaluwarsa') !== false || strpos($statusKedaluwarsa, 'hari lagi') !== false) {
+                } elseif (strpos(strtolower($statusKedaluwarsa), 'kedaluwarsa') !== false || strpos(strtolower($statusKedaluwarsa), 'kadaluarsa') !== false || strpos(strtolower($statusKedaluwarsa), 'hari lagi') !== false) {
                     $statusKedaluwarsa = 'Kedaluwarsa';
                 } elseif ($statusKedaluwarsa === 'Tidak Ada Data' || $statusKedaluwarsa === '' || $statusKedaluwarsa === '-') {
                     $statusKedaluwarsa = 'Belum Terakreditasi';
@@ -154,7 +157,7 @@ class StudyProgramSeeder extends Seeder
                 // Parse tanggal
                 if ($tanggalKedaluwarsa && $tanggalKedaluwarsa !== '-' && $tanggalKedaluwarsa !== '') {
                     try {
-                        $tanggalKedaluwarsa = Carbon::createFromFormat('Y-m-d', $tanggalKedaluwarsa)->format('Y-m-d');
+                        $tanggalKedaluwarsa = Carbon::parse($tanggalKedaluwarsa)->format('Y-m-d');
                     } catch (\Exception $e) {
                         $tanggalKedaluwarsa = null;
                     }
@@ -198,6 +201,7 @@ class StudyProgramSeeder extends Seeder
                     'bentuk_pt' => $bentukPT,
                     'email' => $email,
                     'peringkat_akreditasi' => $peringkatAkreditasi,
+                    'no_sk' => $noSk && $noSk !== '-' ? trim($noSk) : null,
                     'tanggal_kedaluwarsa' => $tanggalKedaluwarsa,
                     'status_kedaluwarsa' => $statusKedaluwarsa,
                     'created_at' => $timestamp,

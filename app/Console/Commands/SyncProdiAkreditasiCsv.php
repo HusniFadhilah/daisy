@@ -151,6 +151,7 @@ class SyncProdiAkreditasiCsv extends Command
                     $tanggal
                 );
                 $peringkat = $this->nullableDash($this->csvValue($data, 'Peringkat_Akreditasi'));
+                $noSk = $this->nullableDash($this->csvValue($data, 'Nomor SK'));
                 $email = $this->nullableDash($this->csvValue($data, 'email') ?: $this->csvValue($data, 'Email'));
 
                 $attributes = [
@@ -162,6 +163,7 @@ class SyncProdiAkreditasiCsv extends Command
                     'bentuk_pt' => $this->detectBentukPt($universityName),
                     'email' => $email,
                     'peringkat_akreditasi' => $peringkat,
+                    'no_sk' => $noSk,
                     'tanggal_kedaluwarsa' => $tanggal,
                     'status_kedaluwarsa' => $status,
                     'akreditasi_source' => 'csv',

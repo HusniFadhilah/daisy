@@ -23,6 +23,7 @@ class StudyProgram extends Model
         'email',
         'rumpun',
         'peringkat_akreditasi',
+        'no_sk',
         'tanggal_kedaluwarsa',
         'status_kedaluwarsa',
         'ketua_prodi_name',

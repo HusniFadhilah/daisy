@@ -24,23 +24,33 @@ class AkreditasiSeeder extends Seeder
 
         $file = fopen($csvFile, 'r');
 
-        // Skip header row
-        fgetcsv($file);
+        $header = fgetcsv($file);
+        $header = $header ? array_map(fn($value) => trim((string) $value), $header) : [];
 
         $updated = 0;
         $notFound = 0;
         $created = 0;
         $errors = [];
 
-        while (($data = fgetcsv($file)) !== false) {
+        while (($row = fgetcsv($file)) !== false) {
             try {
-                $universitas = trim($data[0] ?? '');
-                $programStudi = trim($data[1] ?? '');
-                $jenjang = trim($data[2] ?? '');
-                $email = trim($data[6] ?? '');
-                $peringkatAkreditasi = trim($data[7] ?? '');
-                $tanggalKedaluwarsa = trim($data[8] ?? '');
-                $statusKedaluwarsa = trim($data[9] ?? '');
+                if (count($row) < count($header)) {
+                    $row = array_pad($row, count($header), null);
+                }
+
+                $data = array_combine($header, array_slice($row, 0, count($header)));
+                if ($data === false) {
+                    continue;
+                }
+
+                $universitas = trim($data['Universitas'] ?? '');
+                $programStudi = trim($data['Program Studi'] ?? '');
+                $jenjang = trim($data['Jenjang'] ?? '');
+                $email = trim($data['email'] ?? $data['Email'] ?? '');
+                $noSk = trim($data['Nomor SK'] ?? '');
+                $peringkatAkreditasi = trim($data['Peringkat_Akreditasi'] ?? '');
+                $tanggalKedaluwarsa = trim($data['Tanggal_Kedaluwarsa'] ?? $data['Tanggal_Kadaluarsa'] ?? '');
+                $statusKedaluwarsa = trim($data['Status_Kedaluwarsa'] ?? $data['Status_Kadaluarsa'] ?? '');
 
                 // Use data as-is from CSV
                 $peringkat = !empty($peringkatAkreditasi) && $peringkatAkreditasi !== '-' ? $peringkatAkreditasi : null;
@@ -52,7 +62,9 @@ class AkreditasiSeeder extends Seeder
                 $status = !empty($statusKedaluwarsa) && $statusKedaluwarsa !== '-' ? $statusKedaluwarsa : null;
                 // Konversi status dari CSV ke enum database
                 $statusNormalized = $status ? strtolower($status) : '';
-                if ($statusNormalized === 'masih berlaku') {
+                if ($status === null) {
+                    $status = $tanggal ? 'Aktif' : 'Belum Terakreditasi';
+                } elseif ($statusNormalized === 'masih berlaku') {
                     $status = 'Aktif';
                 } elseif (
                     strpos($statusNormalized, 'kedaluwarsa') !== false ||
@@ -108,6 +120,7 @@ class AkreditasiSeeder extends Seeder
                         'id_degree_level' => $degreeLevel->id,
                         'email' => $email,
                         'peringkat_akreditasi' => $peringkat,
+                        'no_sk' => $noSk !== '' && $noSk !== '-' ? $noSk : null,
                         'tanggal_kedaluwarsa' => $tanggal,
                         'status_kedaluwarsa' => $status,
                     ]);
@@ -117,6 +130,7 @@ class AkreditasiSeeder extends Seeder
                     // Update existing study program
                     $studyProgram->update([
                         'peringkat_akreditasi' => $peringkat,
+                        'no_sk' => $noSk !== '' && $noSk !== '-' ? $noSk : null,
                         'tanggal_kedaluwarsa' => $tanggal,
                         'status_kedaluwarsa' => $status,
                     ]);
@@ -154,9 +168,7 @@ class AkreditasiSeeder extends Seeder
         }
 
         try {
-            // Try to parse date in format Y-m-d
-            $date = Carbon::createFromFormat('Y-m-d', $tanggal);
-            return $date->format('Y-m-d');
+            return Carbon::parse($tanggal)->format('Y-m-d');
         } catch (\Exception $e) {
             return null;
         }

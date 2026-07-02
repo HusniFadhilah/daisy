@@ -344,9 +344,11 @@ class PelaporanHasilAkreditasiController extends Controller
             'keterangan'            => 'nullable|string|max:1000',
         ]);
 
-        if (!$request->hasFile('file_laporan')
+        if (
+            !$request->hasFile('file_laporan')
             && !$request->hasFile('file_sertifikat')
-            && !$request->hasFile('file_sertifikat_banding')) {
+            && !$request->hasFile('file_sertifikat_banding')
+        ) {
             return back()->with('error', 'Minimal upload salah satu dokumen.');
         }
 
@@ -579,6 +581,13 @@ class PelaporanHasilAkreditasiController extends Controller
 
             if (!empty($updateData)) {
                 $pengajuan->update($updateData);
+
+                $nomorSertifikatKey = "nomor_sertifikat_{$metaSuffix}";
+                if (!empty($updateData[$nomorSertifikatKey])) {
+                    $pengajuan->studyProgram?->update([
+                        'no_sk' => $updateData[$nomorSertifikatKey],
+                    ]);
+                }
             }
 
             DB::commit();
@@ -793,6 +802,7 @@ class PelaporanHasilAkreditasiController extends Controller
             if (!$pengajuan->nomor_sertifikat) {
                 $nomorSertifikat = $this->generateNomorSertifikat($pengajuan);
                 $pengajuan->update(['nomor_sertifikat' => $nomorSertifikat]);
+                $pengajuan->studyProgram?->update(['no_sk' => $nomorSertifikat]);
             }
 
             // Calculate masa berlaku berdasarkan peringkat

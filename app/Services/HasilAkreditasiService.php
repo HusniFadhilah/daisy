@@ -654,11 +654,17 @@ class HasilAkreditasiService
                 'tanggal_hasil_akreditasi_dikirim' => now(),
             ]);
 
-            $hasil->studyProgram->update([
+            $studyProgramUpdate = [
                 'peringkat_akreditasi' => $hasil->peringkat_akreditasi_final,
                 'tanggal_kedaluwarsa'  => now()->addYears(5),
                 'status_kedaluwarsa'   => 'Aktif',
-            ]);
+            ];
+
+            if ($hasil->pengajuan->nomor_sertifikat) {
+                $studyProgramUpdate['no_sk'] = $hasil->pengajuan->nomor_sertifikat;
+            }
+
+            $hasil->studyProgram->update($studyProgramUpdate);
 
             DB::commit();
             return $hasil;

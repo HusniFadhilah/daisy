@@ -549,23 +549,23 @@
         }
 
         .p-unggul {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
+            background: rgba(102, 126, 234, .14);
+            color: #4f46a5;
         }
 
         .p-baik-sekali {
-            background: linear-gradient(135deg, #11998e, #38ef7d);
-            color: #fff;
+            background: rgba(17, 153, 142, .13);
+            color: #0f766e;
         }
 
         .p-baik {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            color: #fff;
+            background: rgba(79, 172, 254, .16);
+            color: #0f5f99;
         }
 
         .p-c {
-            background: linear-gradient(135deg, #fa709a, #fee140);
-            color: #fff;
+            background: rgba(250, 112, 154, .14);
+            color: #b4235a;
         }
 
         .p-none {
@@ -789,6 +789,7 @@
         </div>
     </section>
 
+    @auth
     <!-- ── STAT CARDS ── -->
     <div class="stat-grid" style="max-width:1400px;margin:0 auto;">
         <div class="stat-card">
@@ -923,7 +924,9 @@
     </div>
 
     <!-- ── FILTER + TABLE ── -->
-    <div class="section" style="max-width:1400px;margin:0 auto;">
+    @endauth
+
+    <div class="section" style="max-width:1400px;margin:20px auto;">
         <h2 class="section-title"><i class="bi bi-table" style="color:var(--accent);font-size:18px;"></i> Daftar Program Studi</h2>
 
         <!-- Filter panel -->
@@ -1041,6 +1044,7 @@
                             <th>Program Studi</th>
                             <th>Jenjang</th>
                             <th>Status Akreditasi</th>
+                            <th>Nomor SK</th>
                             {{-- <th>Status</th> --}}
                             <th>Kedaluwarsa</th>
                             <th>Sisa Waktu</th>
@@ -1064,10 +1068,14 @@
     <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    @auth
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    @endauth
 
     <script>
         var _lastJson = null;
+        var ROUTE_AJAX = '{{ route("public.prodi.ajax") }}';
+        @auth
         // =========================================================
         // DATA DARI CONTROLLER (inject via Blade)
         // =========================================================
@@ -1079,8 +1087,6 @@
             , status: @json($chartData['status'])
             , rumpun: @json($chartData['rumpun'])
         };
-
-        var ROUTE_AJAX = '{{ route("public.prodi.ajax") }}';
 
         // =========================================================
         // CHART.JS DEFAULTS
@@ -1421,6 +1427,7 @@
                 }
             });
         })();
+        @endauth
 
         // =========================================================
         // SELECT2
@@ -1541,6 +1548,15 @@
                                 cls = 'p-c';
                             }
                             return '<span class="badge-peringkat ' + cls + '">' + data + '</span>';
+                        }
+                    }
+                    , {
+                        data: 'no_sk'
+                        , render: function(data) {
+                            if (!data || data === '-') {
+                                return '<small class="text-muted">â€”</small>';
+                            }
+                            return '<small>' + data + '</small>';
                         }
                     }
                     , {

@@ -1,5 +1,7 @@
 @php
 $authUser = auth()->user();
+$displayName = $authUser->name ?? 'User Daisy';
+$displayRole = $authUser->role_alias ?? 'LAMDEPILAR';
 @endphp
 
 <!-- Top Navigation Bar -->
@@ -41,13 +43,16 @@ $authUser = auth()->user();
         @include('layouts.template.role-switcher')
         <!-- User Menu Dropdown -->
         <div class="dropdown">
-            <div class="user-menu" data-bs-toggle="dropdown">
-                <div class="user-avatar">{{ strtoupper(substr($authUser->name ?? 'M', 0, 1)) }}</div>
+            @auth
+            <div class="user-menu" @auth data-bs-toggle="dropdown" @endauth>
+                <div class="user-avatar">{{ strtoupper(substr($displayName, 0, 1)) }}</div>
                 <div class="user-info">
-                    <div class="user-name">{{ $authUser->name ?? 'Dr. Eng. Maryono, ST., MT' }}</div>
-                    <div class="user-role">{{ $authUser->role_alias ?? 'LAMDEPILAR' }}</div>
+                    <div class="user-name">{{ $displayName }}</div>
+                    <div class="user-role">{{ $displayRole }}</div>
                 </div>
+                @auth
                 <i class="bi bi-chevron-down"></i>
+                @endauth
             </div>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>
@@ -77,6 +82,7 @@ $authUser = auth()->user();
                     </form>
                 </li>
             </ul>
+            @endauth
         </div>
     </div>
     </div>

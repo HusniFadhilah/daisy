@@ -248,6 +248,12 @@ class PenyampaianHasilAkreditasiController extends Controller
 
             if (!empty($updateData)) {
                 $pengajuan->update($updateData);
+
+                if (!empty($updateData['nomor_sertifikat'])) {
+                    $pengajuan->studyProgram?->update([
+                        'no_sk' => $updateData['nomor_sertifikat'],
+                    ]);
+                }
             }
 
             DB::commit();
