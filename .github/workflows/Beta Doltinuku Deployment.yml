@@ -6,41 +6,48 @@ on:
       - main
 
 jobs:
-  web-deploy:
-    name: Deploy
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get latest code
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
-      - name: Prepare deployment files
-        run: |
-          mkdir -p .deploy
-          rsync -a ./ .deploy/ \
-            --exclude=".deploy/" \
-            --exclude="vendor/" \
-            --exclude=".vscode/" \
-            --exclude="public/assets/plugins/" \
-            --exclude="public/gs/" \
-            --exclude=".git/" \
-            --exclude="node_modules/"
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
 
-      - name: Install SFTP client
+      - name: Upload
         run: |
-          sudo apt-get update
-          sudo apt-get install -y lftp
-
-      - name: Sync files using SFTP
-        env:
-          SFTP_HOST: ${{ secrets.SFTP_DOLTINUKU_SERVER }}
-          SFTP_USERNAME: ${{ secrets.SFTP_DOLTINUKU_USERNAME }}
-          SFTP_PASSWORD: ${{ secrets.SFTP_DOLTINUKU_PASSWORD }}
-          SFTP_REMOTE_DIR: /home/doltinuku/daisy
-        run: |
-          lftp -u "$SFTP_USERNAME","$SFTP_PASSWORD" -p 22 "sftp://$SFTP_HOST" <<EOF
+          lftp -u "${{ secrets.SFTP_DOLTINUKU_USERNAME }},${{ secrets.SFTP_DOLTINUKU_PASSWORD }}" \
+            "sftp://${{ secrets.SFTP_DOLTINUKU_SERVER }}:22" <<'EOF'
           set sftp:auto-confirm yes
-          mkdir -p "$SFTP_REMOTE_DIR"
-          mirror -R --verbose .deploy "$SFTP_REMOTE_DIR"
+          set net:max-retries 3
+          set net:timeout 20
+
+          mirror --reverse \
+            --verbose \
+            --overwrite \
+            --no-perms \
+            --exclude-glob vendor/** \
+            --exclude-glob .vscode/** \
+            --exclude-glob public/assets/plugins/** \
+            --exclude-glob public/gs/** \
+            --exclude-glob .git/** \
+            --exclude-glob .github/** \
+            --exclude-glob .env \
+            --exclude-glob .env.* \
+            --exclude-glob node_modules/** \
+            --exclude-glob bootstrap/cache \
+            --exclude-glob bootstrap/cache/** \
+            --exclude-glob .claude/** \
+            --exclude-glob storage/debugbar \
+            --exclude-glob storage/debugbar/** \
+            --exclude-glob storage/framework \
+            --exclude-glob storage/framework/** \
+            --exclude-glob storage/logs \
+            --exclude-glob storage/logs/** \
+            --exclude-glob tests/** \
+            --exclude-glob **/tests/** \
+            ./ /home/doltinuku/daisy
+
           bye
           EOF

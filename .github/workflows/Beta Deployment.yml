@@ -6,43 +6,27 @@ on:
       - main
 
 jobs:
-  web-deploy:
-    name: Deploy
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
-      # Install dependencies termasuk devDependencies
-      # - name: Install Dependencies
-      #   run: npm ci
-
-      # Build Vite
-      # - name: Build Assets
-      #   run: npm run build
-
-      # - name: Remove node_modules before upload
-      #   run: rm -rf node_modules
-
-      # Cleanup Laravel cache
-      - name: Install deployment tools
+      - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
 
-      - name: Sync files using SFTP
-        env:
-          SFTP_HOST: ${{ secrets.FTP_SERVER }}
-          SFTP_USER: ${{ secrets.FTP_USERNAME }}
-          SFTP_PASS: ${{ secrets.FTP_PASSWORD }}
-          SFTP_PORT: ${{ secrets.FTP_PORT }}
-          SFTP_PATH: /home/ubuntu/daisy/daisy
+      - name: Upload
         run: |
-          lftp <<EOF
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" \
+            "sftp://${{ secrets.FTP_SERVER }}:22" <<'EOF'
           set sftp:auto-confirm yes
           set net:max-retries 3
-          set net:timeout 30
-          open -u "${SFTP_USER},${SFTP_PASS}" -p "${SFTP_PORT:-22}" "sftp://${SFTP_HOST}"
-          mirror --reverse --delete --verbose \
+          set net:timeout 20
+
+          mirror --reverse \
+            --verbose \
+            --overwrite \
+            --no-perms \
             --exclude-glob vendor/** \
             --exclude-glob .vscode/** \
             --exclude-glob public/assets/plugins/** \
@@ -63,6 +47,7 @@ jobs:
             --exclude-glob storage/logs/** \
             --exclude-glob tests/** \
             --exclude-glob **/tests/** \
-            ./ "${SFTP_PATH}"
+            ./ /home/ubuntu/daisy/daisy
+
           bye
           EOF
