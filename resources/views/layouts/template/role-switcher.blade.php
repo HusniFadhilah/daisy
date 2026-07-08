@@ -1,3 +1,23 @@
+@php
+if (!function_exists('getRoleIcon')) {
+function getRoleIcon($roleName) {
+$icons = [
+'super_admin' => 'shield-fill-check',
+'sekretariat' => 'person-badge',
+'asesor' => 'clipboard-check',
+'asesor_banding' => 'clipboard-data',
+'validator' => 'check2-circle',
+'verifikator' => 'shield-check',
+'admin_univ' => 'building',
+'admin_prodi' => 'mortarboard',
+'keuangan_lamdepilar' => 'cash-coin',
+'default' => 'person',
+];
+return $icons[$roleName] ?? 'person';
+}
+}
+@endphp
+
 @if(Auth::check() && Auth::user()->hasMultipleRoles())
 <div class="dropdown">
     <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="roleSwitcher" data-bs-toggle="dropdown" aria-expanded="false">
@@ -91,21 +111,3 @@
 </script>
 @endpush
 @endif
-
-@php
-if (!function_exists('getRoleIcon')) {
-function getRoleIcon($roleName) {
-$icons = [
-'super_admin' => 'shield-fill-check',
-'sekretariat' => 'person-badge',
-'asesor' => 'clipboard-check',
-'validator' => 'check2-circle',
-'verifikator' => 'shield-check',
-'admin_univ' => 'building',
-'admin_prodi' => 'mortarboard',
-'default' => 'person',
-];
-return $icons[$roleName] ?? 'person';
-}
-}
-@endphp

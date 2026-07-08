@@ -40,7 +40,8 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         },"files": [
-            "app/Helpers/RouteHelper.php"
+            "app/Helpers/RouteHelper.php",
+            "app/Helpers/RoleHelper.php"
         ]
     },
     "autoload-dev": {

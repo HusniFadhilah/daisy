@@ -72,6 +72,7 @@
                 <th>Program Studi</th>
                 <th>Universitas</th>
                 <th>Status Akreditasi</th>
+                <th>Nomor SK</th>
                 <th>Kedaluwarsa</th>
                 <th>Aksi</th>
             </tr>
@@ -91,7 +92,12 @@
                     @else
                     -
                     @endif
+                    @if(!$prog->is_active)
+                    <br>
+                    <small class="text-muted">Prodi tidak aktif</small>
+                    @endif
                 </td>
+                <td>{{ $prog->no_sk ?: '-' }}</td>
                 <td>
                     @if($prog->tanggal_kedaluwarsa)
                     {{ \App\Libraries\Date::tglIndo($prog->tanggal_kedaluwarsa) }}
@@ -127,7 +133,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="text-center text-muted py-4">
+                <td colspan="7" class="text-center text-muted py-4">
                     Tidak ada program studi pada periode ini.
                 </td>
             </tr>

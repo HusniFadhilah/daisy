@@ -376,9 +376,20 @@ class PemetaanAkreditasiController extends Controller
 
             // ── Status kedaluwarsa (multiple) ────────────────────────
             if ($request->filled('status')) {
-                $statuses = array_filter((array) $request->status);
-                if (!empty($statuses)) {
-                    $query->whereIn('status_kedaluwarsa', $statuses);
+                $status = $request->get('status');
+
+                if ($status === 'prodi_aktif') {
+                    $query->where('is_active', true);
+                } elseif ($status === 'prodi_tidak_aktif') {
+                    $query->where('is_active', false);
+                } elseif ($status === 'akreditasi_aktif') {
+                    $query->whereDate('tanggal_kedaluwarsa', '>=', now()->toDateString());
+                } elseif ($status === 'akreditasi_kedaluwarsa') {
+                    $query->whereDate('tanggal_kedaluwarsa', '<', now()->toDateString());
+                } elseif ($status === 'akreditasi_unknown') {
+                    $query->where(function ($q) {
+                        $q->whereNull('tanggal_kedaluwarsa');
+                    });
                 }
             }
 
@@ -898,9 +909,20 @@ class PemetaanAkreditasiController extends Controller
         }
 
         if ($request->filled('status')) {
-            $statuses = array_filter((array) $request->status);
-            if (!empty($statuses)) {
-                $query->whereIn('status_kedaluwarsa', $statuses);
+            $status = $request->get('status');
+
+            if ($status === 'prodi_aktif') {
+                $query->where('is_active', true);
+            } elseif ($status === 'prodi_tidak_aktif') {
+                $query->where('is_active', false);
+            } elseif ($status === 'akreditasi_aktif') {
+                $query->whereDate('tanggal_kedaluwarsa', '>=', now()->toDateString());
+            } elseif ($status === 'akreditasi_kedaluwarsa') {
+                $query->whereDate('tanggal_kedaluwarsa', '<', now()->toDateString());
+            } elseif ($status === 'akreditasi_unknown') {
+                $query->where(function ($q) {
+                    $q->whereNull('tanggal_kedaluwarsa');
+                });
             }
         }
 

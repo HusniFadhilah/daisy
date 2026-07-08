@@ -9,10 +9,12 @@ $icons = [
 'super_admin' => 'shield-fill-check',
 'sekretariat' => 'person-badge',
 'asesor' => 'clipboard-check',
+'asesor_banding' => 'clipboard-data',
 'validator' => 'check2-circle',
 'verifikator' => 'shield-check',
 'admin_univ' => 'building',
 'admin_prodi' => 'mortarboard',
+'keuangan_lamdepilar' => 'cash-coin',
 'default' => 'person',
 ];
 return $icons[$roleName] ?? 'person';

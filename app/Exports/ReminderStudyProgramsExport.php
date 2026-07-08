@@ -27,6 +27,7 @@ class ReminderStudyProgramsExport implements FromCollection, WithHeadings, WithM
             'Program Studi',
             'Jenjang',
             'Status Akreditasi',
+            'Nomor SK',
             'Tanggal Kedaluwarsa',
         ];
     }
@@ -39,6 +40,7 @@ class ReminderStudyProgramsExport implements FromCollection, WithHeadings, WithM
             $program->name ?? '-',
             $program->degreeLevel?->alias ?? $program->degreeLevel?->name ?? '-',
             $program->peringkat_akreditasi ?? '-',
+            $program->no_sk ?: '-',
             $program->tanggal_kedaluwarsa ? $program->tanggal_kedaluwarsa->format('Y-m-d') : '',
         ];
     }

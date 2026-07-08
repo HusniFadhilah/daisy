@@ -16,6 +16,8 @@ class SyncProdiAkreditasiCsv extends Command
     protected $signature = 'prodi:sync-akreditasi-csv
         {--file=database/seeders/data/data_akreditasi_lengkap.csv : Path CSV relatif ke base path atau path absolut}
         {--dry-run : Tampilkan rencana perubahan tanpa menyimpan}
+        {--set-not-active : Nonaktifkan prodi non-contoh yang tidak ditemukan di CSV dan tidak punya pengajuan}
+        {--set_not_active : Alias untuk --set-not-active}
         {--keep-missing : Jangan nonaktifkan prodi existing yang tidak ada di CSV}';
 
     protected $description = 'Sinkronisasi study_programs dari CSV akreditasi tanpa truncate agar relasi lama tetap aman.';
@@ -42,6 +44,7 @@ class SyncProdiAkreditasiCsv extends Command
         $path = $this->resolvePath((string) $this->option('file'));
         $dryRun = (bool) $this->option('dry-run');
         $keepMissing = (bool) $this->option('keep-missing');
+        $setNotActive = (bool) $this->option('set-not-active') || (bool) $this->option('set_not_active');
 
         if (!is_file($path)) {
             $this->error("File CSV tidak ditemukan: {$path}");
@@ -211,7 +214,7 @@ class SyncProdiAkreditasiCsv extends Command
 
             fclose($handle);
 
-            if (!$keepMissing) {
+            if ($setNotActive && !$keepMissing) {
                 $query = StudyProgram::query()->where('is_example', false);
                 $missingIds = [];
 
@@ -260,7 +263,7 @@ class SyncProdiAkreditasiCsv extends Command
             ['Prodi reaktif', $metrics['reactivated']],
             ['Prodi tidak berubah', $metrics['unchanged']],
             ['Prodi dilewati karena punya pengajuan', $metrics['locked_by_pengajuan']],
-            ['Prodi dinonaktifkan karena tidak ada di CSV', $keepMissing ? 'dilewati (--keep-missing)' : $metrics['deactivated']],
+            ['Prodi dinonaktifkan karena tidak ada di CSV', $this->missingActionLabel($setNotActive, $keepMissing, $metrics['deactivated'])],
             ['Baris duplikat key', $metrics['duplicates']],
             ['Baris dilewati', $metrics['skipped']],
         ]);
@@ -286,6 +289,19 @@ class SyncProdiAkreditasiCsv extends Command
         }
 
         return base_path($path);
+    }
+
+    private function missingActionLabel(bool $setNotActive, bool $keepMissing, int $deactivated): string|int
+    {
+        if ($keepMissing) {
+            return 'dilewati (--keep-missing)';
+        }
+
+        if (!$setNotActive) {
+            return 'dilewati (pakai --set-not-active untuk menonaktifkan)';
+        }
+
+        return $deactivated;
     }
 
     /**

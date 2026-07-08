@@ -49,6 +49,11 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="text-muted small">Nomor SK</label>
+                        <div class="fw-bold">{{ $studyProgram->no_sk ?: '-' }}</div>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="text-muted small">Tanggal Kedaluwarsa</label>
                         <div class="fw-bold">
                             {{ $studyProgram->tanggal_kedaluwarsa ? \App\Libraries\Date::tglIndo($studyProgram->tanggal_kedaluwarsa) : '-' }}

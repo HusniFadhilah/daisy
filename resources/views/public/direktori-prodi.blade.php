@@ -873,7 +873,7 @@
         <div class="chart-grid">
             <!-- Donut: Distribusi Peringkat -->
             <div class="chart-card">
-                <div class="chart-card-title"><i class="bi bi-pie-chart-fill"></i> Distribusi Peringkat</div>
+                <div class="chart-card-title"><i class="bi bi-pie-chart-fill"></i> Distribusi Status Akreditasi</div>
                 <div class="chart-wrap" style="height:240px;">
                     <canvas id="chartPeringkat"></canvas>
                 </div>
@@ -905,13 +905,13 @@
             </div>
 
             <!-- Donut: Status Akreditasi -->
-            <div class="chart-card">
+            {{-- <div class="chart-card">
                 <div class="chart-card-title"><i class="bi bi-patch-check"></i> Status Akreditasi</div>
                 <div class="chart-wrap" style="height:240px;">
                     <canvas id="chartStatus"></canvas>
                 </div>
                 <div id="legendStatus" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;"></div>
-            </div>
+            </div> --}}
 
             <!-- Bar: Sebaran per Rumpun -->
             {{-- <div class="chart-card">
@@ -963,6 +963,12 @@
                         <div class="filter-label">Jenjang</div>
                         <select id="filterJenjang" class="filter-control" multiple>
                             @foreach($degreeLevels as $d)
+                            @php
+                            $hiddenJenjang = ['d1', 'spesialis'];
+                            $alias = strtolower(trim($d->alias ?? ''));
+                            $name = strtolower(trim($d->name ?? ''));
+                            @endphp
+                            @continue(in_array($alias, $hiddenJenjang, true) || in_array($name, $hiddenJenjang, true) || strpos($alias, 'spesialis') === 0 || strpos($name, 'spesialis') === 0)
                             <option value="{{ $d->id }}">{{ $d->alias }} – {{ $d->name }}</option>
                             @endforeach
                         </select>
@@ -980,7 +986,7 @@
                     </div>
 
                     <!-- Status -->
-                    <div>
+                    {{-- <div>
                         <div class="filter-label">Status Kedaluwarsa</div>
                         <select id="filterStatus" class="filter-control">
                             <option value="">Semua Status</option>
@@ -988,7 +994,7 @@
                             <option value="Kedaluwarsa">Kedaluwarsa</option>
                             <option value="Belum Terakreditasi">Belum Terakreditasi</option>
                         </select>
-                    </div>
+                    </div> --}}
 
                     <!-- Tahun Kedaluwarsa -->
                     <div>
@@ -1001,7 +1007,7 @@
                     </div>
 
                     <!-- Rumpun -->
-                    <div>
+                    {{-- <div>
                         <div class="filter-label">Rumpun</div>
                         <select id="filterRumpun" class="filter-control">
                             <option value="">Semua Rumpun</option>
@@ -1010,7 +1016,7 @@
                             <option value="lingkungan">Lingkungan</option>
                             <option value="arsitektur">Arsitektur</option>
                         </select>
-                    </div>
+                    </div> --}}
                 </div>
 
                 <!-- Action buttons -->
@@ -1554,7 +1560,7 @@
                         data: 'no_sk'
                         , render: function(data) {
                             if (!data || data === '-') {
-                                return '<small class="text-muted">â€”</small>';
+                                return '<small class="text-muted">-</small>';
                             }
                             return '<small>' + data + '</small>';
                         }
@@ -1576,7 +1582,7 @@
                                 return '<small class="text-muted">—</small>';
                             }
                             if (data < 0) {
-                                return '<small class="text-danger fw-semibold">Expired</small>';
+                                return '<small class="text-danger fw-semibold">Telah Kedaluwarsa</small>';
                             }
 
                             var pct = Math.min(100, Math.max(0, row.progress));
@@ -1666,6 +1672,13 @@
         var filterVisible = true;
         var suppressFilterApply = false;
 
+        function setInputValue(id, value) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.value = value;
+            }
+        }
+
         function toggleFilter() {
             filterVisible = !filterVisible;
             var body = document.getElementById('filterBody');
@@ -1700,9 +1713,9 @@
 
         function resetFilter() {
             suppressFilterApply = true;
-            document.getElementById('globalSearch').value = '';
-            document.getElementById('filterStatus').value = '';
-            document.getElementById('filterRumpun').value = '';
+            setInputValue('globalSearch', '');
+            setInputValue('filterStatus', '');
+            setInputValue('filterRumpun', '');
             $('#filterUniv, #filterJenjang, #filterPeringkat, #filterTahun').val(null).trigger('change');
             suppressFilterApply = false;
 
@@ -1792,11 +1805,11 @@
 
         function clearChip(key) {
             if (key === 'search_text') {
-                document.getElementById('globalSearch').value = '';
+                setInputValue('globalSearch', '');
             } else if (key === 'status') {
-                document.getElementById('filterStatus').value = '';
+                setInputValue('filterStatus', '');
             } else if (key === 'rumpun') {
-                document.getElementById('filterRumpun').value = '';
+                setInputValue('filterRumpun', '');
             } else if (key === 'university_id') {
                 $('#filterUniv').val(null).trigger('change');
             } else if (key === 'degree_level_id') {
@@ -1821,7 +1834,12 @@
 
         // ── Pilihan lain auto-apply ──
         ['filterStatus', 'filterRumpun'].forEach(function(id) {
-            document.getElementById(id).addEventListener('change', function() {
+            var el = document.getElementById(id);
+            if (!el) {
+                return;
+            }
+
+            el.addEventListener('change', function() {
                 if (suppressFilterApply) {
                     return;
                 }
@@ -1840,9 +1858,9 @@
         // ── Init on load ──
         document.addEventListener('DOMContentLoaded', function() {
             suppressFilterApply = true;
-            document.getElementById('globalSearch').value = '';
-            document.getElementById('filterStatus').value = '';
-            document.getElementById('filterRumpun').value = '';
+            setInputValue('globalSearch', '');
+            setInputValue('filterStatus', '');
+            setInputValue('filterRumpun', '');
             $('#filterUniv, #filterJenjang, #filterPeringkat, #filterTahun').val(null).trigger('change');
             suppressFilterApply = false;
 

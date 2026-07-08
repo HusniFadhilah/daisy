@@ -353,6 +353,33 @@
         margin-right: auto;
     }
 
+    #reminderModal .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.15rem 0.45rem;
+    }
+
+    #reminderModal .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 1rem;
+        height: 1rem;
+        margin-right: 0.25rem;
+        padding: 0;
+        border: 0;
+        color: #6c757d;
+        font-size: 1rem;
+        line-height: 1;
+        opacity: 1;
+        cursor: pointer;
+    }
+
+    #reminderModal .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove:hover {
+        color: #a0152f;
+    }
+
 </style>
 @endpush
 
@@ -1061,7 +1088,7 @@ Sekretariat LAMDEPILAR</textarea>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small fw-bold mb-1"><i class="bi bi-building"></i> Universitas</label>
-                        <select class="form-select form-select-sm" id="reminderUniversitasFilter" multiple>
+                        <select class="form-select form-select-sm" id="reminderUniversitasFilter" multiple data-no-select2>
                             @foreach($universities as $univ)
                             <option value="{{ $univ->id }}">{{ $univ->name }}</option>
                             @endforeach
@@ -1069,7 +1096,7 @@ Sekretariat LAMDEPILAR</textarea>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small fw-bold mb-1"><i class="bi bi-flag"></i> Kategori Data</label>
-                        <select class="form-select form-select-sm" id="reminderIsExampleFilter">
+                        <select class="form-select form-select-sm" id="reminderIsExampleFilter" data-no-select2>
                             <option value="both" selected>Semua Data</option>
                             <option value="false">Hanya Data Real</option>
                             <option value="true">Hanya Data Contoh</option>
@@ -1081,7 +1108,7 @@ Sekretariat LAMDEPILAR</textarea>
                 <div class="row g-2 mb-2">
                     <div class="col-md-3">
                         <label class="form-label small fw-bold mb-1"><i class="bi bi-calendar-month"></i> Bulan Kedaluwarsa</label>
-                        <select class="form-select form-select-sm" id="reminderBulanFilter" multiple>
+                        <select class="form-select form-select-sm" id="reminderBulanFilter" multiple data-no-select2>
                             @php
                             $namabulan = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',
                             5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',
@@ -1094,7 +1121,7 @@ Sekretariat LAMDEPILAR</textarea>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold mb-1"><i class="bi bi-calendar"></i> Tahun Kedaluwarsa</label>
-                        <select class="form-select form-select-sm" id="reminderTahunFilter" multiple>
+                        <select class="form-select form-select-sm" id="reminderTahunFilter" multiple data-no-select2>
                             @php $currentYear = now()->year; @endphp
                             @for($y = $currentYear; $y <= $currentYear + 10; $y++) <option value="{{ $y }}">{{ $y }}</option>
                                 @endfor
@@ -1102,7 +1129,7 @@ Sekretariat LAMDEPILAR</textarea>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold mb-1"><i class="bi bi-star"></i> Status Akreditasi</label>
-                        <select class="form-select form-select-sm" id="reminderPeringkatFilter" multiple>
+                        <select class="form-select form-select-sm" id="reminderPeringkatFilter" multiple data-no-select2>
                             @forelse($peringkatList as $peringkat)
                             <option value="{{ $peringkat }}">{{ $peringkat }}</option>
                             @empty
@@ -1112,10 +1139,13 @@ Sekretariat LAMDEPILAR</textarea>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold mb-1"><i class="bi bi-check-circle"></i> Status</label>
-                        <select class="form-select form-select-sm" id="reminderStatusFilter" multiple>
-                            <option value="Aktif">Aktif</option>
-                            <option value="Kedaluwarsa">Kedaluwarsa</option>
-                            <option value="Belum Terakreditasi">Belum Terakreditasi</option>
+                        <select class="form-select form-select-sm" id="reminderStatusFilter" data-no-select2>
+                            <option value="all" selected>Semua Data</option>
+                            <option value="prodi_aktif">Prodi Aktif</option>
+                            <option value="prodi_tidak_aktif">Prodi Tidak Aktif</option>
+                            <option value="akreditasi_aktif">Akreditasi Masih Aktif</option>
+                            <option value="akreditasi_kedaluwarsa">Akreditasi Kedaluwarsa</option>
+                            <option value="akreditasi_unknown">Belum Terakreditasi/Tidak Diketahui</option>
                         </select>
                     </div>
                 </div>
@@ -2266,39 +2296,8 @@ Sekretariat LAMDEPILAR</textarea>
 
         // Wait for modal content to be fully rendered
         setTimeout(() => {
-            const peringkatSelect = $('#reminderPeringkatFilter');
-            const statusSelect = $('#reminderStatusFilter');
             const modalBody = document.querySelector('#reminderModal .modal-body');
-
-            // Check if elements exist
-            if (peringkatSelect.length === 0 || statusSelect.length === 0) {
-                return;
-            }
-
-            // Destroy existing Select2 instances if any
-            if (peringkatSelect.hasClass('select2-hidden-accessible')) {
-                peringkatSelect.select2('destroy');
-            }
-            if (statusSelect.hasClass('select2-hidden-accessible')) {
-                statusSelect.select2('destroy');
-            }
-
-            // Initialize Select2
-            const select2Config = {
-                theme: 'bootstrap-5'
-                , dropdownParent: $('#reminderModal')
-                , placeholder: 'Pilih...'
-                , allowClear: true
-                , width: '100%'
-                , closeOnSelect: false
-                , language: {
-                    noResults: () => "Tidak ada hasil"
-                    , searching: () => "Mencari..."
-                }
-            };
-
-            peringkatSelect.select2(select2Config);
-            statusSelect.select2(select2Config);
+            initReminderSelect2();
 
             // ✅ Pastikan modal body tetap scrollable setelah Select2 init
             if (modalBody) {
@@ -2313,15 +2312,6 @@ Sekretariat LAMDEPILAR</textarea>
                 searchTimeout = setTimeout(() => {
                     loadReminderDetail(1);
                 }, 500);
-            });
-
-            // Auto-apply on filter change
-            peringkatSelect.off('change').on('change', function() {
-                loadReminderDetail(1);
-            });
-
-            statusSelect.off('change').on('change', function() {
-                loadReminderDetail(1);
             });
 
             reminderFiltersInitialized = true;
@@ -2352,7 +2342,6 @@ Sekretariat LAMDEPILAR</textarea>
         $('#reminderBulanFilter').select2(cfg);
         $('#reminderTahunFilter').select2(cfg);
         $('#reminderPeringkatFilter').select2(cfg);
-        $('#reminderStatusFilter').select2(cfg);
 
         // Target & Window — single-select, bisa kosong
         const cfgSingle = {
@@ -2367,6 +2356,10 @@ Sekretariat LAMDEPILAR</textarea>
         };
         $('#reminderTargetMonths').select2(cfgSingle);
         $('#reminderWindowMonths').select2(cfgSingle);
+        $('#reminderStatusFilter').select2({
+            ...cfgSingle
+            , placeholder: 'Semua Data'
+        });
 
         // Auto-apply saat filter berubah
         $('#reminderUniversitasFilter, #reminderBulanFilter, #reminderTahunFilter, #reminderPeringkatFilter, #reminderStatusFilter')
@@ -2410,7 +2403,7 @@ Sekretariat LAMDEPILAR</textarea>
             , month: $('#reminderBulanFilter').val() || []
             , year: $('#reminderTahunFilter').val() || []
             , peringkat: $('#reminderPeringkatFilter').val() || []
-            , status: $('#reminderStatusFilter').val() || []
+            , status: $('#reminderStatusFilter').val() || 'all'
             , date_start: $('#reminderDateStart').val() || ''
             , date_end: $('#reminderDateEnd').val() || ''
         , };
@@ -2426,7 +2419,7 @@ Sekretariat LAMDEPILAR</textarea>
         if (f.month.length) count++;
         if (f.year.length) count++;
         if (f.peringkat.length) count++;
-        if (f.status.length) count++;
+        if (f.status && f.status !== 'all') count++;
         if (f.date_start || f.date_end) count++;
 
         const badge = document.getElementById('reminderActiveFilterBadge');
@@ -2443,8 +2436,9 @@ Sekretariat LAMDEPILAR</textarea>
         $('#reminderSearchInput').val('');
         $('#reminderIsExampleFilter').val('both');
         $('#reminderDateStart, #reminderDateEnd').val('');
-        $('#reminderUniversitasFilter, #reminderBulanFilter, #reminderTahunFilter, #reminderPeringkatFilter, #reminderStatusFilter')
+        $('#reminderUniversitasFilter, #reminderBulanFilter, #reminderTahunFilter, #reminderPeringkatFilter')
             .val(null).trigger('change');
+        $('#reminderStatusFilter').val('all').trigger('change');
         updateReminderActiveFilters();
         loadReminderDetail(1);
     }
@@ -2464,7 +2458,7 @@ Sekretariat LAMDEPILAR</textarea>
         filters.month.forEach(v => url.searchParams.append('month[]', v));
         filters.year.forEach(v => url.searchParams.append('year[]', v));
         filters.peringkat.forEach(v => url.searchParams.append('peringkat[]', v));
-        filters.status.forEach(v => url.searchParams.append('status[]', v));
+        if (filters.status && filters.status !== 'all') url.searchParams.set('status', filters.status);
 
         return url;
     }
@@ -2501,7 +2495,7 @@ Sekretariat LAMDEPILAR</textarea>
             filters.month.forEach(v => url.searchParams.append('month[]', v));
             filters.year.forEach(v => url.searchParams.append('year[]', v));
             filters.peringkat.forEach(v => url.searchParams.append('peringkat[]', v));
-            filters.status.forEach(v => url.searchParams.append('status[]', v));
+            if (filters.status && filters.status !== 'all') url.searchParams.set('status', filters.status);
             if (targetMonths !== '') url.searchParams.set('target_months', targetMonths);
             if (windowMonths !== '') url.searchParams.set('window_months', windowMonths);
 
