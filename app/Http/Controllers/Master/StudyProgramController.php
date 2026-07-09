@@ -84,14 +84,19 @@ class StudyProgramController extends Controller
             'code' => 'required|string|max:255',
             'id_university' => 'required|exists:universities,id',
             'id_degree_level' => 'required|exists:degree_levels,id',
+            'rumpun' => 'nullable|in:arsitektur,desain,perencanaan,lingkungan',
             'bentuk_pt' => 'nullable|in:Universitas,Institut,Sekolah Tinggi,Politeknik,Akademi',
             'email' => 'nullable|email|max:255',
             'peringkat_akreditasi' => 'nullable|string|max:255',
             'tanggal_kedaluwarsa' => 'nullable|date',
             'status_kedaluwarsa' => 'nullable|in:Aktif,Kedaluwarsa,Belum Terakreditasi',
+            'is_active' => 'required|boolean',
+            'is_example' => 'required|boolean',
         ]);
 
         $validated['full_name'] = $request->input('full_name', $validated['name']);
+        $validated['is_active'] = $request->boolean('is_active');
+        $validated['is_example'] = $request->boolean('is_example');
 
         $studyProgram = StudyProgram::create($validated);
         $studyProgram->load(['university', 'degreeLevel']);
@@ -156,14 +161,19 @@ class StudyProgramController extends Controller
             'code' => 'required|string|max:255',
             'id_university' => 'required|exists:universities,id',
             'id_degree_level' => 'required|exists:degree_levels,id',
+            'rumpun' => 'nullable|in:arsitektur,desain,perencanaan,lingkungan',
             'bentuk_pt' => 'nullable|in:Universitas,Institut,Sekolah Tinggi,Politeknik,Akademi',
             'email' => 'nullable|email|max:255',
             'peringkat_akreditasi' => 'nullable|string|max:255',
             'tanggal_kedaluwarsa' => 'nullable|date',
             'status_kedaluwarsa' => 'nullable|in:Aktif,Kedaluwarsa,Belum Terakreditasi',
+            'is_active' => 'required|boolean',
+            'is_example' => 'required|boolean',
         ]);
 
         $validated['full_name'] = $validated['full_name'] ?? $validated['name'];
+        $validated['is_active'] = $request->boolean('is_active');
+        $validated['is_example'] = $request->boolean('is_example');
 
         $studyProgram = StudyProgram::find($id);
 

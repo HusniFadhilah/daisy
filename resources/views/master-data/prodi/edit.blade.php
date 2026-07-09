@@ -68,6 +68,20 @@
                 </div>
 
                 <div class="mb-3">
+                    <label for="rumpun" class="form-label">Rumpun Prodi</label>
+                    <select class="form-select @error('rumpun') is-invalid @enderror" id="rumpun" name="rumpun">
+                        <option value="">-- Pilih Rumpun --</option>
+                        <option value="arsitektur" {{ old('rumpun', $studyProgram->rumpun) == 'arsitektur' ? 'selected' : '' }}>Arsitektur</option>
+                        <option value="desain" {{ old('rumpun', $studyProgram->rumpun) == 'desain' ? 'selected' : '' }}>Desain</option>
+                        <option value="perencanaan" {{ old('rumpun', $studyProgram->rumpun) == 'perencanaan' ? 'selected' : '' }}>Perencanaan</option>
+                        <option value="lingkungan" {{ old('rumpun', $studyProgram->rumpun) == 'lingkungan' ? 'selected' : '' }}>Lingkungan</option>
+                    </select>
+                    @error('rumpun')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
                     <label for="bentuk_pt" class="form-label">Bentuk Perguruan Tinggi</label>
                     <select class="form-select @error('bentuk_pt') is-invalid @enderror" id="bentuk_pt" name="bentuk_pt">
                         <option value="">-- Pilih Bentuk PT --</option>
@@ -118,6 +132,28 @@
                     @enderror
                 </div>
 
+                <div class="mb-3">
+                    <label for="is_active" class="form-label">Status Program Studi <span class="text-danger">*</span></label>
+                    <select class="form-select @error('is_active') is-invalid @enderror" id="is_active" name="is_active" required>
+                        <option value="1" {{ (string) old('is_active', (int) $studyProgram->is_active) === '1' ? 'selected' : '' }}>Prodi Aktif</option>
+                        <option value="0" {{ (string) old('is_active', (int) $studyProgram->is_active) === '0' ? 'selected' : '' }}>Prodi Tidak Aktif</option>
+                    </select>
+                    @error('is_active')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="is_example" class="form-label">Kategori Data <span class="text-danger">*</span></label>
+                    <select class="form-select @error('is_example') is-invalid @enderror" id="is_example" name="is_example" required>
+                        <option value="0" {{ (string) old('is_example', (int) $studyProgram->is_example) === '0' ? 'selected' : '' }}>Data Real</option>
+                        <option value="1" {{ (string) old('is_example', (int) $studyProgram->is_example) === '1' ? 'selected' : '' }}>Prodi Contoh</option>
+                    </select>
+                    @error('is_example')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-save"></i> Update
@@ -134,7 +170,7 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        $('#id_university, #id_degree_level').select2({
+        $('#id_university, #id_degree_level, #rumpun').select2({
             theme: 'bootstrap-5'
             , width: '100%'
         });

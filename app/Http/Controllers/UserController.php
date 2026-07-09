@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserEmail;
+use App\Models\StudyProgramUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use Yajra\DataTables\Facades\DataTables;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UsersExport;
@@ -70,14 +73,16 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:admin,user',
-            'role_selected' => 'required|in:super_admin,sekretariat,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'role_selected' => 'required|in:super_admin,sekretariat,keuangan_lamdepilar,asesor,asesor_banding,validator,admin_prodi',
             'roles' => 'nullable|array',
-            'roles.*' => 'in:super_admin,sekretariat,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'roles.*' => 'in:super_admin,sekretariat,keuangan_lamdepilar,asesor,asesor_banding,validator,admin_prodi',
+            'notification_emails' => 'nullable|string',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'institution' => 'nullable|string|max:255',
             'id_university' => 'nullable|exists:universities,id',
-            'id_study_program' => 'nullable|exists:study_programs,id',
+            'id_study_programs' => 'nullable|array',
+            'id_study_programs.*' => 'exists:study_programs,id',
             'position' => 'nullable|string|max:255',
         ]);
 
@@ -94,7 +99,16 @@ class UserController extends Controller
         $validated['is_multiple_role'] = count($validated['roles']) > 1;
         $validated['must_change_password'] = true; // Admin create user, set true agar user ganti password
 
-        User::create($validated);
+        $notificationEmails = $this->parseNotificationEmails($request->input('notification_emails'), $validated['email']);
+        unset($validated['notification_emails']);
+        $studyProgramIds = $this->normalizeStudyProgramIds($request->input('id_study_programs', []));
+        unset($validated['id_study_programs']);
+        $this->validateAdminProdiStudyPrograms($validated['roles'], $studyProgramIds);
+        $validated['id_study_program'] = $studyProgramIds[0] ?? null;
+
+        $user = User::create($validated);
+        $this->syncNotificationEmails($user, $validated['email'], $notificationEmails);
+        $this->syncAdminProdiStudyPrograms($user, $studyProgramIds, in_array('admin_prodi', $validated['roles'], true));
 
         return redirect()->route('users.index')
             ->with('success', 'Pengguna berhasil ditambahkan.');
@@ -114,7 +128,12 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        $user = User::with(['university', 'studyProgram'])->findOrFail($id);
+        $user = User::with([
+            'university',
+            'studyProgram',
+            'emails',
+            'studyPrograms' => fn($query) => $query->wherePivot('is_active', true)->with('degreeLevel'),
+        ])->findOrFail($id);
         $universities = \App\Models\University::orderBy('name')->get();
         $studyPrograms = \App\Models\StudyProgram::with(['degreeLevel', 'category'])->orderBy('name')->get();
         return view('admin.users.edit', compact('user', 'universities', 'studyPrograms'));
@@ -131,15 +150,17 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
             'role' => 'required|in:admin,user',
-            'role_selected' => 'required|in:super_admin,sekretariat,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'role_selected' => 'required|in:super_admin,sekretariat,keuangan_lamdepilar,asesor,asesor_banding,validator,admin_prodi',
             'roles' => 'nullable|array',
-            'roles.*' => 'in:super_admin,sekretariat,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'roles.*' => 'in:super_admin,sekretariat,keuangan_lamdepilar,asesor,asesor_banding,validator,admin_prodi',
+            'notification_emails' => 'nullable|string',
             'password' => 'nullable|string|min:8|confirmed',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'institution' => 'nullable|string|max:255',
             'id_university' => 'nullable|exists:universities,id',
-            'id_study_program' => 'nullable|exists:study_programs,id',
+            'id_study_programs' => 'nullable|array',
+            'id_study_programs.*' => 'exists:study_programs,id',
             'position' => 'nullable|string|max:255',
         ]);
 
@@ -151,6 +172,13 @@ class UserController extends Controller
             $roles[] = $validated['role_selected'];
         }
 
+        $notificationEmails = $this->parseNotificationEmails($request->input('notification_emails'), $validated['email']);
+        unset($validated['notification_emails']);
+        $studyProgramIds = $this->normalizeStudyProgramIds($request->input('id_study_programs', []));
+        unset($validated['id_study_programs']);
+        $this->validateAdminProdiStudyPrograms($validated['roles'], $studyProgramIds);
+        $validated['id_study_program'] = $studyProgramIds[0] ?? null;
+
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
@@ -161,6 +189,8 @@ class UserController extends Controller
         $validated['is_multiple_role'] = count($validated['roles']) > 1;
 
         $user->update($validated);
+        $this->syncNotificationEmails($user, $validated['email'], $notificationEmails);
+        $this->syncAdminProdiStudyPrograms($user, $studyProgramIds, in_array('admin_prodi', $validated['roles'], true));
 
         return redirect()->route('users.index')
             ->with('success', 'Pengguna berhasil diperbarui.');
@@ -289,5 +319,112 @@ class UserController extends Controller
             'results'    => $results,
             'pagination' => ['more' => $paginator->hasMorePages()],
         ]);
+    }
+
+    private function parseNotificationEmails(?string $value, string $primaryEmail): array
+    {
+        $emails = collect(preg_split('/[\s,;]+/', (string) $value, -1, PREG_SPLIT_NO_EMPTY))
+            ->map(fn($email) => strtolower(trim($email)))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $invalid = $emails->filter(fn($email) => !filter_var($email, FILTER_VALIDATE_EMAIL))->values();
+        if ($invalid->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'notification_emails' => 'Format email notifikasi tidak valid: ' . $invalid->implode(', '),
+            ]);
+        }
+
+        $primaryEmail = strtolower(trim($primaryEmail));
+        if ($emails->contains($primaryEmail)) {
+            throw ValidationException::withMessages([
+                'notification_emails' => 'Email notifikasi tambahan tidak boleh sama dengan email utama.',
+            ]);
+        }
+
+        return $emails->all();
+    }
+
+    private function syncNotificationEmails(User $user, string $primaryEmail, array $additionalEmails): void
+    {
+        $primaryEmail = strtolower(trim($primaryEmail));
+
+        UserEmail::where('user_id', $user->id)->update(['is_primary' => false]);
+
+        UserEmail::updateOrCreate(
+            ['user_id' => $user->id, 'email' => $primaryEmail],
+            ['is_primary' => true, 'is_active' => true]
+        );
+
+        UserEmail::where('user_id', $user->id)
+            ->where('is_primary', false)
+            ->whereNotIn('email', $additionalEmails)
+            ->update(['is_active' => false]);
+
+        foreach ($additionalEmails as $email) {
+            UserEmail::updateOrCreate(
+                ['user_id' => $user->id, 'email' => $email],
+                ['is_primary' => false, 'is_active' => true]
+            );
+        }
+    }
+
+    private function normalizeStudyProgramIds(array $ids): array
+    {
+        return collect($ids)
+            ->filter(fn($id) => $id !== null && $id !== '')
+            ->map(fn($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function syncAdminProdiStudyPrograms(User $user, array $studyProgramIds, bool $hasAdminProdiRole): void
+    {
+        if (!$hasAdminProdiRole) {
+            StudyProgramUser::where('id_user', $user->id)
+                ->where('role_in_prodi', 'admin_prodi')
+                ->update(['is_active' => false, 'end_date' => now()]);
+
+            return;
+        }
+
+        if (empty($studyProgramIds)) {
+            StudyProgramUser::where('id_user', $user->id)
+                ->where('role_in_prodi', 'admin_prodi')
+                ->update(['is_active' => false, 'end_date' => now()]);
+
+            return;
+        }
+
+        StudyProgramUser::where('id_user', $user->id)
+            ->where('role_in_prodi', 'admin_prodi')
+            ->whereNotIn('id_study_program', $studyProgramIds)
+            ->update(['is_active' => false, 'end_date' => now()]);
+
+        foreach ($studyProgramIds as $studyProgramId) {
+            StudyProgramUser::updateOrCreate(
+                [
+                    'id_user' => $user->id,
+                    'id_study_program' => $studyProgramId,
+                    'role_in_prodi' => 'admin_prodi',
+                ],
+                [
+                    'is_active' => true,
+                    'start_date' => now(),
+                    'end_date' => null,
+                ]
+            );
+        }
+    }
+
+    private function validateAdminProdiStudyPrograms(array $roles, array $studyProgramIds): void
+    {
+        if (in_array('admin_prodi', $roles, true) && empty($studyProgramIds)) {
+            throw ValidationException::withMessages([
+                'id_study_programs' => 'Pilih minimal satu program studi untuk role PT/UPPS/PS.',
+            ]);
+        }
     }
 }

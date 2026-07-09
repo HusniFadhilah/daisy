@@ -33,6 +33,15 @@
                 </div>
 
                 <div class="mb-3">
+                    <label for="notification_emails" class="form-label">Email Notifikasi Tambahan</label>
+                    <textarea class="form-control @error('notification_emails') is-invalid @enderror" id="notification_emails" name="notification_emails" rows="3" placeholder="email1@example.com&#10;email2@example.com">{{ old('notification_emails') }}</textarea>
+                    <small class="text-muted">Pisahkan beberapa email dengan baris baru, koma, titik koma, atau spasi.</small>
+                    @error('notification_emails')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
                     <label for="role" class="form-label">Role Dasar <span class="text-danger">*</span></label>
                     <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
                         <option value="">Pilih Role</option>
@@ -48,13 +57,12 @@
                     <label for="role_selected" class="form-label">Role Aktif (Default Login) <span class="text-danger">*</span></label>
                     <select class="form-select @error('role_selected') is-invalid @enderror" id="role_selected" name="role_selected" required>
                         <option value="">Pilih Role Aktif</option>
-                        <option value="default" {{ old('role_selected') === 'default' ? 'selected' : '' }}>Default User</option>
                         <option value="super_admin" {{ old('role_selected') === 'super_admin' ? 'selected' : '' }}>Super Admin</option>
                         <option value="sekretariat" {{ old('role_selected') === 'sekretariat' ? 'selected' : '' }}>Sekretariat</option>
+                        <option value="keuangan_lamdepilar" {{ old('role_selected') === 'keuangan_lamdepilar' ? 'selected' : '' }}>Keuangan LAMDEPILAR</option>
                         <option value="asesor" {{ old('role_selected') === 'asesor' ? 'selected' : '' }}>Asesor</option>
+                        <option value="asesor_banding" {{ old('role_selected') === 'asesor_banding' ? 'selected' : '' }}>Asesor Banding</option>
                         <option value="validator" {{ old('role_selected') === 'validator' ? 'selected' : '' }}>Validator</option>
-                        <option value="verifikator" {{ old('role_selected') === 'verifikator' ? 'selected' : '' }}>Verifikator</option>
-                        <option value="admin_univ" {{ old('role_selected') === 'admin_univ' ? 'selected' : '' }}>PT</option>
                         <option value="admin_prodi" {{ old('role_selected') === 'admin_prodi' ? 'selected' : '' }}>PT/UPPS/PS</option>
                     </select>
                     <small class="text-muted">Role yang akan aktif saat user pertama kali login</small>
@@ -75,28 +83,24 @@
                             <label class="form-check-label" for="role_sekretariat">Sekretariat</label>
                         </div>
                         <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="roles[]" value="keuangan_lamdepilar" id="role_keuangan_lamdepilar" {{ in_array('keuangan_lamdepilar', old('roles', [])) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="role_keuangan_lamdepilar">Keuangan LAMDEPILAR</label>
+                        </div>
+                        <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="roles[]" value="asesor" id="role_asesor" {{ in_array('asesor', old('roles', [])) ? 'checked' : '' }}>
                             <label class="form-check-label" for="role_asesor">Asesor</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="roles[]" value="asesor_banding" id="role_asesor_banding" {{ in_array('asesor_banding', old('roles', [])) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="role_asesor_banding">Asesor Banding</label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="roles[]" value="validator" id="role_validator" {{ in_array('validator', old('roles', [])) ? 'checked' : '' }}>
                             <label class="form-check-label" for="role_validator">Validator</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="roles[]" value="verifikator" id="role_verifikator" {{ in_array('verifikator', old('roles', [])) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="role_verifikator">Verifikator</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="roles[]" value="admin_univ" id="role_admin_univ" {{ in_array('admin_univ', old('roles', [])) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="role_admin_univ">PT</label>
-                        </div>
-                        <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="roles[]" value="admin_prodi" id="role_admin_prodi" {{ in_array('admin_prodi', old('roles', [])) ? 'checked' : '' }}>
                             <label class="form-check-label" for="role_admin_prodi">PT/UPPS/PS</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="roles[]" value="default" id="role_default" {{ in_array('default', old('roles', [])) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="role_default">Default User</label>
                         </div>
                     </div>
                     <small class="text-muted">Role yang bisa di-switch oleh user ini. Kosongkan untuk auto-sync dari assignment</small>
@@ -159,12 +163,15 @@
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label for="id_study_program" class="form-label">Program Studi</label>
-                        <select class="form-select @error('id_study_program') is-invalid @enderror" id="id_study_program" name="id_study_program" data-no-select2>
-                            <option value="">Pilih Program Studi</option>
+                        <label for="id_study_programs" class="form-label">Program Studi</label>
+                        <select class="form-select @error('id_study_programs') is-invalid @enderror @error('id_study_programs.*') is-invalid @enderror" id="id_study_programs" name="id_study_programs[]" multiple data-no-select2>
                         </select>
-                        @error('id_study_program')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <small class="text-muted">Khusus role PT/UPPS/PS, pilih satu atau beberapa prodi/PS yang dapat dikelola.</small>
+                        @error('id_study_programs')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        @error('id_study_programs.*')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
@@ -197,39 +204,44 @@
 <script>
     $(document).ready(function() {
         $('#id_university').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            placeholder: 'Pilih Universitas',
-            allowClear: true,
-        });
+            theme: 'bootstrap-5'
+            , width: '100%'
+            , placeholder: 'Pilih Universitas'
+            , allowClear: true
+        , });
 
-        $('#id_study_program').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            placeholder: 'Pilih Program Studi',
-            allowClear: true,
-            ajax: {
-                url: '{{ route("ajax.prodi.search") }}',
-                dataType: 'json',
-                delay: 250,
-                cache: true,
-                data: function (params) {
+        $('#id_study_programs').select2({
+            theme: 'bootstrap-5'
+            , width: '100%'
+            , placeholder: 'Pilih Program Studi'
+            , allowClear: true
+            , closeOnSelect: false
+            , ajax: {
+                url: '{{ route("ajax.prodi.search") }}'
+                , dataType: 'json'
+                , delay: 250
+                , cache: true
+                , data: function(params) {
                     return {
-                        q: params.term,
-                        page: params.page || 1,
-                        university_id: $('#id_university').val(),
-                    };
-                },
-                processResults: function (data, params) {
+                        q: params.term
+                        , page: params.page || 1
+                        , university_id: $('#id_university').val()
+                    , };
+                }
+                , processResults: function(data, params) {
                     params.page = params.page || 1;
-                    return { results: data.results, pagination: data.pagination };
-                },
-            },
-        });
+                    return {
+                        results: data.results
+                        , pagination: data.pagination
+                    };
+                }
+            , }
+        , });
 
-        $('#id_university').on('change', function () {
-            $('#id_study_program').val(null).trigger('change');
+        $('#id_university').on('change', function() {
+            $('#id_study_programs').val(null).trigger('change');
         });
     });
+
 </script>
 @endpush
