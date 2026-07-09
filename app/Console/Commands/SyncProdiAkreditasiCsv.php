@@ -16,6 +16,7 @@ class SyncProdiAkreditasiCsv extends Command
     protected $signature = 'prodi:sync-akreditasi-csv
         {--file=database/seeders/data/data_akreditasi_lengkap.csv : Path CSV relatif ke base path atau path absolut}
         {--dry-run : Tampilkan rencana perubahan tanpa menyimpan}
+        {--rumpun-only : Hanya update kolom rumpun untuk prodi existing; tidak membuat, menghapus, atau menonaktifkan prodi}
         {--set-not-active : Nonaktifkan prodi non-contoh yang tidak ditemukan di CSV dan tidak punya pengajuan}
         {--set_not_active : Alias untuk --set-not-active}
         {--keep-missing : Jangan nonaktifkan prodi existing yang tidak ada di CSV}';
@@ -43,6 +44,7 @@ class SyncProdiAkreditasiCsv extends Command
     {
         $path = $this->resolvePath((string) $this->option('file'));
         $dryRun = (bool) $this->option('dry-run');
+        $rumpunOnly = (bool) $this->option('rumpun-only');
         $keepMissing = (bool) $this->option('keep-missing');
         $setNotActive = (bool) $this->option('set-not-active') || (bool) $this->option('set_not_active');
 
@@ -54,6 +56,9 @@ class SyncProdiAkreditasiCsv extends Command
         $this->info('Membaca CSV: ' . $path);
         if ($dryRun) {
             $this->warn('Mode dry-run aktif: tidak ada data yang disimpan.');
+        }
+        if ($rumpunOnly) {
+            $this->warn('Mode rumpun-only aktif: hanya kolom rumpun prodi existing yang akan diperbarui.');
         }
 
         $degreeLevels = $this->degreeLevelMap();
@@ -70,6 +75,9 @@ class SyncProdiAkreditasiCsv extends Command
             'locked_by_pengajuan' => 0,
             'skipped' => 0,
             'duplicates' => 0,
+            'not_found' => 0,
+            'invalid_rumpun' => 0,
+            'empty_rumpun' => 0,
         ];
         $errors = [];
         $seenKeys = [];
@@ -128,6 +136,50 @@ class SyncProdiAkreditasiCsv extends Command
                 }
                 $seenKeys[$key] = true;
 
+                if ($rumpunOnly) {
+                    $rumpun = $this->normalizeRumpun(
+                        $this->csvValue($data, 'rumpun') ?: $this->csvValue($data, 'Rumpun')
+                    );
+
+                    if ($rumpun === '') {
+                        $metrics['empty_rumpun']++;
+                        $metrics['skipped']++;
+                        continue;
+                    }
+
+                    if (!$this->isValidRumpun($rumpun)) {
+                        $metrics['invalid_rumpun']++;
+                        $metrics['skipped']++;
+                        $errors[] = "Baris {$metrics['rows']}: rumpun tidak valid: {$rumpun} ({$programName} - {$universityName}).";
+                        continue;
+                    }
+
+                    $studyProgram = StudyProgram::query()
+                        ->whereHas('university', fn($query) => $query->where('name', $universityName))
+                        ->where('id_degree_level', $degreeLevel->id)
+                        ->where('name', $programName)
+                        ->first();
+
+                    if (!$studyProgram) {
+                        $metrics['not_found']++;
+                        $metrics['skipped']++;
+                        continue;
+                    }
+
+                    if ($studyProgram->rumpun === $rumpun) {
+                        $metrics['unchanged']++;
+                        continue;
+                    }
+
+                    $metrics['updated']++;
+
+                    if (!$dryRun) {
+                        $studyProgram->forceFill(['rumpun' => $rumpun])->save();
+                    }
+
+                    continue;
+                }
+
                 $university = University::query()->where('name', $universityName)->first();
                 if (!$university) {
                     $metrics['created_universities']++;
@@ -156,6 +208,14 @@ class SyncProdiAkreditasiCsv extends Command
                 $peringkat = $this->nullableDash($this->csvValue($data, 'Peringkat_Akreditasi'));
                 $noSk = $this->nullableDash($this->csvValue($data, 'Nomor SK'));
                 $email = $this->nullableDash($this->csvValue($data, 'email') ?: $this->csvValue($data, 'Email'));
+                $rumpun = $this->normalizeRumpun(
+                    $this->csvValue($data, 'rumpun') ?: $this->csvValue($data, 'Rumpun')
+                );
+                if ($rumpun !== '' && !$this->isValidRumpun($rumpun)) {
+                    $metrics['invalid_rumpun']++;
+                    $errors[] = "Baris {$metrics['rows']}: rumpun tidak valid: {$rumpun} ({$programName} - {$universityName}).";
+                    $rumpun = '';
+                }
 
                 $attributes = [
                     'name' => $programName,
@@ -169,6 +229,7 @@ class SyncProdiAkreditasiCsv extends Command
                     'no_sk' => $noSk,
                     'tanggal_kedaluwarsa' => $tanggal,
                     'status_kedaluwarsa' => $status,
+                    'rumpun' => $rumpun ?: null,
                     'akreditasi_source' => 'csv',
                     'is_active' => true,
                     'is_example' => false,
@@ -214,7 +275,7 @@ class SyncProdiAkreditasiCsv extends Command
 
             fclose($handle);
 
-            if ($setNotActive && !$keepMissing) {
+            if (!$rumpunOnly && $setNotActive && !$keepMissing) {
                 $query = StudyProgram::query()->where('is_example', false);
                 $missingIds = [];
 
@@ -263,7 +324,10 @@ class SyncProdiAkreditasiCsv extends Command
             ['Prodi reaktif', $metrics['reactivated']],
             ['Prodi tidak berubah', $metrics['unchanged']],
             ['Prodi dilewati karena punya pengajuan', $metrics['locked_by_pengajuan']],
-            ['Prodi dinonaktifkan karena tidak ada di CSV', $this->missingActionLabel($setNotActive, $keepMissing, $metrics['deactivated'])],
+            ['Prodi tidak ditemukan', $metrics['not_found']],
+            ['Rumpun kosong di CSV', $metrics['empty_rumpun']],
+            ['Rumpun tidak valid', $metrics['invalid_rumpun']],
+            ['Prodi dinonaktifkan karena tidak ada di CSV', $this->missingActionLabel($setNotActive, $keepMissing, $metrics['deactivated'], $rumpunOnly)],
             ['Baris duplikat key', $metrics['duplicates']],
             ['Baris dilewati', $metrics['skipped']],
         ]);
@@ -291,8 +355,12 @@ class SyncProdiAkreditasiCsv extends Command
         return base_path($path);
     }
 
-    private function missingActionLabel(bool $setNotActive, bool $keepMissing, int $deactivated): string|int
+    private function missingActionLabel(bool $setNotActive, bool $keepMissing, int $deactivated, bool $rumpunOnly = false): string|int
     {
+        if ($rumpunOnly) {
+            return 'dilewati (--rumpun-only)';
+        }
+
         if ($keepMissing) {
             return 'dilewati (--keep-missing)';
         }
@@ -435,6 +503,16 @@ class SyncProdiAkreditasiCsv extends Command
         }
 
         return 'Belum Terakreditasi';
+    }
+
+    private function normalizeRumpun(string $value): string
+    {
+        return strtolower($this->normalizeText($value));
+    }
+
+    private function isValidRumpun(string $value): bool
+    {
+        return in_array($value, ['arsitektur', 'desain', 'perencanaan', 'lingkungan'], true);
     }
 
     private function detectBentukPt(string $universityName): ?string

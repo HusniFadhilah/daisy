@@ -18,7 +18,7 @@ jobs:
       - name: Upload
         run: |
           lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" \
-            "sftp://${{ secrets.FTP_SERVER }}:22" <<'EOF'
+            "sftp://${{ secrets.FTP_SERVER }}:${{ secrets.FTP_PORT }}" <<'EOF'
           set sftp:auto-confirm yes
           set net:max-retries 3
           set net:timeout 20

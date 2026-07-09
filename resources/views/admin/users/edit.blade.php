@@ -167,9 +167,9 @@
                         <label for="id_study_programs" class="form-label">Program Studi</label>
                         @php
                         $selectedStudyProgramIds = collect(old('id_study_programs', $user->studyPrograms->pluck('id')->all()))
-                            ->map(fn($id) => (int) $id)
-                            ->values()
-                            ->all();
+                        ->map(fn($id) => (int) $id)
+                        ->values()
+                        ->all();
                         @endphp
                         <select class="form-select @error('id_study_programs') is-invalid @enderror @error('id_study_programs.*') is-invalid @enderror" id="id_study_programs" name="id_study_programs[]" multiple data-no-select2>
                             @foreach($user->studyPrograms as $studyProgram)

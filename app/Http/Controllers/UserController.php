@@ -310,7 +310,7 @@ class UserController extends Controller
 
         $paginator = $query->paginate($perPage, ['id', 'name', 'email'], 'page', $page);
 
-        $results = $paginator->getCollection()->map(fn ($u) => [
+        $results = $paginator->getCollection()->map(fn($u) => [
             'id'   => $u->id,
             'text' => $u->name . ' (' . $u->email . ')',
         ]);
