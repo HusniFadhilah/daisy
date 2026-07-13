@@ -110,6 +110,9 @@
                         <option value="Unggul" {{ old('peringkat_akreditasi') == 'Unggul' ? 'selected' : '' }}>Unggul</option>
                         <option value="Baik Sekali" {{ old('peringkat_akreditasi') == 'Baik Sekali' ? 'selected' : '' }}>Baik Sekali</option>
                         <option value="Baik" {{ old('peringkat_akreditasi') == 'Baik' ? 'selected' : '' }}>Baik</option>
+                        <option value="Terakreditasi" {{ old('peringkat_akreditasi') == 'Terakreditasi' ? 'selected' : '' }}>Terakreditasi</option>
+                        <option value="Terakreditasi Sementara" {{ old('peringkat_akreditasi') == 'Terakreditasi Sementara' ? 'selected' : '' }}>Terakreditasi Sementara</option>
+                        <option value="Terakreditasi Pertama" {{ old('peringkat_akreditasi') == 'Terakreditasi Pertama' ? 'selected' : '' }}>Terakreditasi Pertama</option>
                         <option value="Tidak Terakreditasi" {{ old('peringkat_akreditasi') == 'Tidak Terakreditasi' ? 'selected' : '' }}>Tidak Terakreditasi</option>
                         <option value="A" {{ old('peringkat_akreditasi') == 'A' ? 'selected' : '' }}>A</option>
                         <option value="B" {{ old('peringkat_akreditasi') == 'B' ? 'selected' : '' }}>B</option>
