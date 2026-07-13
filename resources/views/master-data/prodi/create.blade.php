@@ -105,8 +105,25 @@
 
                 <div class="mb-3">
                     <label for="peringkat_akreditasi" class="form-label">Status Akreditasi</label>
-                    <input type="text" class="form-control @error('peringkat_akreditasi') is-invalid @enderror" id="peringkat_akreditasi" name="peringkat_akreditasi" value="{{ old('peringkat_akreditasi') }}" placeholder="Contoh: Unggul, Baik Sekali, A, B, dll">
+                    <select class="form-select @error('peringkat_akreditasi') is-invalid @enderror" id="peringkat_akreditasi" name="peringkat_akreditasi">
+                        <option value="">-- Pilih Status Akreditasi --</option>
+                        <option value="Unggul" {{ old('peringkat_akreditasi') == 'Unggul' ? 'selected' : '' }}>Unggul</option>
+                        <option value="Baik Sekali" {{ old('peringkat_akreditasi') == 'Baik Sekali' ? 'selected' : '' }}>Baik Sekali</option>
+                        <option value="Baik" {{ old('peringkat_akreditasi') == 'Baik' ? 'selected' : '' }}>Baik</option>
+                        <option value="Tidak Terakreditasi" {{ old('peringkat_akreditasi') == 'Tidak Terakreditasi' ? 'selected' : '' }}>Tidak Terakreditasi</option>
+                        <option value="A" {{ old('peringkat_akreditasi') == 'A' ? 'selected' : '' }}>A</option>
+                        <option value="B" {{ old('peringkat_akreditasi') == 'B' ? 'selected' : '' }}>B</option>
+                        <option value="C" {{ old('peringkat_akreditasi') == 'C' ? 'selected' : '' }}>C</option>
+                    </select>
                     @error('peringkat_akreditasi')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="no_sk" class="form-label">Nomor SK</label>
+                    <input type="text" class="form-control @error('no_sk') is-invalid @enderror" id="no_sk" name="no_sk" value="{{ old('no_sk') }}" placeholder="Contoh: 1234/SK/BAN-PT/Akred/S/V/2026">
+                    @error('no_sk')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
