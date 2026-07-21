@@ -180,7 +180,7 @@ class ValidasiPembayaranController extends Controller
         $validated = $request->validate([
             'id_pengajuan' => 'required|array',
             'id_pengajuan.*' => 'exists:pengajuan_akreditasi,id',
-            'jumlah_pembayaran' => 'required|numeric|min:0',
+            'jumlah_pembayaran' => 'required|integer|min:0',
             'tanggal_jatuh_tempo' => 'required|date|after:today',
         ]);
 

@@ -202,7 +202,7 @@ class ValidasiPembayaranBandingController extends Controller
         $request->validate([
             'id_pengajuan' => 'required|array|min:1',
             'id_pengajuan.*' => 'exists:pengajuan_akreditasi,id',
-            'jumlah_pembayaran' => 'required|numeric|min:1000000',
+            'jumlah_pembayaran' => 'required|integer|min:1000000',
             'tanggal_jatuh_tempo' => 'required|date|after:today',
             'keterangan' => 'nullable|string|max:500',
         ], [
