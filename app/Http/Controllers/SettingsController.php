@@ -28,7 +28,7 @@ class SettingsController extends Controller
 
         $rules = collect(config('panduan.roles', []))
             ->keys()
-            ->mapWithKeys(fn (string $key) => ["panduan_links.{$key}" => ['required', 'url', 'max:2048']])
+            ->mapWithKeys(fn(string $key) => ["panduan_links.{$key}" => ['required', 'url', 'max:2048']])
             ->all();
 
         $rules['biaya.akreditasi'] = ['required', 'integer', 'min:0'];

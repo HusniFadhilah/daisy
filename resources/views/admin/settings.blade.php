@@ -33,16 +33,7 @@
                             <label for="biaya_akreditasi" class="form-label">Biaya Akreditasi</label>
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
-                                <input
-                                    type="number"
-                                    class="form-control @error('biaya.akreditasi') is-invalid @enderror"
-                                    id="biaya_akreditasi"
-                                    name="biaya[akreditasi]"
-                                    value="{{ old('biaya.akreditasi', $paymentSettings['biaya_akreditasi']) }}"
-                                    min="0"
-                                    step="100000"
-                                    required
-                                >
+                                <input type="number" class="form-control @error('biaya.akreditasi') is-invalid @enderror" id="biaya_akreditasi" name="biaya[akreditasi]" value="{{ old('biaya.akreditasi', $paymentSettings['biaya_akreditasi']) }}" min="0" step="1" required>
                                 @error('biaya.akreditasi')
                                 <div class="invalid-feedback">
                                     {{ $message }}
@@ -56,16 +47,7 @@
                             <label for="biaya_banding" class="form-label">Biaya Banding</label>
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
-                                <input
-                                    type="number"
-                                    class="form-control @error('biaya.banding') is-invalid @enderror"
-                                    id="biaya_banding"
-                                    name="biaya[banding]"
-                                    value="{{ old('biaya.banding', $paymentSettings['biaya_banding']) }}"
-                                    min="0"
-                                    step="100000"
-                                    required
-                                >
+                                <input type="number" class="form-control @error('biaya.banding') is-invalid @enderror" id="biaya_banding" name="biaya[banding]" value="{{ old('biaya.banding', $paymentSettings['biaya_banding']) }}" min="0" step="1" required>
                                 @error('biaya.banding')
                                 <div class="invalid-feedback">
                                     {{ $message }}
@@ -89,14 +71,7 @@
                         </label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
-                            <input
-                                type="url"
-                                class="form-control @error('panduan_links.' . $key) is-invalid @enderror"
-                                id="panduan_{{ $key }}"
-                                name="panduan_links[{{ $key }}]"
-                                value="{{ old('panduan_links.' . $key, $item['url']) }}"
-                                required
-                            >
+                            <input type="url" class="form-control @error('panduan_links.' . $key) is-invalid @enderror" id="panduan_{{ $key }}" name="panduan_links[{{ $key }}]" value="{{ old('panduan_links.' . $key, $item['url']) }}" required>
                             <a href="{{ old('panduan_links.' . $key, $item['url']) }}" target="_blank" rel="noopener" class="btn btn-outline-secondary">
                                 <i class="bi bi-box-arrow-up-right"></i>
                             </a>
