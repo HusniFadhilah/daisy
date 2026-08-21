@@ -127,6 +127,9 @@ class PenyimpananArsipAkreditasiController extends Controller
             $q->where('is_latest', true);
         }])->findOrFail($id);
 
+        $studyProgramIds = Auth::user()->studyPrograms()->pluck('study_programs.id');
+        abort_unless($studyProgramIds->contains($pengajuan->id_program_studi), 403, 'Anda tidak memiliki akses ke pengajuan ini.');
+
         $dokumens = $pengajuan->dokumen;
 
         if ($dokumens->isEmpty()) {

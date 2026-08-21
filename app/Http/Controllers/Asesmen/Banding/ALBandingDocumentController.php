@@ -207,6 +207,8 @@ class ALBandingDocumentController extends Controller
 
     public function download($idAsesmen, $docId)
     {
+        $this->assertAccessOrFail((int)$idAsesmen);
+
         $doc = AsesmenDocument::where('id_asesmen', $idAsesmen)->findOrFail($docId);
 
         $absolutePath = storage_path('app/public/' . $doc->path);
@@ -220,6 +222,8 @@ class ALBandingDocumentController extends Controller
 
     public function preview($idAsesmen, $docId)
     {
+        $this->assertAccessOrFail((int)$idAsesmen);
+
         $doc = AsesmenDocument::where('id_asesmen', $idAsesmen)->findOrFail($docId);
 
         $absolutePath = storage_path('app/public/' . $doc->path);

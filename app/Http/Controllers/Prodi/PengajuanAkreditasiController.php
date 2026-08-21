@@ -9,6 +9,7 @@ use App\Models\BorangDataExcel;
 use App\Models\BorangImport;
 use App\Models\Kriteria;
 use App\Models\PengajuanAkreditasi;
+use App\Models\AsesmenUserRole;
 use App\Models\PengajuanDokumen;
 use App\Models\PengajuanPembayaran;
 use App\Models\PengajuanStatusLog;
@@ -1508,10 +1509,30 @@ class PengajuanAkreditasiController extends Controller
     /**
      * Download templat DOCX
      */
+    /**
+     * Cek akses user ke pengajuan: staff (super_admin/sekretariat), prodi pemilik,
+     * DE/validator yang ditugaskan, atau asesor/validator via penugasan asesmen.
+     */
+    private function assertAksesPengajuan(PengajuanAkreditasi $pengajuan): void
+    {
+        $user = Auth::user();
+
+        $hasAccess = in_array($user->role_selected, ['super_admin', 'sekretariat'], true)
+            || $user->studyPrograms()->pluck('study_programs.id')->contains($pengajuan->id_program_studi)
+            || $pengajuan->id_de_assigned === $user->id
+            || $pengajuan->id_validator_assigned === $user->id
+            || AsesmenUserRole::where('id_user', $user->id)
+                ->whereHas('asesmen', fn($q) => $q->where('id_pengajuan', $pengajuan->id))
+                ->exists();
+
+        abort_unless($hasAccess, 403, 'Anda tidak memiliki akses ke pengajuan ini.');
+    }
+
     public function downloadBorangTemplate($id)
     {
         try {
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $this->assertAksesPengajuan($pengajuan);
             $degreeLevel = $pengajuan->studyProgram->degreeLevel->code;
             $fileName = 'TEMPLAT_LAPORAN_EVALUASI_DIRI_' . $degreeLevel . '.docx';
             $templatePath = storage_path('app/public/templates/' . $fileName);
@@ -1553,6 +1574,7 @@ class PengajuanAkreditasiController extends Controller
                 'pengaju',
                 'borangData'
             ])->findOrFail($id);
+            $this->assertAksesPengajuan($pengajuan);
 
             $exportService = new BorangExportService($pengajuan);
             $phpWord = $exportService->generate();

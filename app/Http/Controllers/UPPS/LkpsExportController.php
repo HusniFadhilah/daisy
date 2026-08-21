@@ -8,6 +8,7 @@ use App\Models\PengajuanAkreditasi;
 use App\Repositories\SyaratAkreditasiRepository;
 use App\Services\BorangExport\LkpsTemplateExcelExportService;
 use App\Services\LkpsDataReaderService;
+use Illuminate\Support\Facades\Auth;
 
 class LkpsExportController extends Controller
 {
@@ -22,6 +23,9 @@ class LkpsExportController extends Controller
 
     public function export(PengajuanAkreditasi $pengajuan, LkpsTemplateExcelExportService $svc)
     {
+        $studyProgramIds = Auth::user()->studyPrograms()->pluck('study_programs.id');
+        abort_unless($studyProgramIds->contains($pengajuan->id_program_studi), 403, 'Anda tidak memiliki akses ke pengajuan ini.');
+
         $path = $svc->exportFromTemplate($pengajuan);
 
         return response()->download($path)->deleteFileAfterSend(true);

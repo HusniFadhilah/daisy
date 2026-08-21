@@ -895,7 +895,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PenyampaianHasilAkreditasiController::class, 'show'])->name('.show');
             Route::get('/{id}/preview-sertifikat', [\App\Http\Controllers\UPPS\PenyampaianHasilAkreditasiController::class, 'previewSertifikat'])->name('.preview-sertifikat');
             Route::get('/{id}/download-sertifikat', [\App\Http\Controllers\UPPS\PenyampaianHasilAkreditasiController::class, 'downloadSertifikat'])->name('.download-sertifikat');
-            Route::get('/{id}/download-berita-acara', [PenyampaianHasilAkreditasiController::class, 'downloadBeritaAcara'])
+            Route::get('/{id}/download-berita-acara', [\App\Http\Controllers\UPPS\PenyampaianHasilAkreditasiController::class, 'downloadBeritaAcara'])
                 ->name('.download-berita-acara');
         });
 

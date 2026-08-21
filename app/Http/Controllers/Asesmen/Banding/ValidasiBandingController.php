@@ -862,6 +862,14 @@ class ValidasiBandingController extends Controller
      */
     public function exportComparison(Request $request, Asesmen $asesmen)
     {
+        $user = Auth::user();
+        $isValidatorAssigned = AsesmenUserRole::where('id_asesmen', $asesmen->id)
+            ->where('id_user', $user->id)
+            ->where('jenis_asesmen', 'ak_banding')
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->exists();
+        abort_unless($isValidatorAssigned, 403, 'Anda tidak memiliki akses untuk export perbandingan ini.');
+
         $asesors = AsesmenUserRole::where('id_asesmen', $asesmen->id)
             ->where('jenis_asesmen', 'ak_banding')
             ->where('status_penawaran', 'accepted')

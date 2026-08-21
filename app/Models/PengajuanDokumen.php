@@ -184,19 +184,19 @@ class PengajuanDokumen extends Model
             ->where('is_latest', true);
     }
 
+    /**
+     * Role yang boleh melihat seluruh dokumen lintas program studi.
+     */
+    public const STAFF_ROLES_FULL_ACCESS = ['super_admin', 'sekretariat', 'keuangan_lamdepilar'];
+
     public function downloadDokumen($additionalFunction = null)
     {
         $dokumen = $this;
         $authUser = Auth::user();
         $pengajuan = $dokumen->pengajuan;
 
-        $userStudyProgramIds = $authUser->studyPrograms()->pluck('study_programs.id')->toArray();
-        $hasAccess = in_array($pengajuan->id_program_studi, $userStudyProgramIds)
-            || $pengajuan->id_de_assigned === $authUser->id
-            || $pengajuan->id_validator_assigned === $authUser->id
-            || $authUser->role === 'admin';
-
-        // if (!$hasAccess) abort(403);
+        abort_if(!$authUser || !$pengajuan, 403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
+        abort_unless($this->userCanAccess($authUser, $pengajuan), 403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
 
         if (!Storage::disk('public')->exists($dokumen->path_file)) {
             // Jalankan additionalFunction jika ada
@@ -233,5 +233,33 @@ class PengajuanDokumen extends Model
             'Pragma'              => 'public',
             'X-Content-Type-Options' => 'nosniff',
         ]);
+    }
+
+    /**
+     * Cek apakah user boleh akses dokumen milik $pengajuan.
+     *
+     * - super_admin / sekretariat / keuangan_lamdepilar: semua dokumen.
+     * - admin_univ / admin_prodi (PT, UPPS, PS): hanya dokumen prodi miliknya.
+     * - DE / validator: dokumen pengajuan yang ditugaskan langsung ke dia.
+     * - asesor / validator asesmen: dokumen pengajuan yang asesmen-nya dia tangani.
+     */
+    private function userCanAccess($authUser, $pengajuan): bool
+    {
+        if (in_array($authUser->role_selected, self::STAFF_ROLES_FULL_ACCESS, true)) {
+            return true;
+        }
+
+        $userStudyProgramIds = $authUser->studyPrograms()->pluck('study_programs.id')->toArray();
+        if (in_array($pengajuan->id_program_studi, $userStudyProgramIds, true)) {
+            return true;
+        }
+
+        if ($pengajuan->id_de_assigned === $authUser->id || $pengajuan->id_validator_assigned === $authUser->id) {
+            return true;
+        }
+
+        return AsesmenUserRole::where('id_user', $authUser->id)
+            ->whereHas('asesmen', fn($q) => $q->where('id_pengajuan', $pengajuan->id))
+            ->exists();
     }
 }
