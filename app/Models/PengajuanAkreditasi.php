@@ -301,8 +301,8 @@ class PengajuanAkreditasi extends Model
     public static function jenisAkreditasiOptions()
     {
         return [
-            self::AKREDITASI_BARU => 'Pembukaan prodi baru',
-            self::AKREDITASI_PERPANJANGAN => 'Perpanjangan status akreditasi',
+            self::AKREDITASI_BARU => 'Terakreditasi Pertama',
+            self::AKREDITASI_PERPANJANGAN => 'Perpanjangan Status Akreditasi',
             self::AKREDITASI_TERAKREDITASI => 'Terakreditasi',
             self::AKREDITASI_MENUJU_UNGGUL => 'Unggul',
         ];
