@@ -95,7 +95,10 @@ class PenerimaanPermohonanController extends Controller
      */
     public function download($id)
     {
-        $pengajuanDokumen = PengajuanDokumen::with('pengajuan')->findOrFail($id);
+        $pengajuanDokumen = PengajuanDokumen::where('id_pengajuan', $id)
+            ->where('jenis_dokumen', 'surat_penerimaan_de')
+            ->where('is_latest', true)
+            ->firstOrFail();
         return $pengajuanDokumen->downloadDokumen();
     }
 
