@@ -98,6 +98,7 @@ class StudyProgramController extends Controller
         $validated['full_name'] = $request->input('full_name', $validated['name']);
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_example'] = $request->boolean('is_example');
+        $validated['id_category'] = $this->categoryIdForDegreeLevel((int) $validated['id_degree_level']);
 
         $studyProgram = StudyProgram::create($validated);
         $studyProgram->load(['university', 'degreeLevel']);
@@ -176,6 +177,7 @@ class StudyProgramController extends Controller
         $validated['full_name'] = $validated['full_name'] ?? $validated['name'];
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_example'] = $request->boolean('is_example');
+        $validated['id_category'] = $this->categoryIdForDegreeLevel((int) $validated['id_degree_level']);
 
         $studyProgram = StudyProgram::find($id);
 
@@ -201,6 +203,11 @@ class StudyProgramController extends Controller
 
         return redirect()->route('master-data.index', ['tab' => 'study-programs'])
             ->with('success', 'Program studi berhasil diperbarui.');
+    }
+
+    private function categoryIdForDegreeLevel(int $degreeLevelId): ?int
+    {
+        return DegreeLevel::whereKey($degreeLevelId)->value('id_category');
     }
 
     /**

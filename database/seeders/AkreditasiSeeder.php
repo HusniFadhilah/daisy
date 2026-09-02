@@ -118,6 +118,7 @@ class AkreditasiSeeder extends Seeder
                         'full_name' => $degreeLevel->alias . ' - ' . $programStudi . ' ' . $university->name,
                         'id_university' => $university->id,
                         'id_degree_level' => $degreeLevel->id,
+                        'id_category' => $degreeLevel->id_category,
                         'email' => $email,
                         'peringkat_akreditasi' => $peringkat,
                         'no_sk' => $noSk !== '' && $noSk !== '-' ? $noSk : null,
@@ -133,6 +134,7 @@ class AkreditasiSeeder extends Seeder
                         'no_sk' => $noSk !== '' && $noSk !== '-' ? $noSk : null,
                         'tanggal_kedaluwarsa' => $tanggal,
                         'status_kedaluwarsa' => $status,
+                        'id_category' => $studyProgram->id_category ?? $degreeLevel->id_category,
                     ]);
                     $updated++;
                 }
