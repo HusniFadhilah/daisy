@@ -290,7 +290,7 @@ class PelaporanAKController extends Controller
             $document = $pengajuan->asesmen
                 ->asesmenDocuments()
                 ->where('id', $documentId)
-                ->where('type', 'laporan_ak')
+                ->where('type', 'laporan_validasi_ak')
                 ->where('is_active', true)
                 ->firstOrFail();
 
@@ -300,7 +300,10 @@ class PelaporanAKController extends Controller
                     'id' => $document->id,
                     'title' => $document->title,
                     'path' => $document->path,
-                    'url' => asset('storage/' . $document->path),
+                    'url' => route('storage.laporan-validasi-ak.preview', [
+                        'pengajuan' => $pengajuan->id,
+                        'filename' => basename($document->path),
+                    ]),
                     'size' => $document->size,
                     'mime' => $document->mime,
                     'uploaded_by' => $document->uploadedBy->name ?? 'Unknown',

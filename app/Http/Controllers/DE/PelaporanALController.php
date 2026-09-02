@@ -298,7 +298,10 @@ class PelaporanALController extends Controller
                     'id' => $document->id,
                     'title' => $document->title,
                     'path' => $document->path,
-                    'url' => asset('storage/' . $document->path),
+                    'url' => route('storage.laporan-al.preview', [
+                        'pengajuan' => $pengajuan->id,
+                        'filename' => basename($document->path),
+                    ]),
                     'size' => $document->size,
                     'mime' => $document->mime,
                     'uploaded_by' => $document->uploadedBy->name ?? 'Unknown',

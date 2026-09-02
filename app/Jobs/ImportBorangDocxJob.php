@@ -187,12 +187,9 @@ class ImportBorangDocxJob implements ShouldQueue
                 $ts        = now()->format('YmdHis');
                 $rand      = substr(md5(uniqid()), 0, 8);
                 $name      = "img_{$this->importId}_{$ts}_{$rand}_{$seqNumber}.{$ext}";
-                $path      = "{$dir}/{$name}";
+                $url       = $this->storePublicImage($dir, $name, $content);
 
-                Storage::disk('public')->put($path, $content);
-
-                if (Storage::disk('public')->exists($path)) {
-                    $url   = Storage::disk('public')->url($path);
+                if ($url) {
                     $raw[] = ['seq' => $seqNumber, 'url' => $url];
                 }
             }
@@ -419,17 +416,7 @@ class ImportBorangDocxJob implements ShouldQueue
         $ts   = now()->format('YmdHis');
         $rand = substr(md5(uniqid()), 0, 8);
         $name = "img_{$this->importId}_{$ts}_{$rand}.{$ext}";
-        $path = "{$dir}/{$name}";
-
-        Storage::disk('public')->put($path, $binary);
-
-        if (!Storage::disk('public')->exists($path)) {
-            Log::error("[Import] Failed to save image: {$path}");
-            return null;
-        }
-
-        $url = Storage::disk('public')->url($path);
-        return $url;
+        return $this->storePublicImage($dir, $name, $binary);
     }
 
     // =========================================================================
@@ -1907,11 +1894,126 @@ class ImportBorangDocxJob implements ShouldQueue
     {
         $dir = "permohonan-akreditasi/{$this->pengajuanId}/kualitatif/images";
 
-        // hapus semua isi folder (kalau tidak ada, aman)
-        Storage::disk('public')->deleteDirectory($dir);
+        try {
+            // hapus semua isi folder (kalau tidak ada, aman)
+            Storage::disk('public')->deleteDirectory($dir);
+        } catch (\Throwable $e) {
+            Log::warning("[Import] purgeOldImagesForPengajuan delete failed: " . $e->getMessage());
+        }
 
         // (opsional) buat ulang folder agar siap dipakai
-        Storage::disk('public')->makeDirectory($dir);
+        $this->ensurePublicDirectory($dir);
+    }
+
+    private function storePublicImage(string $dir, string $name, string $binary): ?string
+    {
+        $path = "{$dir}/{$name}";
+
+        if (!$this->ensurePublicDirectory($dir)) {
+            Log::error("[Import] Failed to prepare image directory: {$dir}");
+            return null;
+        }
+
+        try {
+            Storage::disk('public')->put($path, $binary);
+        } catch (\Throwable $e) {
+            Log::warning("[Import] Storage put image failed, trying direct write: " . $e->getMessage(), [
+                'path' => $path,
+            ]);
+
+            if (!$this->writePublicFileDirectly($path, $binary)) {
+                return null;
+            }
+        }
+
+        if (!Storage::disk('public')->exists($path)) {
+            Log::warning("[Import] Stored image not visible via disk, trying direct write", [
+                'path' => $path,
+            ]);
+
+            if (!$this->writePublicFileDirectly($path, $binary)) {
+                Log::error("[Import] Failed to save image: {$path}");
+                return null;
+            }
+        }
+
+        return Storage::disk('public')->url($path);
+    }
+
+    private function ensurePublicDirectory(string $dir): bool
+    {
+        $disk = Storage::disk('public');
+
+        try {
+            $absoluteDir = $disk->path($dir);
+
+            if (is_dir($absoluteDir) || $disk->makeDirectory($dir)) {
+                return true;
+            }
+        } catch (\Throwable $e) {
+            Log::warning("[Import] Storage directory creation failed: " . $e->getMessage(), [
+                'dir' => $dir,
+            ]);
+        }
+
+        try {
+            $absoluteDir = $disk->path($dir);
+
+            if (!is_dir($absoluteDir) && !@mkdir($absoluteDir, 0775, true) && !is_dir($absoluteDir)) {
+                Log::error("[Import] Native directory creation failed", [
+                    'dir' => $dir,
+                    'absolute_dir' => $absoluteDir,
+                    'last_error' => error_get_last()['message'] ?? null,
+                ]);
+
+                return false;
+            }
+
+            @chmod($absoluteDir, 0775);
+
+            return is_dir($absoluteDir) && is_writable($absoluteDir);
+        } catch (\Throwable $e) {
+            Log::error("[Import] Native directory creation exception: " . $e->getMessage(), [
+                'dir' => $dir,
+            ]);
+
+            return false;
+        }
+    }
+
+    private function writePublicFileDirectly(string $path, string $binary): bool
+    {
+        $disk = Storage::disk('public');
+        $dir = trim(str_replace('\\', '/', dirname($path)), '.');
+
+        if ($dir !== '' && !$this->ensurePublicDirectory($dir)) {
+            return false;
+        }
+
+        try {
+            $absolutePath = $disk->path($path);
+            $bytes = @file_put_contents($absolutePath, $binary, LOCK_EX);
+
+            if ($bytes === false) {
+                Log::error("[Import] Native image write failed", [
+                    'path' => $path,
+                    'absolute_path' => $absolutePath,
+                    'last_error' => error_get_last()['message'] ?? null,
+                ]);
+
+                return false;
+            }
+
+            @chmod($absolutePath, 0664);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error("[Import] Native image write exception: " . $e->getMessage(), [
+                'path' => $path,
+            ]);
+
+            return false;
+        }
     }
 
     private function getElemenByKodeCached(string $kode): ?ElemenStandar

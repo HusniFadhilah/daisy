@@ -96,6 +96,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/ajax/prodi/search', [\App\Http\Controllers\Prodi\PemetaanAkreditasiController::class, 'searchProdiAjax'])->name('ajax.prodi.search');
     Route::get('/ajax/users/search', [\App\Http\Controllers\UserController::class, 'searchForSelect2'])->name('ajax.users.search');
 
+    Route::get('/storage/permohonan-akreditasi/{pengajuan}/laporan-al/{filename}', [PengajuanAkreditasiController::class, 'previewLaporanAlStorage'])
+        ->where('filename', '.*')
+        ->name('storage.laporan-al.preview');
+    Route::get('/storage/permohonan-akreditasi/{pengajuan}/laporan-validasi-ak/{filename}', [PengajuanAkreditasiController::class, 'previewLaporanValidasiAkStorage'])
+        ->where('filename', '.*')
+        ->name('storage.laporan-validasi-ak.preview');
+
     // PENAWARAN ASESMEN
     Route::prefix('penawaran')->name('penawaran')->group(function () {
         Route::get('/', [PenawaranController::class, 'index']);

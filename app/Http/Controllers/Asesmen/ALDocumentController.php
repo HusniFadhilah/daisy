@@ -95,6 +95,17 @@ class ALDocumentController extends Controller
         abort_if(!$ok, 403, 'Unauthorized');
     }
 
+    private function assertViewAccessOrFail(int $idAsesmen): void
+    {
+        $user = Auth::user();
+
+        if ($user && $user->hasRole(['super_admin', 'sekretariat'])) {
+            return;
+        }
+
+        $this->assertAccessOrFail($idAsesmen);
+    }
+
     public function index($idAsesmen)
     {
         $this->assertAccessOrFail((int)$idAsesmen);
@@ -254,7 +265,7 @@ class ALDocumentController extends Controller
 
     public function download($idAsesmen, $docId)
     {
-        $this->assertAccessOrFail((int)$idAsesmen);
+        $this->assertViewAccessOrFail((int)$idAsesmen);
 
         $doc = AsesmenDocument::where('id_asesmen', $idAsesmen)->findOrFail($docId);
 
@@ -269,7 +280,7 @@ class ALDocumentController extends Controller
 
     public function preview($idAsesmen, $docId)
     {
-        $this->assertAccessOrFail((int)$idAsesmen);
+        $this->assertViewAccessOrFail((int)$idAsesmen);
 
         $doc = AsesmenDocument::where('id_asesmen', $idAsesmen)->findOrFail($docId);
 

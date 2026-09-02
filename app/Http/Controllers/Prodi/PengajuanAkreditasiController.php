@@ -7,6 +7,7 @@ use App\Jobs\ImportBorangDocxJob;
 use App\Models\BorangData;
 use App\Models\BorangDataExcel;
 use App\Models\BorangImport;
+use App\Models\AsesmenDocument;
 use App\Models\Kriteria;
 use App\Models\PengajuanAkreditasi;
 use App\Models\AsesmenUserRole;
@@ -1522,8 +1523,8 @@ class PengajuanAkreditasiController extends Controller
             || $pengajuan->id_de_assigned === $user->id
             || $pengajuan->id_validator_assigned === $user->id
             || AsesmenUserRole::where('id_user', $user->id)
-                ->whereHas('asesmen', fn($q) => $q->where('id_pengajuan', $pengajuan->id))
-                ->exists();
+            ->whereHas('asesmen', fn($q) => $q->where('id_pengajuan', $pengajuan->id))
+            ->exists();
 
         abort_unless($hasAccess, 403, 'Anda tidak memiliki akses ke pengajuan ini.');
     }
@@ -1833,6 +1834,63 @@ class PengajuanAkreditasiController extends Controller
 
             abort(404, 'File tidak ditemukan.');
         });
+    }
+
+    public function previewLaporanAlStorage($pengajuanId, $filename)
+    {
+        return $this->previewAsesmenStorageDocument(
+            $pengajuanId,
+            'laporan-al',
+            $filename,
+            'laporan_al'
+        );
+    }
+
+    public function previewLaporanValidasiAkStorage($pengajuanId, $filename)
+    {
+        return $this->previewAsesmenStorageDocument(
+            $pengajuanId,
+            'laporan-validasi-ak',
+            $filename,
+            'laporan_validasi_ak'
+        );
+    }
+
+    private function previewAsesmenStorageDocument($pengajuanId, string $folder, string $filename, string $type)
+    {
+        $path = "permohonan-akreditasi/{$pengajuanId}/{$folder}/{$filename}";
+
+        $document = AsesmenDocument::with(['asesmen.pengajuan', 'asesmen.pengajuan.studyProgram'])
+            ->where('type', $type)
+            ->where('is_active', true)
+            ->where('path', $path)
+            ->whereHas('asesmen', fn($query) => $query->where('id_pengajuan', $pengajuanId))
+            ->firstOrFail();
+
+        $pengajuan = $document->asesmen?->pengajuan;
+        $user = Auth::user();
+
+        abort_if(!$user || !$pengajuan, 403, 'Anda tidak memiliki akses untuk melihat dokumen ini.');
+
+        $hasAccess = in_array($user->role_selected, ['super_admin', 'sekretariat'], true)
+            || $user->studyPrograms()->pluck('study_programs.id')->contains($pengajuan->id_program_studi)
+            || $pengajuan->id_de_assigned === $user->id
+            || $pengajuan->id_validator_assigned === $user->id
+            || AsesmenUserRole::where('id_user', $user->id)
+            ->where('id_asesmen', $document->id_asesmen)
+            ->exists();
+
+        abort_unless($hasAccess, 403, 'Anda tidak memiliki akses untuk melihat dokumen ini.');
+
+        $absolutePath = Storage::disk('public')->path($document->path);
+        abort_unless(is_file($absolutePath), 404, 'File tidak ditemukan.');
+
+        $filename = $document->original_name ?: basename($absolutePath);
+
+        return response()->file($absolutePath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . addslashes($filename) . '"',
+        ]);
     }
 
     /**
