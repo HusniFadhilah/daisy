@@ -64,6 +64,8 @@ class ImportBorangDocxJob implements ShouldQueue
     public function handle()
     {
         $borangImport = null;
+        $sanitizedDocxPath = null;
+        $tempDir = null;
 
         try {
             if (!file_exists($this->filePath)) {
@@ -93,8 +95,10 @@ class ImportBorangDocxJob implements ShouldQueue
             $this->parseNumberingXml();
 
 
+            $sanitizedDocxPath = $this->prepareDocxForPhpWord($this->filePath, $tempDir);
+
             // --- Load DOCX ---
-            $phpWord = IOFactory::load($this->filePath);
+            $phpWord = IOFactory::load($sanitizedDocxPath);
 
             // ✅ 2. Build map mediaIndex => URL (setelah PhpWord load, sehingga bisa pakai getMediaIndex)
             $this->buildMediaIndexMap($phpWord);
@@ -140,13 +144,20 @@ class ImportBorangDocxJob implements ShouldQueue
             ]);
 
             @unlink($this->filePath);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("[Import] Job failed: " . $e->getMessage());
             Log::error($e->getTraceAsString());
             if ($borangImport) {
                 $borangImport->markAsFailed(['error' => $e->getMessage()]);
             }
             throw $e;
+        } finally {
+            if ($sanitizedDocxPath && $sanitizedDocxPath !== $this->filePath && file_exists($sanitizedDocxPath)) {
+                @unlink($sanitizedDocxPath);
+            }
+            if ($tempDir) {
+                $this->deleteTempDir($tempDir);
+            }
         }
     }
 
@@ -155,10 +166,220 @@ class ImportBorangDocxJob implements ShouldQueue
     // =========================================================================
 
     /**
-     * Ekstrak semua gambar dari DOCX (ZIP) dan simpan ke storage.
-     * Hasilnya disimpan ke $this->extractedImageUrlsQueue (indexed 0, 1, 2, ...).
-     * Nama file asli (image1.png, image2.png, dst) juga disimpan untuk mapping nanti.
+     * Create a temporary DOCX copy that PhpWord can load safely.
      */
+    private function prepareDocxForPhpWord(string $sourcePath, string $tempDir): string
+    {
+        $safePath = rtrim($tempDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'phpword_safe_' . uniqid() . '.docx';
+
+        if (!@copy($sourcePath, $safePath)) {
+            Log::warning('[Import] Unable to create sanitized DOCX copy, loading original file', [
+                'source' => $sourcePath,
+                'target' => $safePath,
+                'last_error' => error_get_last()['message'] ?? null,
+            ]);
+
+            return $sourcePath;
+        }
+
+        try {
+            $zip = new \ZipArchive();
+            if ($zip->open($safePath) !== true) {
+                return $sourcePath;
+            }
+
+            $unsupportedTargetsByOwner = $this->removeUnsupportedDocxMedia($zip);
+            $removedRelIdsByOwner = $this->removeUnsupportedDocxRelationships($zip, $unsupportedTargetsByOwner);
+            $this->sanitizeDocxXmlParts($zip, $removedRelIdsByOwner);
+
+            $zip->close();
+        } catch (\Throwable $e) {
+            Log::warning('[Import] DOCX sanitizing failed, loading original file: ' . $e->getMessage());
+
+            return $sourcePath;
+        }
+
+        return $safePath;
+    }
+
+    private function removeUnsupportedDocxMedia(\ZipArchive $zip): array
+    {
+        $unsupportedTargetsByOwner = [];
+
+        for ($i = $zip->numFiles - 1; $i >= 0; $i--) {
+            $filename = $zip->getNameIndex($i);
+            if (!preg_match('#^word/media/(image\d+)\.(emf|wmf|tif|tiff)$#i', $filename)) {
+                continue;
+            }
+
+            $target = substr($filename, strlen('word/'));
+            $unsupportedTargetsByOwner['word/document.xml'][] = $target;
+            $zip->deleteName($filename);
+        }
+
+        return $unsupportedTargetsByOwner;
+    }
+
+    private function removeUnsupportedDocxRelationships(\ZipArchive $zip, array $unsupportedTargetsByOwner): array
+    {
+        $removedRelIdsByOwner = [];
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $relsPath = $zip->getNameIndex($i);
+            if (!preg_match('#^word/_rels/(.+\.xml)\.rels$#', $relsPath, $m)) {
+                continue;
+            }
+
+            $ownerPath = 'word/' . $m[1];
+            $relsXml = $zip->getFromName($relsPath);
+            if (!$relsXml) {
+                continue;
+            }
+
+            $doc = new \DOMDocument();
+            $doc->preserveWhiteSpace = false;
+            if (!@$doc->loadXML($relsXml)) {
+                continue;
+            }
+
+            $changed = false;
+            $rels = iterator_to_array($doc->getElementsByTagName('Relationship'));
+            foreach ($rels as $rel) {
+                $target = preg_replace('#^(\.\./)+#', '', ltrim(str_replace('\\', '/', $rel->getAttribute('Target')), '/'));
+                $isUnsupported = preg_match('#^media/.+\.(emf|wmf|tif|tiff)$#i', $target)
+                    || in_array($target, $unsupportedTargetsByOwner[$ownerPath] ?? [], true);
+
+                if (!$isUnsupported) {
+                    continue;
+                }
+
+                $removedRelIdsByOwner[$ownerPath][] = $rel->getAttribute('Id');
+                $rel->parentNode?->removeChild($rel);
+                $changed = true;
+            }
+
+            if ($changed) {
+                $zip->addFromString($relsPath, $doc->saveXML());
+            }
+        }
+
+        return $removedRelIdsByOwner;
+    }
+
+    private function sanitizeDocxXmlParts(\ZipArchive $zip, array $removedRelIdsByOwner): void
+    {
+        $parts = [
+            'word/document.xml',
+            'word/footnotes.xml',
+            'word/endnotes.xml',
+        ];
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $filename = $zip->getNameIndex($i);
+            if (preg_match('#^word/(header|footer)\d+\.xml$#', $filename)) {
+                $parts[] = $filename;
+            }
+        }
+
+        foreach (array_unique($parts) as $part) {
+            $xml = $zip->getFromName($part);
+            if (!$xml) {
+                continue;
+            }
+
+            $doc = new \DOMDocument();
+            $doc->preserveWhiteSpace = false;
+            if (!@$doc->loadXML($xml)) {
+                continue;
+            }
+
+            $xpath = new \DOMXPath($doc);
+            $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+            $xpath->registerNamespace('r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+            $xpath->registerNamespace('mc', 'http://schemas.openxmlformats.org/markup-compatibility/2006');
+
+            $changed = $this->downgradeCellPageBreaks($xpath);
+            $changed = $this->removeNodesForRelationships($xpath, $removedRelIdsByOwner[$part] ?? []) || $changed;
+
+            if ($changed) {
+                $zip->addFromString($part, $doc->saveXML());
+            }
+        }
+    }
+
+    private function downgradeCellPageBreaks(\DOMXPath $xpath): bool
+    {
+        $changed = false;
+
+        foreach ($xpath->query('//w:tc//w:br[@w:type="page"]') ?: [] as $break) {
+            $break->removeAttributeNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'type');
+            $changed = true;
+        }
+
+        return $changed;
+    }
+
+    private function removeNodesForRelationships(\DOMXPath $xpath, array $relationshipIds): bool
+    {
+        if (empty($relationshipIds)) {
+            return false;
+        }
+
+        $changed = false;
+        $relationshipIds = array_values(array_unique(array_filter($relationshipIds)));
+
+        foreach ($relationshipIds as $relId) {
+            $literal = $this->xpathLiteral($relId);
+            $nodes = $xpath->query("//*[@r:embed={$literal} or @r:id={$literal}]") ?: [];
+
+            foreach (iterator_to_array($nodes) as $node) {
+                $remove = $this->closestDocxMediaContainer($node);
+                if ($remove && $remove->parentNode) {
+                    $remove->parentNode->removeChild($remove);
+                    $changed = true;
+                }
+            }
+        }
+
+        return $changed;
+    }
+
+    private function closestDocxMediaContainer(\DOMNode $node): ?\DOMNode
+    {
+        for ($current = $node; $current !== null; $current = $current->parentNode) {
+            if (!$current instanceof \DOMElement) {
+                continue;
+            }
+
+            $name = $current->localName;
+            $namespace = $current->namespaceURI;
+
+            if (
+                ($namespace === 'http://schemas.openxmlformats.org/wordprocessingml/2006/main' && in_array($name, ['drawing', 'pict', 'object'], true))
+                || ($namespace === 'http://schemas.openxmlformats.org/markup-compatibility/2006' && $name === 'AlternateContent')
+            ) {
+                return $current;
+            }
+        }
+
+        return $node;
+    }
+
+    private function xpathLiteral(string $value): string
+    {
+        if (!str_contains($value, "'")) {
+            return "'{$value}'";
+        }
+
+        if (!str_contains($value, '"')) {
+            return "\"{$value}\"";
+        }
+
+        $parts = array_map(fn($part) => "'{$part}'", explode("'", $value));
+
+        return 'concat(' . implode(', "\'", ', $parts) . ')';
+    }
+
     private function extractAndMapImagesFromZip(): void
     {
         $this->extractedImageUrlsQueue = [];

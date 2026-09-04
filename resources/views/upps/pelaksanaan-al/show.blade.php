@@ -72,7 +72,7 @@
                 </div>
                 <div class="card-body">
                     @php
-                    $beritaAcaraList = $pengajuan->asesmen->beritaAcaraAL ?? collect([]);
+                    $beritaAcaraList = $pengajuan->asesmen?->beritaAcaraAL ?? collect([]);
                     @endphp
 
                     @if($beritaAcaraList->count() > 0)
@@ -127,11 +127,11 @@
                 </div>
                 <div class="card-body">
                     @php
-                    $lhaList = $pengajuan->asesmen->documents()
+                    $lhaList = $pengajuan->asesmen?->documents()
                     ->where('type', 'lha_asesor')
                     ->where('is_active', true)
                     ->latest('uploaded_at')
-                    ->get();
+                    ->get() ?? collect([]);
                     @endphp
 
                     @if($lhaList->count() > 0)
