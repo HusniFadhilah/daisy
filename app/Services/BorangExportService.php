@@ -45,9 +45,8 @@ class BorangExportService
         ini_set('max_execution_time', '300');
         $this->pengajuan = $pengajuan;
 
-        // ✅ set active degree level
-        $this->activeDegreeLevel = $pengajuan->degreeLevel;
-        // atau jika relasinya beda: DegreeLevel::find($pengajuan->id_degree_level)
+        // Jenjang prodi diakses melalui relasi studyProgram.
+        $this->activeDegreeLevel = $pengajuan->studyProgram?->degreeLevel;
 
         $this->phpWord = new PhpWord();
         $this->phpWord->getSettings()->setUpdateFields(true);

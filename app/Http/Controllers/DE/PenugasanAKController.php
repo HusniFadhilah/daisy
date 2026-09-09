@@ -253,15 +253,14 @@ class PenugasanAKController extends Controller
             if (!$pengajuan->asesmen) {
                 $asesmen = Asesmen::create([
                     'name' => 'Asesmen - ' . $pengajuan->studyProgram->name,
-                    'code' => $pengajuan->code,
-                    'id_program_studi' => $pengajuan->id_program_studi,
+                    'code' => $pengajuan->nomor_pengajuan,
+                    'id_study_program' => $pengajuan->id_program_studi,
                     'id_pengajuan' => $pengajuan->id,
                     'tanggal_mulai' => $tanggalMulai,
                     'tanggal_selesai' => $tanggalSelesai,
                     'status' => 'active',
                 ]);
 
-                $pengajuan->update(['id_asesmen' => $asesmen->id]);
             } else {
                 $asesmen = $pengajuan->asesmen;
                 $asesmen->update([

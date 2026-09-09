@@ -233,14 +233,13 @@ class PenugasanALController extends Controller
                 $asesmen = Asesmen::create([
                     'name' => 'Asesmen - ' . $pengajuan->studyProgram->name,
                     'code' => 'LAMDEPILAR-' . $pengajuan->id . '-' . now()->format('YmdHis'),
-                    'id_program_studi' => $pengajuan->id_program_studi,
+                    'id_study_program' => $pengajuan->id_program_studi,
                     'id_pengajuan' => $pengajuan->id,
                     'tanggal_mulai' => $request->tanggal_mulai,
                     'tanggal_selesai' => $request->tanggal_selesai,
                     'status' => 'active',
                 ]);
 
-                $pengajuan->update(['id_asesmen' => $asesmen->id]);
             } else {
                 $asesmen = $pengajuan->asesmen;
             }
