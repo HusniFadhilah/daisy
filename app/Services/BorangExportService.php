@@ -1402,33 +1402,86 @@ class BorangExportService
         $this->ensureGhostscriptLocal();
 
         $tmpDir = storage_path("app/public/tmp_pdf_export/{$this->pengajuan->id}");
-        if (!is_dir($tmpDir)) {
-            mkdir($tmpDir, 0777, true);
-        }
+        $this->ensureTmpPdfExportDirectory($tmpDir);
 
         try {
-            $imagick = new \Imagick();
-            $imagick->setResolution($dpi, $dpi);
-            $imagick->setOption('pdf:use-cropbox', 'true');
-            $imagick->readImage($pdfPath);
+            $probe = new \Imagick();
+            $probe->setResolution(72, 72);
+            $probe->setOption('pdf:use-cropbox', 'true');
+            $probe->pingImage($pdfPath);
+            $pageCount = $probe->getNumberImages();
+            $probe->clear();
+            $probe->destroy();
 
             $pages = [];
-            foreach ($imagick as $i => $page) {
-                $page->setImageFormat('png');
-                $page->setImageCompressionQuality(90);
-
+            for ($i = 0; $i < $pageCount; $i++) {
                 $out = $tmpDir . '/' . md5($pdfPath) . "_page_" . $i . ".png";
-                $page->writeImage($out);
-                $pages[] = $out;
-            }
+                $renderedPath = $this->renderPdfPageImage($pdfPath, $i, $out, $dpi);
 
-            $imagick->clear();
-            $imagick->destroy();
+                if ($renderedPath) {
+                    $pages[] = $renderedPath;
+                    continue;
+                }
+
+                $fallbackOut = $tmpDir . '/' . md5($pdfPath) . "_page_" . $i . ".jpg";
+                $renderedPath = $this->renderPdfPageImage($pdfPath, $i, $fallbackOut, 150, 'jpeg');
+
+                if ($renderedPath) {
+                    $pages[] = $renderedPath;
+                    continue;
+                }
+
+                Log::warning('Skipping invalid PDF page image during DOCX export', [
+                    'pdf' => $pdfPath,
+                    'page' => $i,
+                ]);
+            }
 
             return $pages;
         } catch (ImagickException $e) {
             throw new \RuntimeException("Gagal convert PDF ke PNG: " . $e->getMessage(), 0, $e);
         }
+    }
+
+    private function renderPdfPageImage(
+        string $pdfPath,
+        int $pageIndex,
+        string $out,
+        int $dpi,
+        string $format = 'png'
+    ): ?string {
+        try {
+            $page = new \Imagick();
+            $page->setResolution($dpi, $dpi);
+            $page->setOption('pdf:use-cropbox', 'true');
+            $page->readImage($pdfPath . '[' . $pageIndex . ']');
+            $page->setImageBackgroundColor('white');
+
+            if ($page->getImageAlphaChannel()) {
+                $page = $page->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);
+            }
+
+            $page->setImageFormat($format);
+            $page->setImageCompressionQuality(90);
+            $page->stripImage();
+            $page->writeImage($out);
+            $page->clear();
+            $page->destroy();
+
+            if ($this->isUsableImageForPhpWord($out)) {
+                return $out;
+            }
+
+            @unlink($out);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to render PDF page image during DOCX export: ' . $e->getMessage(), [
+                'pdf' => $pdfPath,
+                'page' => $pageIndex,
+                'out' => $out,
+            ]);
+        }
+
+        return null;
     }
 
     /**
@@ -1567,15 +1620,50 @@ class BorangExportService
             throw new \RuntimeException("Image not found: {$path}");
         }
 
-        $dir = storage_path("app/public/tmp_pdf_export/{$this->pengajuan->id}");
-        if (!is_dir($dir)) {
-            mkdir($dir, 0777, true);
+        if (!$this->isUsableImageForPhpWord($path)) {
+            throw new \RuntimeException("Invalid image: {$path}");
         }
 
+        $dir = storage_path("app/public/tmp_pdf_export/{$this->pengajuan->id}");
+        $this->ensureTmpPdfExportDirectory($dir);
+
         $newPath = $dir . '/' . basename($path);
-        copy($path, $newPath);
+        if ($path !== $newPath) {
+            copy($path, $newPath);
+        }
 
         return $newPath;
+    }
+
+    private function ensureTmpPdfExportDirectory(string $dir): void
+    {
+        if (is_dir($dir) && is_writable($dir)) {
+            return;
+        }
+
+        if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+            throw new \RuntimeException("Gagal membuat direktori temporary PDF export: {$dir}");
+        }
+
+        @chmod($dir, 0775);
+
+        if (!is_writable($dir)) {
+            throw new \RuntimeException("Direktori temporary PDF export tidak writable: {$dir}");
+        }
+    }
+
+    private function isUsableImageForPhpWord(string $path): bool
+    {
+        if (!is_file($path) || filesize($path) <= 0) {
+            return false;
+        }
+
+        $info = @getimagesize($path);
+
+        return is_array($info)
+            && ($info[0] ?? 0) > 0
+            && ($info[1] ?? 0) > 0
+            && in_array($info[2] ?? null, [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_BMP], true);
     }
 
     /**

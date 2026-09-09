@@ -30,6 +30,9 @@ class ImportBorangDocxJob implements ShouldQueue
     protected $importId;
     protected array $elemenCacheByKode = [];
     protected array $datasetTableCacheByElemenId = [];
+    protected array $publicDirectoryStatus = [];
+    protected array $publicDirectoryFailureLogged = [];
+    protected ?string $lastMkdirError = null;
 
     /**
      * Map: mediaIndex (int) => public URL
@@ -384,6 +387,15 @@ class ImportBorangDocxJob implements ShouldQueue
     {
         $this->extractedImageUrlsQueue = [];
         $raw = [];
+        $dir = "permohonan-akreditasi/{$this->pengajuanId}/kualitatif/images";
+
+        if (!$this->ensurePublicDirectory($dir)) {
+            Log::warning("[Import] Skipping DOCX image extraction because image directory is not writable", [
+                'dir' => $dir,
+            ]);
+
+            return;
+        }
 
         try {
             $zip = new \ZipArchive();
@@ -404,7 +416,6 @@ class ImportBorangDocxJob implements ShouldQueue
                 $ext       = strtolower($m[3]);
                 $seqNumber = (int) $m[2]; // angka di image2.png => 2
 
-                $dir       = "permohonan-akreditasi/{$this->pengajuanId}/kualitatif/images";
                 $ts        = now()->format('YmdHis');
                 $rand      = substr(md5(uniqid()), 0, 8);
                 $name      = "img_{$this->importId}_{$ts}_{$rand}_{$seqNumber}.{$ext}";
@@ -2164,12 +2175,26 @@ class ImportBorangDocxJob implements ShouldQueue
     private function ensurePublicDirectory(string $dir): bool
     {
         $disk = Storage::disk('public');
+        $dir = trim(str_replace('\\', '/', $dir), '/');
+
+        if (array_key_exists($dir, $this->publicDirectoryStatus)) {
+            return $this->publicDirectoryStatus[$dir];
+        }
 
         try {
             $absoluteDir = $disk->path($dir);
+            clearstatcache(true, $absoluteDir);
 
             if (is_dir($absoluteDir) || $disk->makeDirectory($dir)) {
-                return true;
+                @chmod($absoluteDir, 0775);
+                clearstatcache(true, $absoluteDir);
+
+                $isReady = is_dir($absoluteDir) && is_writable($absoluteDir);
+                if (!$isReady) {
+                    $this->logPublicDirectoryFailureOnce($dir, $absoluteDir, 'not_writable');
+                }
+
+                return $this->publicDirectoryStatus[$dir] = $isReady;
             }
         } catch (\Throwable $e) {
             Log::warning("[Import] Storage directory creation failed: " . $e->getMessage(), [
@@ -2179,27 +2204,75 @@ class ImportBorangDocxJob implements ShouldQueue
 
         try {
             $absoluteDir = $disk->path($dir);
+            clearstatcache(true, $absoluteDir);
 
-            if (!is_dir($absoluteDir) && !@mkdir($absoluteDir, 0775, true) && !is_dir($absoluteDir)) {
-                Log::error("[Import] Native directory creation failed", [
-                    'dir' => $dir,
-                    'absolute_dir' => $absoluteDir,
-                    'last_error' => error_get_last()['message'] ?? null,
-                ]);
+            if (!is_dir($absoluteDir) && !$this->makeDirectoryWithCapturedError($absoluteDir)) {
+                $this->logPublicDirectoryFailureOnce($dir, $absoluteDir, 'mkdir_failed');
 
-                return false;
+                return $this->publicDirectoryStatus[$dir] = false;
             }
 
             @chmod($absoluteDir, 0775);
+            clearstatcache(true, $absoluteDir);
 
-            return is_dir($absoluteDir) && is_writable($absoluteDir);
+            $isReady = is_dir($absoluteDir) && is_writable($absoluteDir);
+            if (!$isReady) {
+                $this->logPublicDirectoryFailureOnce($dir, $absoluteDir, 'not_writable');
+            }
+
+            return $this->publicDirectoryStatus[$dir] = $isReady;
         } catch (\Throwable $e) {
             Log::error("[Import] Native directory creation exception: " . $e->getMessage(), [
                 'dir' => $dir,
             ]);
 
-            return false;
+            return $this->publicDirectoryStatus[$dir] = false;
         }
+    }
+
+    private function makeDirectoryWithCapturedError(string $absoluteDir): bool
+    {
+        $this->lastMkdirError = null;
+        set_error_handler(function ($severity, $message) {
+            $this->lastMkdirError = $message;
+
+            return true;
+        });
+
+        try {
+            $created = mkdir($absoluteDir, 0775, true);
+        } finally {
+            restore_error_handler();
+        }
+
+        clearstatcache(true, $absoluteDir);
+
+        return $created || is_dir($absoluteDir);
+    }
+
+    private function logPublicDirectoryFailureOnce(string $dir, string $absoluteDir, string $reason): void
+    {
+        if (isset($this->publicDirectoryFailureLogged[$dir])) {
+            return;
+        }
+
+        $this->publicDirectoryFailureLogged[$dir] = true;
+        $diskRoot = Storage::disk('public')->path('');
+        $parent = dirname($absoluteDir);
+
+        Log::error("[Import] Native directory creation failed", [
+            'dir' => $dir,
+            'absolute_dir' => $absoluteDir,
+            'reason' => $reason,
+            'disk_root' => $diskRoot,
+            'disk_root_exists' => is_dir($diskRoot),
+            'disk_root_writable' => is_dir($diskRoot) && is_writable($diskRoot),
+            'parent_dir' => $parent,
+            'parent_exists' => is_dir($parent),
+            'parent_writable' => is_dir($parent) && is_writable($parent),
+            'path_exists_as_file' => file_exists($absoluteDir) && !is_dir($absoluteDir),
+            'last_error' => $this->lastMkdirError ?? error_get_last()['message'] ?? null,
+        ]);
     }
 
     private function writePublicFileDirectly(string $path, string $binary): bool

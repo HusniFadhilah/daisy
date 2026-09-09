@@ -1569,6 +1569,8 @@ class PengajuanAkreditasiController extends Controller
      */
     public function exportBorangDocx($id)
     {
+        $exportService = null;
+
         try {
             $pengajuan = PengajuanAkreditasi::with([
                 'studyProgram.university',
@@ -1579,7 +1581,6 @@ class PengajuanAkreditasiController extends Controller
 
             $exportService = new BorangExportService($pengajuan);
             $phpWord = $exportService->generate();
-            // $exportService->cleanupTmpPdfImages();
 
             $fileName = 'LAPORAN_EVALUASI_DIRI_' . Str::slug($pengajuan->studyProgram->name) . '_' . date('Y-m-d') . '.docx';
             $tempFile = storage_path('app/temp/' . $fileName);
@@ -1591,12 +1592,14 @@ class PengajuanAkreditasiController extends Controller
             $exportService->save($tempFile);
 
             return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Export DOCX Error', [
                 'error' => $e->getMessage()
             ]);
 
             return back()->with('error', 'Gagal export borang: ' . $e->getMessage());
+        } finally {
+            $exportService?->cleanupTmpPdfImages();
         }
     }
 

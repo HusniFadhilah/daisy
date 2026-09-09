@@ -84,34 +84,48 @@ class PaymentSummaryController extends Controller
                 ], 403);
             }
 
-            // Get verified payments
+            // Get verified accreditation payments
             $verifiedPayments = PengajuanPembayaran::where('status_pembayaran', 'terverifikasi')
+                ->where('jenis_pembayaran', 'akreditasi')
                 ->with(['pengajuan.studyProgram.university', 'pengajuan.studyProgram.degreeLevel'])
                 ->get();
 
             // Calculate statistics
-            $totalProdi = $verifiedPayments->unique('pengajuan.id_study_program')->count();
+            $totalProdi = $verifiedPayments
+                ->pluck('pengajuan.id_program_studi')
+                ->filter()
+                ->unique()
+                ->count();
             $totalNominal = $verifiedPayments->sum('jumlah_pembayaran');
             $totalTransaksi = $verifiedPayments->count();
 
             // Group by university
             $byUniversity = $verifiedPayments->groupBy(function ($payment) {
-                return $payment->pengajuan->studyProgram->university->name;
+                return $payment->pengajuan?->studyProgram?->university?->name ?? 'Tidak diketahui';
             })->map(function ($group) {
                 return [
                     'count' => $group->count(),
                     'total' => $group->sum('jumlah_pembayaran'),
-                    'prodi_count' => $group->unique('pengajuan.id_study_program')->count(),
+                    'prodi_count' => $group
+                        ->pluck('pengajuan.id_program_studi')
+                        ->filter()
+                        ->unique()
+                        ->count(),
                 ];
             })->sortByDesc('total');
 
             // Group by degree level
             $byDegree = $verifiedPayments->groupBy(function ($payment) {
-                return $payment->pengajuan->studyProgram->degreeLevel->name;
+                return $payment->pengajuan?->studyProgram?->degreeLevel?->name ?? 'Tidak diketahui';
             })->map(function ($group) {
                 return [
                     'count' => $group->count(),
                     'total' => $group->sum('jumlah_pembayaran'),
+                    'prodi_count' => $group
+                        ->pluck('pengajuan.id_program_studi')
+                        ->filter()
+                        ->unique()
+                        ->count(),
                 ];
             })->sortByDesc('total');
 
@@ -133,6 +147,7 @@ class PaymentSummaryController extends Controller
 
             // Recent verified payments (last 10)
             $recentPayments = PengajuanPembayaran::where('status_pembayaran', 'terverifikasi')
+                ->where('jenis_pembayaran', 'akreditasi')
                 ->with(['pengajuan.studyProgram'])
                 ->orderByDesc('tanggal_verifikasi')
                 ->limit(10)
@@ -140,9 +155,9 @@ class PaymentSummaryController extends Controller
                 ->map(function ($payment) {
                     return [
                         'nomor_invoice' => $payment->nomor_invoice,
-                        'prodi' => $payment->pengajuan->studyProgram->name,
+                        'prodi' => $payment->pengajuan?->studyProgram?->name ?? '-',
                         'jumlah' => $payment->jumlah_pembayaran,
-                        'tanggal' => $payment->tanggal_verifikasi->locale('id')->translatedFormat('d M Y H:i'),
+                        'tanggal' => $payment->tanggal_verifikasi?->locale('id')->translatedFormat('d M Y H:i') ?? '-',
                     ];
                 });
 

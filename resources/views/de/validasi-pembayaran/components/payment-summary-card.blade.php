@@ -346,7 +346,7 @@
 
         // By Degree
         let degreeHtml = '<div class="table-responsive"><table class="table table-sm table-hover">';
-        degreeHtml += '<thead><tr><th>Jenjang</th><th>Transaksi</th><th class="text-end">Total</th></tr></thead><tbody>';
+        degreeHtml += '<thead><tr><th>Jenjang</th><th>Prodi</th><th>Transaksi</th><th class="text-end">Total</th></tr></thead><tbody>';
 
         Object.entries(data.by_degree).forEach(function(entry) {
             const degree = entry[0];
@@ -354,6 +354,7 @@
             degreeHtml += `
                 <tr>
                     <td>${degree}</td>
+                    <td><span class="badge bg-info">${stats.prodi_count}</span></td>
                     <td><span class="badge bg-primary">${stats.count}</span></td>
                     <td class="text-end"><strong class="text-success">Rp ${formatNumber(stats.total)}</strong></td>
                 </tr>
