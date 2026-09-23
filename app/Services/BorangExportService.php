@@ -18,6 +18,7 @@ use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpWord\SimpleType\Jc;
 use App\Services\HtmlToPhpWordParser;
+use Symfony\Component\Process\Process;
 
 class BorangExportService
 {
@@ -1398,9 +1399,11 @@ class BorangExportService
         if (!file_exists($pdfPath)) {
             throw new \RuntimeException("File PDF tidak ditemukan: {$pdfPath}");
         }
-        $this->ensureGhostscriptLocal();
+        $ghostscript = $this->ensureGhostscriptLocal();
 
-        $tmpDir = storage_path("app/public/tmp_pdf_export/{$this->pengajuan->id}");
+        // PDF page images are internal export artifacts; they do not need to be
+        // exposed through /storage and should not depend on public-disk ACLs.
+        $tmpDir = storage_path("app/tmp_pdf_export/{$this->pengajuan->id}");
         $this->ensureTmpPdfExportDirectory($tmpDir);
 
         try {
@@ -1415,7 +1418,8 @@ class BorangExportService
             $pages = [];
             for ($i = 0; $i < $pageCount; $i++) {
                 $out = $tmpDir . '/' . md5($pdfPath) . "_page_" . $i . ".png";
-                $renderedPath = $this->renderPdfPageImage($pdfPath, $i, $out, $dpi);
+                $lastError = null;
+                $renderedPath = $this->renderPdfPageImage($pdfPath, $i, $out, $dpi, 'png', $lastError);
 
                 if ($renderedPath) {
                     $pages[] = $renderedPath;
@@ -1423,7 +1427,18 @@ class BorangExportService
                 }
 
                 $fallbackOut = $tmpDir . '/' . md5($pdfPath) . "_page_" . $i . ".jpg";
-                $renderedPath = $this->renderPdfPageImage($pdfPath, $i, $fallbackOut, 150, 'jpeg');
+                $renderedPath = $this->renderPdfPageImage($pdfPath, $i, $fallbackOut, 150, 'jpeg', $lastError);
+
+                if (!$renderedPath) {
+                    $renderedPath = $this->renderPdfPageWithGhostscript(
+                        $ghostscript,
+                        $pdfPath,
+                        $i,
+                        $fallbackOut,
+                        150,
+                        $lastError
+                    );
+                }
 
                 if ($renderedPath) {
                     $pages[] = $renderedPath;
@@ -1433,6 +1448,7 @@ class BorangExportService
                 Log::warning('Skipping invalid PDF page image during DOCX export', [
                     'pdf' => $pdfPath,
                     'page' => $i,
+                    'reason' => $lastError,
                 ]);
             }
 
@@ -1447,13 +1463,23 @@ class BorangExportService
         int $pageIndex,
         string $out,
         int $dpi,
-        string $format = 'png'
+        string $format = 'png',
+        ?string &$error = null
     ): ?string {
+        $error = null;
+        $page = null;
+
         try {
+            if (!is_dir(dirname($out)) || !is_writable(dirname($out))) {
+                throw new \RuntimeException("Direktori output tidak writable: " . dirname($out));
+            }
+
+            @unlink($out);
             $page = new \Imagick();
             $page->setResolution($dpi, $dpi);
             $page->setOption('pdf:use-cropbox', 'true');
             $page->readImage($pdfPath . '[' . $pageIndex . ']');
+            $page->setIteratorIndex(0);
             $page->setImageBackgroundColor('white');
 
             if ($page->getImageAlphaChannel()) {
@@ -1463,21 +1489,73 @@ class BorangExportService
             $page->setImageFormat($format);
             $page->setImageCompressionQuality(90);
             $page->stripImage();
-            $page->writeImage($out);
-            $page->clear();
-            $page->destroy();
+            if (!$page->writeImage($out)) {
+                throw new \RuntimeException("ImageMagick gagal menulis {$out}");
+            }
 
             if ($this->isUsableImageForPhpWord($out)) {
                 return $out;
             }
 
-            @unlink($out);
+            throw new \RuntimeException("ImageMagick menghasilkan image tidak valid: {$out}");
         } catch (\Throwable $e) {
-            Log::warning('Failed to render PDF page image during DOCX export: ' . $e->getMessage(), [
-                'pdf' => $pdfPath,
-                'page' => $pageIndex,
-                'out' => $out,
+            $error = $e->getMessage();
+            @unlink($out);
+        } finally {
+            if ($page instanceof \Imagick) {
+                $page->clear();
+                $page->destroy();
+            }
+        }
+
+        return null;
+    }
+
+    private function renderPdfPageWithGhostscript(
+        string $ghostscript,
+        string $pdfPath,
+        int $pageIndex,
+        string $out,
+        int $dpi,
+        ?string &$error = null
+    ): ?string {
+        try {
+            if (!is_dir(dirname($out)) || !is_writable(dirname($out))) {
+                throw new \RuntimeException("Direktori output tidak writable: " . dirname($out));
+            }
+
+            @unlink($out);
+            $process = new Process([
+                $ghostscript,
+                '-dSAFER',
+                '-dBATCH',
+                '-dNOPAUSE',
+                '-dQUIET',
+                '-dUseCropBox',
+                '-sDEVICE=jpeg',
+                '-dJPEGQ=90',
+                "-r{$dpi}",
+                '-dFirstPage=' . ($pageIndex + 1),
+                '-dLastPage=' . ($pageIndex + 1),
+                '-sOutputFile=' . $out,
+                $pdfPath,
             ]);
+            $process->setTimeout(120);
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                throw new \RuntimeException(trim($process->getErrorOutput()) ?: 'Ghostscript gagal merender halaman PDF');
+            }
+
+            if (!$this->isUsableImageForPhpWord($out)) {
+                throw new \RuntimeException("Ghostscript menghasilkan image tidak valid: {$out}");
+            }
+
+            $error = null;
+            return $out;
+        } catch (\Throwable $e) {
+            $error = $e->getMessage();
+            @unlink($out);
         }
 
         return null;
@@ -1525,7 +1603,7 @@ class BorangExportService
      */
     public function cleanupTmpPdfImages(): void
     {
-        $tmpDir = storage_path("app/public/tmp_pdf_export/{$this->pengajuan->id}");
+        $tmpDir = storage_path("app/tmp_pdf_export/{$this->pengajuan->id}");
         if (!is_dir($tmpDir)) return;
         foreach (glob($tmpDir . '/*') as $file) {
             if (is_file($file)) {
@@ -1537,7 +1615,7 @@ class BorangExportService
     }
 
 
-    private function ensureGhostscriptLocal(): void
+    private function ensureGhostscriptLocal(): string
     {
         $gsBase = public_path('gs');
 
@@ -1611,6 +1689,8 @@ class BorangExportService
         putenv("MAGICK_GHOSTSCRIPT_PATH={$gsBinReal}");
         $_SERVER['MAGICK_GHOSTSCRIPT_PATH'] = $gsBinReal;
         $_ENV['MAGICK_GHOSTSCRIPT_PATH'] = $gsBinReal;
+
+        return $gsFound;
     }
 
     private function persistImage(string $path): string
@@ -1623,7 +1703,7 @@ class BorangExportService
             throw new \RuntimeException("Invalid image: {$path}");
         }
 
-        $dir = storage_path("app/public/tmp_pdf_export/{$this->pengajuan->id}");
+        $dir = storage_path("app/tmp_pdf_export/{$this->pengajuan->id}");
         $this->ensureTmpPdfExportDirectory($dir);
 
         $newPath = $dir . '/' . basename($path);

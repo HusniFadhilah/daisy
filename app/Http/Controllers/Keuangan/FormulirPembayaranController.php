@@ -102,7 +102,6 @@ class FormulirPembayaranController extends Controller
         if (!empty($q)) {
             $pengajuanQuery->where(function ($w) use ($q) {
                 $w->where('nomor_pengajuan', 'like', "%{$q}%")
-                    ->orWhere('judul', 'like', "%{$q}%")
                     ->orWhereHas(
                         'studyProgram',
                         fn($sp) =>

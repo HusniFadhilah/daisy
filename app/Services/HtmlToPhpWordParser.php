@@ -1399,11 +1399,17 @@ class HtmlToPhpWordParser
     private function tmpExportPath(string $filename = ''): string
     {
         $basePath = storage_path(
-            'app/public/tmp_pdf_export/' . $this->pengajuanId
+            'app/tmp_pdf_export/' . $this->pengajuanId
         );
 
         if (!is_dir($basePath)) {
-            mkdir($basePath, 0777, true);
+            if (!mkdir($basePath, 0775, true) && !is_dir($basePath)) {
+                throw new \RuntimeException("Gagal membuat direktori temporary export: {$basePath}");
+            }
+        }
+
+        if (!is_writable($basePath)) {
+            throw new \RuntimeException("Direktori temporary export tidak writable: {$basePath}");
         }
 
         return $filename

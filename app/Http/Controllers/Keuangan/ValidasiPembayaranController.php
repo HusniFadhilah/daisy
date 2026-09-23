@@ -53,7 +53,6 @@ class ValidasiPembayaranController extends Controller
                         'pengajuan',
                         fn($p) =>
                         $p->where('nomor_pengajuan', 'like', "%{$q}%")
-                            ->orWhere('judul', 'like', "%{$q}%")
                     )
                     ->orWhereHas(
                         'pengajuan.studyProgram',

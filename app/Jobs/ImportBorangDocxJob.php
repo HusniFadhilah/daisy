@@ -25,6 +25,13 @@ class ImportBorangDocxJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /**
+     * DOCX imports can contain hundreds of images and large tables.
+     */
+    public int $timeout = 900;
+    public int $tries = 1;
+    public int $maxExceptions = 1;
+
     protected $pengajuanId;
     protected $filePath;
     protected $importId;
@@ -90,15 +97,14 @@ class ImportBorangDocxJob implements ShouldQueue
             // (true menyebabkan double-encode: &quot; → &amp;quot;)
             Settings::setOutputEscapingEnabled(false);
 
+            $sanitizedDocxPath = $this->prepareDocxForPhpWord($this->filePath, $tempDir);
             $this->purgeOldImagesForPengajuan();
             // ✅ 1. Extract semua gambar dari ZIP dan simpan ke storage
-            $this->extractAndMapImagesFromZip();
+            $this->extractAndMapImagesFromZip($sanitizedDocxPath);
 
             // ✅ 1b. Parse numbering.xml untuk mendapatkan format & indentasi per numId/ilvl
-            $this->parseNumberingXml();
+            $this->parseNumberingXml($sanitizedDocxPath);
 
-
-            $sanitizedDocxPath = $this->prepareDocxForPhpWord($this->filePath, $tempDir);
 
             // --- Load DOCX ---
             $phpWord = IOFactory::load($sanitizedDocxPath);
@@ -175,34 +181,80 @@ class ImportBorangDocxJob implements ShouldQueue
     {
         $safePath = rtrim($tempDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'phpword_safe_' . uniqid() . '.docx';
 
-        if (!@copy($sourcePath, $safePath)) {
-            Log::warning('[Import] Unable to create sanitized DOCX copy, loading original file', [
-                'source' => $sourcePath,
-                'target' => $safePath,
-                'last_error' => error_get_last()['message'] ?? null,
-            ]);
+        $this->assertValidDocxArchive($sourcePath);
 
-            return $sourcePath;
+        if (!@copy($sourcePath, $safePath)) {
+            throw new \RuntimeException(
+                'Unable to create sanitized DOCX copy: ' . ($sourcePath)
+            );
         }
 
+        $zip = new \ZipArchive();
+        $zipOpened = false;
+
         try {
-            $zip = new \ZipArchive();
-            if ($zip->open($safePath) !== true) {
-                return $sourcePath;
+            $openResult = $zip->open($safePath);
+            if ($openResult !== true) {
+                throw new \RuntimeException("DOCX copy is not a valid ZIP archive (code {$openResult})");
             }
+            $zipOpened = true;
 
             $unsupportedTargetsByOwner = $this->removeUnsupportedDocxMedia($zip);
             $removedRelIdsByOwner = $this->removeUnsupportedDocxRelationships($zip, $unsupportedTargetsByOwner);
             $this->sanitizeDocxXmlParts($zip, $removedRelIdsByOwner);
 
-            $zip->close();
-        } catch (\Throwable $e) {
-            Log::warning('[Import] DOCX sanitizing failed, loading original file: ' . $e->getMessage());
+            if (!$zip->close()) {
+                throw new \RuntimeException('Unable to close sanitized DOCX archive');
+            }
+            $zipOpened = false;
 
-            return $sourcePath;
+            // Validate the rewritten archive before passing it to PhpWord.
+            $this->assertValidDocxArchive($safePath);
+
+            return $safePath;
+        } catch (\Throwable $e) {
+            if ($zipOpened) {
+                @$zip->close();
+            }
+
+            @unlink($safePath);
+            Log::error('[Import] DOCX sanitizing failed', [
+                'source' => $sourcePath,
+                'target' => $safePath,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+    }
+
+    private function assertValidDocxArchive(string $path): void
+    {
+        if (!is_file($path) || !is_readable($path)) {
+            throw new \InvalidArgumentException("DOCX file is missing or unreadable: {$path}");
         }
 
-        return $safePath;
+        if ((int) filesize($path) <= 0) {
+            throw new \InvalidArgumentException("DOCX file is empty: {$path}");
+        }
+
+        $zip = new \ZipArchive();
+        $openResult = $zip->open($path);
+        if ($openResult !== true) {
+            throw new \InvalidArgumentException(
+                "DOCX is not a valid ZIP archive (ZipArchive code {$openResult}): {$path}"
+            );
+        }
+
+        try {
+            foreach (['[Content_Types].xml', 'word/document.xml'] as $entry) {
+                if ($zip->locateName($entry) === false) {
+                    throw new \InvalidArgumentException("DOCX archive is missing {$entry}: {$path}");
+                }
+            }
+        } finally {
+            $zip->close();
+        }
     }
 
     private function removeUnsupportedDocxMedia(\ZipArchive $zip): array
@@ -319,6 +371,23 @@ class ImportBorangDocxJob implements ShouldQueue
             $changed = true;
         }
 
+        // PhpWord maps lastRenderedPageBreak to addPageBreak(). A page break
+        // is only valid in a Section, not inside a table Cell.
+        foreach ($xpath->query('//w:tc//w:lastRenderedPageBreak') ?: [] as $break) {
+            if ($break->parentNode) {
+                $break->parentNode->removeChild($break);
+                $changed = true;
+            }
+        }
+
+        // Treat paragraph-level page breaks in cells as normal cell content.
+        foreach ($xpath->query('//w:tc//w:pPr/w:pageBreakBefore') ?: [] as $break) {
+            if ($break->parentNode) {
+                $break->parentNode->removeChild($break);
+                $changed = true;
+            }
+        }
+
         return $changed;
     }
 
@@ -383,10 +452,11 @@ class ImportBorangDocxJob implements ShouldQueue
         return 'concat(' . implode(', "\'", ', $parts) . ')';
     }
 
-    private function extractAndMapImagesFromZip(): void
+    private function extractAndMapImagesFromZip(?string $docxPath = null): void
     {
         $this->extractedImageUrlsQueue = [];
         $raw = [];
+        $docxPath ??= $this->filePath;
         $dir = "permohonan-akreditasi/{$this->pengajuanId}/kualitatif/images";
 
         if (!$this->ensurePublicDirectory($dir)) {
@@ -399,8 +469,12 @@ class ImportBorangDocxJob implements ShouldQueue
 
         try {
             $zip = new \ZipArchive();
-            if ($zip->open($this->filePath) !== true) {
-                Log::warning("[Import] Cannot open DOCX as ZIP");
+            $openResult = $zip->open($docxPath);
+            if ($openResult !== true) {
+                Log::warning("[Import] Cannot open DOCX as ZIP", [
+                    'path' => $docxPath,
+                    'zip_code' => $openResult,
+                ]);
                 return;
             }
 
@@ -448,17 +522,15 @@ class ImportBorangDocxJob implements ShouldQueue
      * 'fmt' values: decimal, lowerLetter, upperLetter, lowerRoman, upperRoman, bullet, none
      * 'left' values: indentasi dalam twips (1 inch = 1440 twips, 1 level Word ≈ 360 twips)
      */
-    private function parseNumberingXml(): void
+    private function parseNumberingXml(?string $docxPath = null): void
     {
         try {
-            $localPath = Storage::disk('public')->exists(ltrim($this->filePath, '/'))
-                ? Storage::disk('public')->path(ltrim($this->filePath, '/'))
-                : $this->filePath;
+            $docxPath ??= $this->filePath;
+            $localPath = $docxPath;
 
             $zip = new \ZipArchive();
             if ($zip->open($localPath) !== true) {
-                // Fallback: coba path langsung
-                if ($zip->open($this->filePath) !== true) return;
+                return;
             }
 
             $xmlContent = $zip->getFromName('word/numbering.xml');

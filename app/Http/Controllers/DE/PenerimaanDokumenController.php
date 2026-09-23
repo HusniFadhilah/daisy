@@ -172,7 +172,6 @@ class PenerimaanDokumenController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nomor_pengajuan', 'like', "%{$search}%")
-                    ->orWhere('judul', 'like', "%{$search}%")
                     ->orWhereHas('studyProgram', function ($sq) use ($search) {
                         $sq->where('name', 'like', "%{$search}%")
                             ->orWhere('full_name', 'like', "%{$search}%");
