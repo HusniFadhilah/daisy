@@ -300,6 +300,9 @@
                                     <a href="{{ route('al.berkas.documents.page', ['id' => $asesmen->id]) }}" class="btn btn-outline-secondary btn-sm btn-width-180">
                                         <i class="bi bi-file-earmark-text"></i> Lihat Berita Acara
                                     </a>
+                                    <a href="{{ route('al.berkas.hasil', $asesmen->id) }}" class="btn btn-outline-dark btn-sm btn-width-180">
+                                        <i class="bi bi-clipboard-data"></i> Hasil Penilaian AL
+                                    </a>
                                     @elseif($statusInfo['button_route'] ?? false)
                                     <a href="{{ route($statusInfo['button_route'], ['idAsesmen'=>$asesmen->id,'jenisAsesmen'=>$assignment->jenis_asesmen]) }}" class="btn {{ $statusInfo['button_class'] }} btn-sm btn-width-180" @if($statusInfo['button_disabled']) disabled @endif>
                                         <i class="{{ $statusInfo['button_icon'] }}"></i>
@@ -315,6 +318,9 @@
                                     </a>
                                     <a href="{{ route('al.berkas.documents.page', ['id' => $asesmen->id]) }}" class="btn btn-success btn-sm btn-width-180" @if($statusInfo['button_disabled']) disabled @endif>
                                         <i class="bi bi-file-earmark-text"></i> Berita Acara AL
+                                    </a>
+                                    <a href="{{ route('al.berkas.hasil', $asesmen->id) }}" class="btn btn-outline-dark btn-sm btn-width-180">
+                                        <i class="bi bi-clipboard-data"></i> Hasil Penilaian AL
                                     </a>
                                     @endif
                                 </div>

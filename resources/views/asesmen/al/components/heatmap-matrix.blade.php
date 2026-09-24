@@ -84,7 +84,8 @@
                     @foreach($kriteria->elemenStandar as $elemen)
                     @php
                     // Get penilaianElemenAl for this elemen (not indikator!)
-                    $penilaianElemenAl = $elemen->penilaianElemenAl->first(); // Assuming relation exists
+                    $penilaianElemenAl = (isset($penilaianByElemen) ? ($penilaianByElemen[$elemen->id] ?? null) : null)
+                        ?: $elemen->penilaianElemenAl->first();
                     $hasPenilaian = $penilaianElemenAl && $penilaianElemenAl->skor !== null;
                     @endphp
                     <tr>
@@ -102,11 +103,11 @@
                         </td>
 
                         {{-- Kolom Pemenuhan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pemenuhan" style="background-color: {{ $hasPenilaian ? $penilaianElemenAl->skor == 4 ? '#e0e0e0' : \App\Models\JenjangPenilaian::getSkorColor($penilaianElemenAl->skor) : '#e0e0e0' }}">
+                        <td class="matrix-cell {{ $hasPenilaian && (int) $penilaianElemenAl->skor !== 4 ? 'has-score' : '' }}" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pemenuhan" @if($hasPenilaian && (int) $penilaianElemenAl->skor !== 4) data-skor="{{ $penilaianElemenAl->skor }}" @endif style="background-color: {{ $hasPenilaian ? $penilaianElemenAl->skor == 4 ? '#e0e0e0' : \App\Models\JenjangPenilaian::getSkorColor($penilaianElemenAl->skor) : '#e0e0e0' }}">
                         </td>
 
                         {{-- Kolom Pelampauan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pelampauan" style="background-color: {{ $hasPenilaian ? $penilaianElemenAl->skor == 4 ? \App\Models\JenjangPenilaian::getSkorColor(4) : '#e0e0e0' : '#e0e0e0' }}">
+                        <td class="matrix-cell {{ $hasPenilaian && (int) $penilaianElemenAl->skor === 4 ? 'has-score' : '' }}" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pelampauan" @if($hasPenilaian && (int) $penilaianElemenAl->skor === 4) data-skor="4" @endif style="background-color: {{ $hasPenilaian ? $penilaianElemenAl->skor == 4 ? \App\Models\JenjangPenilaian::getSkorColor(4) : '#e0e0e0' : '#e0e0e0' }}">
                         </td>
                     </tr>
                     @endforeach
@@ -144,25 +145,40 @@
          * ============================================
          */
         function updateMatrixStats() {
-            const allCells = document.querySelectorAll('.matrix-cell');
-            const filledCells = document.querySelectorAll('.matrix-cell.has-score');
+            // Kartu progres dihitung dari form elemen, bukan sel matriks
+            // (sel matriks awalnya tidak punya class has-score, jadi hanya elemen
+            // yang baru disimpan yang terhitung 1).
+            if (typeof window.updateProgressPenilaian === 'function') {
+                window.updateProgressPenilaian();
+                return;
+            }
 
-            const allElemen = new Set();
-            const filledElemen = new Set();
+            const allCards = document.querySelectorAll('.elemen-card');
+            let filled = 0;
+            allCards.forEach(card => {
+                const skor = card.querySelector('.skor-select')?.value;
+                if (skor) filled += 1;
+            });
 
-            allCells.forEach(c => c.dataset.elemenId && allElemen.add(c.dataset.elemenId));
-            filledCells.forEach(c => c.dataset.elemenId && filledElemen.add(c.dataset.elemenId));
+            const total = allCards.length;
+            const empty = Math.max(0, total - filled);
+            const percent = total ? Math.round((filled / total) * 1000) / 10 : 0;
 
-            const total = allElemen.size;
-            const filled = filledElemen.size;
-            const empty = total - filled;
-            const percent = total ? Math.round((filled / total) * 100) : 0;
+            const setVal = (id, value) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const bold = el.querySelector('b');
+                if (bold) bold.textContent = value;
+                else el.textContent = value;
+            };
 
-            document.getElementById('summaryTotal').innerHTML = `<b>${total}</b>`;
-            document.getElementById('summaryCompleted').innerHTML = `<b>${filled}</b>`;
-            document.getElementById('summaryRemaining').innerHTML = `<b>${empty}</b>`;
-            document.getElementById('summaryPercentage').innerHTML = `<b>${percent}%</b>`;
+            setVal('summaryTotal', total);
+            setVal('summaryCompleted', filled);
+            setVal('summaryRemaining', empty);
+            setVal('summaryPercentage', percent + '%');
         }
+
+        window.updateMatrixStats = updateMatrixStats;
 
         /**
          * ============================================

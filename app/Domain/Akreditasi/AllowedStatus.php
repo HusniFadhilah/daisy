@@ -151,6 +151,7 @@ final class AllowedStatus
 
             P::STATUS_AL_SELESAI => [
                 P::STATUS_AL_DILAPORKAN,
+                P::STATUS_AL_IN_PROGRESS,
             ],
 
             // =========================

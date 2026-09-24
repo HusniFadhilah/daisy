@@ -106,6 +106,7 @@ $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
 $isSubmittedOnly = $statusPekerjaan === 'submitted';
 $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
 $isApproved = $statusPekerjaan === 'approved';
+$isHasilFinalized = $asesmen->hasil?->isAlFinalized() ?? false;
 $needsRevision = $statusPekerjaan === 'revision_required';
 $isComplete = $progress['percentage'] == 100;
 @endphp
@@ -229,7 +230,7 @@ $isComplete = $progress['percentage'] == 100;
                     </h5>
                     <p class="mb-2">
                         Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
-                        Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi oleh LAMDEPILAR.
+                        Silakan <strong>lihat skor</strong> terlebih dahulu, lalu kirim penilaian dari halaman hasil.
                     </p>
                     <hr>
                     <div class="mb-0">
@@ -249,53 +250,64 @@ $isComplete = $progress['percentage'] == 100;
             <strong>Progres Penilaian:</strong>
             Anda telah menilai {{ $progress['completed'] }} dari {{ $progress['total'] }} elemen
             (<strong>{{ $progress['percentage'] }}%</strong>).
-            Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi untuk dapat melakukan finalisasi.
+            Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi, lalu lihat skor sebelum mengirim.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         @endif
 
-        @if($isSubmittedOnly && !$isApproved)
+        @if(($isSubmittedOnly || $isApproved) && !$isHasilFinalized)
         <div class="alert alert-info alert-permanent alert-dismissible mb-3">
             <i class="bi bi-info-circle me-2"></i>
-            <strong>Telah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari LAMDEPILAR.
-            @if(app()->environment('local'))
-            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 mt-2" id="btnUnsubmit">
+            <strong>Telah Di-Submit!</strong> Penilaian sudah dikirim. Cek skor dan isi draft resume di
+            <a href="{{ route('al.berkas.hasil', $asesmen->id) }}" class="alert-link">Hasil Penilaian AL</a>.
+            Jika nilai belum sesuai, batalkan dulu lalu edit.
+            <div class="mt-2">
+                Silakan unduh file hasil penilaian lengkap di
+                <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>.
+                Tandatangani, lalu upload ulang di halaman
+                <a href="{{ route('al.berkas.documents.page', ['id' => $asesmen->id]) }}" class="alert-link">Berita Acara AL</a>.
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-warning ms-2 mt-2" id="btnUnsubmit">
                 <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit
             </button>
-            @endif
         </div>
         @endif
 
-        @if($isApproved)
+        @if($isHasilFinalized)
         <div class="alert alert-success alert-permanent alert-dismissible mb-3">
             <i class="bi bi-check-circle me-2"></i>
-            <strong>Penilaian Difinalisasi!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah difinalisasi. Silahkan unduh file Hasil penilaian lengkap di <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>. Tanda tangani, lalu upload ulang di step ke-2 (Hasil dan berita acara Asesmen Lapangan) di halaman <a href="{{ route('al.berkas.documents.page', ['id' => $asesmen->id]) }}" class="alert-link">berikut ini</a>.
+            <strong>Penilaian Dikunci!</strong> Hasil sudah dikunci oleh sekretariat. Silakan lihat
+            <a href="{{ route('al.berkas.hasil', $asesmen->id) }}" class="alert-link">Hasil Penilaian AL</a>
+            atau unduh file penilaian di
+            <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>.
+            Upload file yang sudah ditandatangani tetap di
+            <a href="{{ route('al.berkas.documents.page', ['id' => $asesmen->id]) }}" class="alert-link">Berita Acara AL</a>.
         </div>
         @endif
 
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
 
-            <!-- Finalisasi -->
+            <!-- Lihat skor, kirim dari halaman hasil -->
             <div>
                 @if(!$isSubmittedOnly && !$isApproved)
-                <button class="btn btn-success w-md-100 w-md-auto" id="btnSubmit">
-                    <i class="bi bi-check-circle"></i> Finalisasi dan Kirim
-                </button>
+                <a href="{{ route('al.berkas.hasil', $asesmen->id) }}" class="btn btn-primary w-md-100 w-md-auto" id="btnLihatSkor">
+                    <i class="bi bi-clipboard-data"></i> Lihat Skor
+                </a>
 
                 <small class="d-block text-muted mt-1">
                     <i class="bi bi-info-circle"></i>
-                    Pastikan semua elemen telah dinilai sebelum mengirim
+                    Cek skor di halaman hasil, lalu kirim penilaian dari sana
                 </small>
 
                 @elseif($isSubmittedOnly)
-                <button class="btn btn-secondary w-100 w-md-auto" disabled>
-                    <i class="bi bi-clock-history"></i> Menunggu Validasi
-                </button>
+                <a href="{{ route('al.berkas.hasil', $asesmen->id) }}" class="btn btn-outline-dark w-100 w-md-auto">
+                    <i class="bi bi-clipboard-data"></i> Hasil Penilaian AL
+                </a>
 
                 @else
-                <button class="btn btn-success w-100 w-md-auto" disabled>
-                    <i class="bi bi-check-all"></i> Penilaian Difinalisasi
-                </button>
+                <a href="{{ route('al.berkas.hasil', $asesmen->id) }}" class="btn btn-outline-dark w-100 w-md-auto">
+                    <i class="bi bi-clipboard-data"></i> Hasil Penilaian AL
+                </a>
                 @endif
             </div>
 
@@ -411,7 +423,7 @@ $isComplete = $progress['percentage'] == 100;
             <i class="bi bi-info-circle me-2"></i>
             <strong>Petunjuk:</strong>
             <ol class="mb-0 mt-2">
-                <li>Gunakan <strong>tombol Finalisasi & Kirim</strong> untuk submit penilaian, <strong>tombol Download Excel</strong> untuk mengunduh templat atau hasil penilaian dalam format excel, serta <strong>tombol Upload Excel</strong> untuk mengupload penilaian excel serta menyimpannya ke sistem</li>
+                <li>Setelah penilaian terisi, klik <strong>Lihat Skor</strong> untuk memeriksa hasil, lalu kirim penilaian dari halaman tersebut. Gunakan <strong>Download Excel</strong> untuk templat atau hasil, dan <strong>Upload Excel</strong> untuk mengimpor penilaian ke sistem</li>
                 <li>Klik <strong><i>Expand/Collapse All</i></strong> untuk membuka/menutup semua form elemen penilaian</li>
                 <li>Klik <strong>sel di matriks visualisasi penilaian</strong> untuk langsung membuka elemen penilaian dan menilai elemen tersebut</li>
                 <li>Pilih kategori penilaian:
@@ -465,7 +477,7 @@ $isComplete = $progress['percentage'] == 100;
                     @foreach($kriteria->elemenStandar as $elemenIndex => $elemen)
                     @php
                     // Get penilaian for this elemen (not indikator!)
-                    $penilaianElemenAl = $elemen->penilaianElemenAl->first(); // Assuming relation exists
+                    $penilaianElemenAl = ($penilaianByElemen[$elemen->id] ?? null) ?: $elemen->penilaianElemenAl->first();
                     $hasPenilaian = $penilaianElemenAl && $penilaianElemenAl->skor !== null;
                     $needsRevisionElemen = $penilaianElemenAl && $penilaianElemenAl->status_validasi === 'revision_required';
                     $totalIndikator = $elemen->indikator->count();
@@ -1014,7 +1026,7 @@ $isComplete = $progress['percentage'] == 100;
         initializeFormHandlers();
         initializeScrollButton();
         initializeActionButtons();
-        updateAllProgress();
+        updateProgressPenilaian({});
 
         // ============================================
         // DISABLE EDITING: submitted ATAU bukan editor
@@ -1046,12 +1058,7 @@ $isComplete = $progress['percentage'] == 100;
                 if (el) el.setAttribute('disabled', 'disabled');
             });
 
-            // Sembunyikan tombol submit jika bukan editor
-            if (!isEditorAsesor) {
-                const btnSubmit = document.getElementById('btnSubmit');
-                let closestDiv = btnSubmit.closest('div')
-                if (btnSubmit && closestDiv) closestDiv.remove();
-            }
+            // Asesor non-editor tetap boleh lihat skor; kirim hanya dari pengisi
         }
 
         /**
@@ -1079,9 +1086,6 @@ $isComplete = $progress['percentage'] == 100;
                 });
             }
 
-            // Submit Penilaian
-            const btnSubmit = document.getElementById('btnSubmit');
-            if (btnSubmit) btnSubmit.addEventListener('click', submitPenilaian);
             const btnUnsubmit = document.getElementById('btnUnsubmit');
             if (btnUnsubmit) btnUnsubmit.addEventListener('click', unSubmitPenilaian);
 
@@ -1351,8 +1355,7 @@ $isComplete = $progress['percentage'] == 100;
                 badge.innerHTML = '<i class="bi bi-clock"></i> Belum Dinilai';
             }
 
-            // Sekalian update progress kriteria
-            updateAllProgress();
+            updateProgressPenilaian({});
         }
 
         /**
@@ -1726,12 +1729,10 @@ $isComplete = $progress['percentage'] == 100;
                     });
                     updateSaveStatus(form, `Tersimpan otomatis pada ${timeStr}`, 'text-success');
                     setElemenStatus(idElemen, true);
-                    if (data.progress) {
-                        updateProgressPenilaian(data.progress);
-                    }
                     if (typeof window.updateMatrixCell === 'function') {
                         window.updateMatrixCell(idElemen, formData.get('skor'));
                     }
+                    updateProgressPenilaian(data.progress || {});
                 }
             } catch (error) {
                 console.error('Auto-save error:', error);
@@ -1814,13 +1815,10 @@ $isComplete = $progress['percentage'] == 100;
                             badge.innerHTML = '<i class="bi bi-check-circle"></i> Telah Dinilai';
                         }
                     }
-                    if (data.progress) {
-                        updateProgressPenilaian(data.progress);
-                    }
                     if (typeof window.updateMatrixCell === 'function') {
                         window.updateMatrixCell(idElemen, skor);
                     }
-                    if (typeof window.updateMatrixStats === 'function') updateMatrixStats();
+                    updateProgressPenilaian(data.progress || {});
                 } else {
                     throw new Error(data.message || 'Gagal menyimpan penilaian');
                 }
@@ -1850,7 +1848,67 @@ $isComplete = $progress['percentage'] == 100;
             }
         }
 
+        function setSummaryValue(id, value) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const bold = el.querySelector('b');
+            if (bold) {
+                bold.textContent = value;
+            } else {
+                el.textContent = value;
+            }
+        }
+
+        function isElemenFormFilled(card) {
+            const skor = card.querySelector('.skor-select')?.value;
+            const komentar = card.querySelector('.komentar-textarea')?.value?.trim();
+            return Boolean(skor) && Boolean(komentar);
+        }
+
+        function syncHasPenilaianFromForms() {
+            document.querySelectorAll('.elemen-card').forEach(card => {
+                const filled = isElemenFormFilled(card);
+                card.classList.toggle('has-penilaian', filled);
+
+                const badge = card.querySelector('.status-badge');
+                if (!badge) return;
+
+                if (filled) {
+                    badge.classList.remove('bg-warning', 'text-dark');
+                    badge.classList.add('bg-success');
+                    badge.innerHTML = '<i class="bi bi-check-circle"></i> Telah Dinilai';
+                } else {
+                    badge.classList.remove('bg-success');
+                    badge.classList.add('bg-warning', 'text-dark');
+                    badge.innerHTML = '<i class="bi bi-clock"></i> Belum Dinilai';
+                }
+            });
+        }
+
+        function recountProgressFromCards() {
+            syncHasPenilaianFromForms();
+            const totalCards = document.querySelectorAll('.elemen-card').length;
+            const completedCards = document.querySelectorAll('.elemen-card.has-penilaian').length;
+            return {
+                total: totalCards,
+                completed: completedCards,
+                remaining: Math.max(0, totalCards - completedCards),
+                percentage: totalCards ? Math.round((completedCards / totalCards) * 1000) / 10 : 0,
+            };
+        }
+
         function updateProgressPenilaian(progress) {
+            const fromCards = recountProgressFromCards();
+            const total = fromCards.total || Number(progress?.total) || 0;
+            const completed = fromCards.total ? fromCards.completed : (Number(progress?.completed) || 0);
+            const remaining = Math.max(0, total - completed);
+            const percentage = total ? Math.round((completed / total) * 1000) / 10 : 0;
+
+            setSummaryValue('summaryTotal', total);
+            setSummaryValue('summaryCompleted', completed);
+            setSummaryValue('summaryRemaining', remaining);
+            setSummaryValue('summaryPercentage', percentage + '%');
+
             const progressBar = document.getElementById('progressBarPenilaian');
             const progressPercentage = document.getElementById('progressPercentage');
             const progressCompleted = document.getElementById('progressCompleted');
@@ -1858,28 +1916,30 @@ $isComplete = $progress['percentage'] == 100;
             const progressCount = document.getElementById('progressCount');
 
             if (progressBar) {
-                progressBar.style.width = progress.percentage + '%';
-                progressBar.setAttribute('aria-valuenow', progress.percentage);
+                progressBar.style.width = percentage + '%';
+                progressBar.setAttribute('aria-valuenow', percentage);
             }
 
             if (progressPercentage) {
-                progressPercentage.textContent = progress.percentage + '%';
+                progressPercentage.textContent = percentage + '%';
             }
 
             if (progressCompleted) {
-                progressCompleted.textContent = progress.completed;
+                progressCompleted.textContent = completed;
             }
 
             if (progressTotal) {
-                progressTotal.textContent = progress.total;
+                progressTotal.textContent = total;
             }
 
             if (progressCount) {
-                progressCount.textContent = progress.completed + '/' + progress.total;
+                progressCount.textContent = completed + '/' + total;
             }
 
             updateAllProgress();
         }
+
+        window.updateProgressPenilaian = updateProgressPenilaian;
 
         function updateAllProgress() {
             document.querySelectorAll('.kriteria-progress').forEach(badge => {

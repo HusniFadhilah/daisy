@@ -215,4 +215,53 @@ class HasilAkreditasiServiceTest extends TestCase
         $this->assertSame(0, $result['jumlah_elemen']);
         $this->assertEqualsWithDelta(0.0, $result['skor_total'], 0.01);
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // canUnfinalizeHasilAL — sampai masa sanggah berakhir
+    // ─────────────────────────────────────────────────────────────
+
+    public function test_can_unfinalize_while_masa_sanggah_masih_berjalan(): void
+    {
+        $pengajuan = new PengajuanAkreditasi([
+            'status' => PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+            'tanggal_masa_sanggah_selesai' => now()->addDay(),
+        ]);
+        $hasil = new HasilAkreditasi(['status' => 'final_al']);
+
+        $this->assertTrue($this->service->canUnfinalizeHasilAL($pengajuan, $hasil));
+    }
+
+    public function test_cannot_unfinalize_when_masa_sanggah_selesai(): void
+    {
+        $pengajuan = new PengajuanAkreditasi([
+            'status' => PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
+            'tanggal_masa_sanggah_selesai' => now()->subMinute(),
+        ]);
+        $hasil = new HasilAkreditasi(['status' => 'final_al']);
+
+        $this->assertFalse($this->service->canUnfinalizeHasilAL($pengajuan, $hasil));
+    }
+
+    public function test_cannot_unfinalize_when_deadline_passed_but_status_belum_update(): void
+    {
+        $pengajuan = new PengajuanAkreditasi([
+            'status' => PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+            'tanggal_masa_sanggah_selesai' => now()->subMinute(),
+        ]);
+        $hasil = new HasilAkreditasi(['status' => 'final_al']);
+
+        $this->assertFalse($this->service->canUnfinalizeHasilAL($pengajuan, $hasil));
+    }
+
+    public function test_has_unfinished_al_asesor_when_penilaian_draft(): void
+    {
+        $data = (new HasilAkreditasiTestSeeder())->run();
+
+        $this->assertFalse($this->service->hasUnfinishedAlAsesor($data['asesmen']->id));
+
+        \App\Models\PenilaianElemenAl::where('id_asesmen', $data['asesmen']->id)
+            ->update(['status' => 'draft']);
+
+        $this->assertTrue($this->service->hasUnfinishedAlAsesor($data['asesmen']->id));
+    }
 }

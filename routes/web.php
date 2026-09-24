@@ -194,6 +194,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/berkas/{asesmen}/comparison-data', [ALController::class, 'getComparisonData'])->name('berkas.comparison-data');
             Route::get('/berkas/{idAsesmen}/upload-berita-acara', [\App\Http\Controllers\Asesmen\ALController::class, 'uploadBeritaAcaraPage'])->name('berkas.upload-berita-acara');
             Route::post('/berkas/{idAsesmen}/confirm-opener', [\App\Http\Controllers\Asesmen\ALController::class, 'confirmOpener'])->name('berkas.confirm-opener');
+            Route::get('/berkas/{idAsesmen}/hasil', [ALController::class, 'showHasil'])->name('berkas.hasil');
+            Route::post('/berkas/{idAsesmen}/hasil/resume', [ALController::class, 'saveResume'])->name('berkas.hasil.save-resume');
 
             Route::prefix('/berkas/{id}/documents')->name('berkas.documents.')->group(function () {
                 Route::get('/', [ALDocumentController::class, 'index'])->name('index');
@@ -640,6 +642,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [PenyampaianHasilAkreditasiController::class, 'show'])->name('.show');
             Route::post('/{id}/calculate', [PenyampaianHasilAkreditasiController::class, 'calculate'])->name('.calculate');
             Route::post('/{id}/finalize', [PenyampaianHasilAkreditasiController::class, 'finalize'])->name('.finalize');
+            Route::post('/{id}/unfinalize', [PenyampaianHasilAkreditasiController::class, 'unfinalize'])->name('.unfinalize');
             Route::post('/{id}/upload-berita-acara', [PenyampaianHasilAkreditasiController::class, 'uploadBeritaAcara'])
                 ->name('.upload-berita-acara');
             Route::get('/{id}/download-berita-acara', [PenyampaianHasilAkreditasiController::class, 'downloadBeritaAcara'])

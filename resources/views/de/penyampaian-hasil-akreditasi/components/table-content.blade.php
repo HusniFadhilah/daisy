@@ -51,6 +51,22 @@
                     ];
                     }
 
+                    $pengisiIds = optional($pengajuan->asesmen)->penilaianElemenAl
+                        ? $pengajuan->asesmen->penilaianElemenAl->pluck('id_asesor')->unique()
+                        : collect();
+                    $pengisiAl = optional($pengajuan->asesmen)->userRoles
+                        ? $pengajuan->asesmen->userRoles
+                            ->where('status_pekerjaan', '!=', 'not_started')
+                            ->when($pengisiIds->isNotEmpty(), fn ($roles) => $roles->whereIn('id_user', $pengisiIds))
+                            ->sortBy(fn ($role) => [
+                                $role->status_pekerjaan === 'in_progress' ? 0 : 1,
+                                $role->id,
+                            ])
+                            ->first()
+                        : null;
+                    $pengisiMerevisi = $pengisiAl && $pengisiAl->status_pekerjaan === 'in_progress';
+                    $pengisiSudahKirim = $pengisiAl && in_array($pengisiAl->status_pekerjaan, ['submitted', 'approved'], true);
+
                     // Tanggal tampil (prioritas finalisasi -> pengiriman hasil -> created_at)
                     $tanggalLabel = null;
                     $tanggalKeterangan = null;
@@ -101,6 +117,18 @@
                             <span class="badge bg-{{ $hasilConfig['class'] }}">
                                 <i class="bi bi-{{ $hasilConfig['icon'] }}"></i> {{ $hasilConfig['text'] }}
                             </span>
+                            @if(!$hasil?->isAlFinalized())
+                            <div class="mt-1">
+                                @if($pengisiMerevisi)
+                                <span class="badge bg-warning text-dark">Asesor merevisi</span>
+                                @elseif($pengisiSudahKirim)
+                                <span class="badge bg-success">Asesor sudah kirim</span>
+                                @if($pengisiAl->submitted_at)
+                                <div class="small text-muted">{{ \App\Libraries\Date::tglWaktu($pengisiAl->submitted_at) }}</div>
+                                @endif
+                                @endif
+                            </div>
+                            @endif
                         </td>
 
                         <td>

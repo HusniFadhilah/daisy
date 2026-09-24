@@ -169,7 +169,7 @@
                                 </h5>
                                 <p class="mb-2">
                                     Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
-                                    Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> untuk menyelesaikan penilaian.
+                                    Silakan <strong>lihat skor</strong> terlebih dahulu, lalu kirim penilaian dari halaman hasil.
                                 </p>
                             </div>
                         </div>
@@ -184,7 +184,7 @@
                         <strong>Progres Penilaian:</strong>
                         Anda telah menilai {{ $progress['completed'] }} dari {{ $progress['total'] }} elemen
                         (<strong>{{ $progress['percentage'] }}%</strong>).
-                        Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi untuk dapat melakukan finalisasi.
+                        Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi, lalu lihat skor sebelum mengirim.
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     @endif
@@ -193,11 +193,25 @@
                     @if($isSubmittedOnly || $isApproved)
                     <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
-                        <strong>Penilaian Telah Difinalisasi!</strong>
-                        Penilaian Anda telah berhasil dikirim dan disimpan.
+                        <strong>{{ $isApproved ? 'Penilaian Dikunci Sekretariat' : 'Penilaian Telah Dikirim' }}!</strong>
+                        @if($isSubmittedOnly && !$isApproved)
+                        Cek skor dan isi draft resume di
+                        <a href="{{ route('al.berkas.hasil', $asesmen->id) }}" class="alert-link">Hasil Penilaian AL</a>.
+                        <div class="mt-2">
+                            Silakan unduh file hasil penilaian lengkap di
+                            <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>.
+                            Tandatangani, lalu upload ulang di halaman
+                            <a href="{{ route('al.berkas.documents.page', ['id' => $asesmen->id]) }}" class="alert-link">Berita Acara AL</a>.
+                        </div>
+                        @else
+                        Unduh file penilaian di
+                        <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>.
+                        Upload file yang sudah ditandatangani di
+                        <a href="{{ route('al.berkas.documents.page', ['id' => $asesmen->id]) }}" class="alert-link">Berita Acara AL</a>.
+                        @endif
                         @if($assignment->submitted_at)
                         <div class="mt-2 small text-muted">
-                            <i class="bi bi-clock"></i> Difinalisasi pada: {{ \App\Libraries\Date::tglWaktu($assignment->submitted_at) }}
+                            <i class="bi bi-clock"></i> Dikirim pada: {{ \App\Libraries\Date::tglWaktu($assignment->submitted_at) }}
                         </div>
                         @endif
                     </div>
@@ -207,16 +221,20 @@
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
                         <div>
                             @if(!$isSubmittedOnly && !$isApproved)
-                            <button class="btn btn-success w-md-100 w-md-auto" id="btnSubmit">
-                                <i class="bi bi-check-circle"></i> Finalisasi dan Kirim
-                            </button>
+                            <a href="{{ route('al.berkas.hasil', $asesmen->id) }}" class="btn btn-primary w-md-100 w-md-auto" id="btnLihatSkor">
+                                <i class="bi bi-clipboard-data"></i> Lihat Skor
+                            </a>
                             <small class="d-block text-muted mt-1">
                                 <i class="bi bi-info-circle"></i>
-                                Pastikan semua elemen telah dinilai sebelum mengirim
+                                Cek skor di halaman hasil, lalu kirim penilaian dari sana
                             </small>
+                            @elseif($isSubmittedOnly && !$isApproved)
+                            <a href="{{ route('al.berkas.hasil', $asesmen->id) }}" class="btn btn-outline-dark">
+                                <i class="bi bi-clipboard-data"></i> Hasil Penilaian AL
+                            </a>
                             @else
                             <button class="btn btn-success w-100 w-md-auto" disabled>
-                                <i class="bi bi-check-all"></i> Penilaian Telah Difinalisasi
+                                <i class="bi bi-check-all"></i> Penilaian Dikunci
                             </button>
                             @endif
                         </div>
@@ -354,7 +372,7 @@
                             <li>Silahkan mengisi penilaian pada kolom yang tersedia (cell berwarna kuning)</li>
                             <li>Mohon jangan mengubah struktur, nama sheet, atau kode elemen pada excel</li>
                             <li>Upload file Excel yang telah diisi</li>
-                            <li>Setelah selesai upload, klik tombol <strong>Finalisasi dan Kirim</strong></li>
+                            <li>Setelah selesai upload, klik <strong>Lihat Skor</strong>, lalu kirim penilaian dari halaman hasil</li>
                         </ol>
                     </div>
 

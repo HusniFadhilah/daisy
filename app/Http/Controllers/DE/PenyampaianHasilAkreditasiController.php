@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SelesaikanMasaSanggahJob;
 use App\Mail\Reminder\ReminderContextMail;
 use App\Models\AsesmenDocument;
+use App\Models\AsesmenUserRole;
 use App\Models\HasilAkreditasi;
 use App\Models\PengajuanAkreditasi;
 use App\Models\PengajuanDokumen;
+use App\Models\PenilaianElemenAl;
+use App\Models\Role;
 use App\Repositories\SyaratAkreditasiRepository;
 use App\Services\HasilAkreditasiService;
 use App\Services\MailDeliveryService;
@@ -47,6 +50,15 @@ class PenyampaianHasilAkreditasiController extends Controller
             'studyProgram.degreeLevel',
             'studyProgram.category',
             'asesmen.asesmenLapangan',
+            'asesmen.userRoles' => function ($q) {
+                $q->where('jenis_asesmen', 'al')
+                    ->where('id_role', Role::ID_ROLE_ASESOR)
+                    ->where('status_penawaran', 'accepted')
+                    ->with('user');
+            },
+            'asesmen.penilaianElemenAl' => function ($q) {
+                $q->whereNotNull('skor')->select('id', 'id_asesmen', 'id_asesor');
+            },
             'asesmen.hasil' => function ($q) {
                 // $q->select('id', 'id_pengajuan', 'id_asesmen', 'skor_al', 'skor_final', 'peringkat_akreditasi', 'status', 'tanggal_finalisasi_al');
             },
@@ -139,12 +151,22 @@ class PenyampaianHasilAkreditasiController extends Controller
         $sertifikat = $dokumenHasil->firstWhere('jenis_dokumen', 'sertifikat');
         $resume = $hasil->getDraftResumeAsesmenOrDefault();
         $resumeSaved = $hasil->hasResumeAsesmen();
-        $canFinalize = $beritaAcara !== null && $sertifikat !== null && $resumeSaved && !$hasil->isAlFinalized();
+        $hasUnfinishedAl = $this->hasilService->hasUnfinishedAlAsesor($asesmen->id);
+        $pengisiAl = $this->hasilService->getPengisiAlAsesor($asesmen->id);
+        $canFinalize = $beritaAcara !== null && $sertifikat !== null && $resumeSaved && !$hasil->isAlFinalized() && !$hasUnfinishedAl;
+        $canUnfinalize = $this->canUnfinalize($pengajuan, $hasil);
         $validationSummary = $this->hasilService->getValidationSummary($hasil, 'hasil');
 
         $detailSkorAL = $hasil->detail_skor_al ?? [];
         $kriteriaList = $hasil->getKriteriaOrderedList();
         $elemenList   = $detailSkorAL['elemen']   ?? [];
+        $skorCalculatedAt = isset($detailSkorAL['metadata']['calculated_at'])
+            ? Carbon::parse($detailSkorAL['metadata']['calculated_at'])
+            : ($hasil->updated_at);
+        $skorPerluHitungUlang = !$hasil->isAlFinalized()
+            && $pengisiAl?->submitted_at
+            && $skorCalculatedAt
+            && $pengisiAl->submitted_at->gt($skorCalculatedAt);
         // Untuk kartu keterangan batasan skor — dari syarat_akreditasi kelompok rentang_skor
         $rentangSkor = $this->syaratRepo->getRentangSkor();
         $syaratKualitatif = $this->syaratRepo->getSyaratKualitatif();
@@ -160,6 +182,11 @@ class PenyampaianHasilAkreditasiController extends Controller
             'resume',
             'resumeSaved',
             'canFinalize',
+            'canUnfinalize',
+            'hasUnfinishedAl',
+            'pengisiAl',
+            'skorCalculatedAt',
+            'skorPerluHitungUlang',
             'rentangSkor',
             'syaratKualitatif'
         ));
@@ -206,6 +233,13 @@ class PenyampaianHasilAkreditasiController extends Controller
                 'ok' => false,
                 'message' => 'Data hasil akreditasi tidak ditemukan.',
             ], 404);
+        }
+
+        if ($hasil->isAlFinalized()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Hasil sudah dikunci. Buka finalisasi terlebih dahulu untuk mengedit.',
+            ], 422);
         }
 
         DB::beginTransaction();
@@ -289,6 +323,10 @@ class PenyampaianHasilAkreditasiController extends Controller
             return back()->with('error', 'Resume asesmen harus disimpan terlebih dahulu sebelum upload sertifikat.');
         }
 
+        if ($hasil->isAlFinalized()) {
+            return back()->with('error', 'Hasil sudah dikunci. Buka finalisasi terlebih dahulu untuk mengganti sertifikat.');
+        }
+
         DB::beginTransaction();
 
         $uploadedPath = null;
@@ -364,6 +402,11 @@ class PenyampaianHasilAkreditasiController extends Controller
                 throw new \Exception('Asesmen Lapangan belum selesai.');
             }
 
+            $hasil = $asesmen->hasil;
+            if ($hasil?->isAlFinalized()) {
+                throw new \Exception('Hasil sudah dikunci. Buka finalisasi terlebih dahulu untuk menghitung ulang.');
+            }
+
             $authId = auth()->id();
             $this->hasilService->saveHasilAK($asesmen, $authId);
             $hasil = $this->hasilService->saveHasilAL($asesmen, $authId);
@@ -427,6 +470,10 @@ class PenyampaianHasilAkreditasiController extends Controller
                 throw new \Exception('Resume asesmen akreditasi harus diisi terlebih dahulu.');
             }
 
+            if ($this->hasilService->hasUnfinishedAlAsesor($asesmen->id)) {
+                throw new \Exception('Pengisi penilaian AL masih in progress atau draft. Penilaian harus di-submit terlebih dahulu.');
+            }
+
             // Parse datetime-local (format: Y-m-d\TH:i)
             $endAt = Carbon::parse($request->tanggal_masa_sanggah_selesai);
 
@@ -443,6 +490,16 @@ class PenyampaianHasilAkreditasiController extends Controller
             $this->hasilService->finalizeHasilAL($hasil, $authId);
             $hasil->finalizeResumeAsesmen($authId);
             $hasil->refresh();
+
+            AsesmenUserRole::where('id_asesmen', $asesmen->id)
+                ->where('jenis_asesmen', 'al')
+                ->where('id_role', Role::ID_ROLE_ASESOR)
+                ->whereIn('status_pekerjaan', ['submitted', 'in_progress'])
+                ->update(['status_pekerjaan' => 'approved']);
+
+            PenilaianElemenAl::where('id_asesmen', $asesmen->id)
+                ->whereIn('status', ['submitted', 'draft'])
+                ->update(['status' => 'approved']);
 
             // Update status pengajuan + simpan deadline masa sanggah
             $this->updateStatusPengajuan($pengajuan, $hasil, $authId, $endAt);
@@ -475,6 +532,67 @@ class PenyampaianHasilAkreditasiController extends Controller
             ]);
 
             return back()->with('error', 'Gagal finalisasi: ' . $e->getMessage());
+        }
+    }
+
+    public function unfinalize($id)
+    {
+        DB::beginTransaction();
+        try {
+            $authId    = auth()->id();
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $asesmen   = $pengajuan->asesmen;
+            $hasil     = $asesmen?->hasil;
+
+            if (!$hasil) {
+                throw new \Exception('Data hasil akreditasi tidak ditemukan.');
+            }
+
+                    if (!$this->canUnfinalize($pengajuan, $hasil)) {
+                        throw new \Exception('Masa sanggah sudah berakhir. Finalisasi tidak dapat dibuka.');
+                    }
+
+            $this->hasilService->unfinalizeHasilAL($hasil);
+
+            AsesmenUserRole::where('id_asesmen', $asesmen->id)
+                ->where('jenis_asesmen', 'al')
+                ->where('id_role', Role::ID_ROLE_ASESOR)
+                ->where('status_pekerjaan', 'approved')
+                ->update(['status_pekerjaan' => 'submitted']);
+
+            PenilaianElemenAl::where('id_asesmen', $asesmen->id)
+                ->where('status', 'approved')
+                ->update(['status' => 'submitted']);
+
+            $statusFrom = $pengajuan->status;
+            $pengajuan->update([
+                'status'                           => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG,
+                'tanggal_hasil_akreditasi_dikirim' => null,
+                'tanggal_masa_sanggah_mulai'       => null,
+                'tanggal_masa_sanggah_selesai'     => null,
+            ]);
+
+            $pengajuan->statusLog()->create([
+                'status_from' => $statusFrom,
+                'status_to'   => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG,
+                'changed_by'  => $authId,
+                'keterangan'  => 'Finalisasi penyampaian hasil dibuka kembali untuk koreksi.',
+                'changed_at'  => now(),
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('de.penyampaian-hasil-akreditasi.show', $id)
+                ->with('success', 'Finalisasi dibuka. Hasil kembali ke draft dan dapat dikoreksi.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Unfinalize hasil failed', [
+                'pengajuan_id' => $id,
+                'error'        => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Gagal membuka finalisasi: ' . $e->getMessage());
         }
     }
 
@@ -776,6 +894,11 @@ class PenyampaianHasilAkreditasiController extends Controller
             'sudah_final' => $sudahFinal,
             'belum_final' => $total - $sudahFinal,
         ];
+    }
+
+    private function canUnfinalize(PengajuanAkreditasi $pengajuan, HasilAkreditasi $hasil): bool
+    {
+        return $this->hasilService->canUnfinalizeHasilAL($pengajuan, $hasil);
     }
 
     /**

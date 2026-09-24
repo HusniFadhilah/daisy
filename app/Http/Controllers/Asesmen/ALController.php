@@ -20,10 +20,18 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\ImportPenilaianExcelJob;
+use App\Models\HasilAkreditasi;
+use App\Services\HasilAkreditasiService;
 use App\Services\PenilaianExcelService;
+use App\Repositories\SyaratAkreditasiRepository;
 
 class ALController extends Controller
 {
+    public function __construct(
+        private readonly HasilAkreditasiService $hasilService,
+        private readonly SyaratAkreditasiRepository $syaratRepo,
+    ) {}
+
     /**
      * Display a listing of asesmens (berkas) for current user
      */
@@ -78,6 +86,8 @@ class ALController extends Controller
                         ->where('is_active', true)
                         ->latest('updated_at');
                 },
+                'hasil',
+                'penilaianElemenAl:id,id_asesmen,id_asesor,skor',
             ])
             ->latest()
             ->paginate(10);
@@ -99,9 +109,18 @@ class ALController extends Controller
             $asesmen->statusInfo = AsesmenUserRole::getStatusInfo($assignment);
 
             // ── First opener (dari relasi allAsesorRolesAl) ─────────────────
+            $pengisiIds = $asesmen->penilaianElemenAl
+                ->whereNotNull('skor')
+                ->pluck('id_asesor');
+
             $asesmen->firstOpenerRole = $asesmen->allAsesorRolesAl
-                ->where('status_pekerjaan', '!=', 'not_started')
-                ->first(); // sudah di-orderBy updated_at → yang terlama = first opener
+                ->filter(fn ($role) => $pengisiIds->contains($role->id_user))
+                ->sortBy(fn ($role) => [$role->submitted_at ?? $role->updated_at, $role->id])
+                ->first()
+                ?? $asesmen->allAsesorRolesAl
+                    ->where('status_pekerjaan', '!=', 'not_started')
+                    ->sortBy(fn ($role) => [$role->submitted_at ?? $role->updated_at, $role->id])
+                    ->first();
 
             // ── Status penilaian — hanya dari first opener ───────────────────
             // Karena hanya satu asesor (first opener) yang mengisi penilaian,
@@ -204,6 +223,10 @@ class ALController extends Controller
 
         $jenjangs  = JenjangPenilaian::all();
         $progress  = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
+        $penilaianByElemen = PenilaianElemenAl::where('id_asesmen', $asesmen->id)
+            ->where('id_asesor', $user->id)
+            ->get()
+            ->keyBy('id_elemen');
 
         $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'al')
@@ -247,7 +270,8 @@ class ALController extends Controller
             'otherAsesorsProgress',
             'isFirstVisitForMe',   // [BARU]
             'isFirstOpener',       // [BARU] selalu true di sini
-            'firstOpenerUser'      // [BARU] selalu null di sini
+            'firstOpenerUser',     // [BARU] selalu null di sini
+            'penilaianByElemen'
         ));
     }
 
@@ -349,18 +373,18 @@ class ALController extends Controller
     {
         $totalElemens = ElemenStandar::count();
 
-        // Ambil semua penilaian user sekaligus
-        $penilaian = PenilaianElemenAl::where('id_asesor', $userId)
+        $completedByAsesmen = PenilaianElemenAl::where('id_asesor', $userId)
             ->whereIn('id_asesmen', $asesmenIds)
             ->whereNotNull('skor')
-            ->select('id_asesmen', DB::raw('COUNT(*) as completed'))
+            ->whereNotNull('komentar')
+            ->where('komentar', '!=', '')
+            ->get(['id_asesmen', 'id_elemen'])
             ->groupBy('id_asesmen')
-            ->pluck('completed', 'id_asesmen'); // [id_asesmen => completed]
+            ->map(fn ($rows) => $rows->pluck('id_elemen')->unique()->count());
 
-        // Mapping progress per asesmen
         $progress = [];
         foreach ($asesmenIds as $id) {
-            $completed = $penilaian[$id] ?? 0;
+            $completed = (int) ($completedByAsesmen[$id] ?? 0);
             $percentage = $totalElemens ? round($completed / $totalElemens * 100, 1) : 0;
 
             $progress[$id] = [
@@ -463,50 +487,48 @@ class ALController extends Controller
 
             DB::beginTransaction();
 
-            // Update all penilaian status to submitted
             PenilaianElemenAl::where('id_asesmen', $idAsesmen)
                 ->where('id_asesor', $user->id)
                 ->update([
-                    'status' => 'approved',
+                    'status' => 'submitted',
                 ]);
 
-            // Update assignment status
             $assignment->update([
-                // 'status_pekerjaan' => 'submitted',
-                'status_pekerjaan' => 'approved',
+                'status_pekerjaan' => 'submitted',
                 'submitted_at' => now(),
             ]);
 
             $pengajuan = $assignment->asesmen->pengajuan;
-            if ($pengajuan) {
-                // ada assignment yang status_pekerjaan-nya BUKAN approved?
-                $hasUnapproved = $pengajuan->assignments()
-                    ->where('status_pekerjaan', '!=', 'approved')
-                    ->exists();
-
-                if ($hasUnapproved) {
-                } else {
-                    $statusFrom = $pengajuan->status;
-                    $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
-                    $pengajuan->statusLog()->firstOrCreate(
-                        [
-                            'status_from' => $statusFrom,
-                            'status_to'   => PengajuanAkreditasi::STATUS_AL_SELESAI,
-                        ],
-                        [
-                            'changed_by'  => Auth::id(),
-                            'keterangan'  => 'Seluruh asesor AL telah menyelesaikan proses penilaian lapangan',
-                            'changed_at'  => now(),
-                        ]
-                    );
-                }
+            if ($pengajuan && !$this->hasilService->hasUnfinishedAlAsesor($idAsesmen)) {
+                $statusFrom = $pengajuan->status;
+                $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
+                $pengajuan->statusLog()->firstOrCreate(
+                    [
+                        'status_from' => $statusFrom,
+                        'status_to'   => PengajuanAkreditasi::STATUS_AL_SELESAI,
+                    ],
+                    [
+                        'changed_by'  => Auth::id(),
+                        'keterangan'  => 'Pengisi penilaian AL telah mengirim penilaian lapangan',
+                        'changed_at'  => now(),
+                    ]
+                );
             }
 
             DB::commit();
 
+            try {
+                $this->hasilService->prepareDraftHasilAL($assignment->asesmen, $user->id, true);
+            } catch (\Throwable $e) {
+                Log::warning('submitPenilaian: skor resmi belum tersimpan', [
+                    'asesmen_id' => $idAsesmen,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => $assignment->status_pekerjaan == 'submitted' ? 'Penilaian berhasil di-submit! Menunggu validasi oleh LAMDEPILAR.' : 'Penilaian berhasil di-submit dan difinalisasi!',
+                'message' => 'Penilaian berhasil dikirim. Kunci final tetap pada sekretariat.',
                 'submitted_at' => now()->locale('id')->translatedFormat('d M Y H:i'),
             ]);
         } catch (\Exception $e) {
@@ -531,26 +553,21 @@ class ALController extends Controller
             $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('id_user', $user->id)
                 ->where('jenis_asesmen', 'al')
-                ->where('status_pekerjaan', 'submitted')
+                ->where('status_penawaran', 'accepted')
                 ->firstOrFail();
 
-            // ✅ PERBAIKAN: Hanya cek yang benar-benar telah VALIDATED (final)
-            $hasValidated = PenilaianElemenAl::where('id_asesmen', $idAsesmen)
-                ->where('id_asesor', $user->id)->whereIn('status', ['approved'])
-                ->exists();
-
-            if ($hasValidated) {
+            $hasil = HasilAkreditasi::where('id_asesmen', $idAsesmen)->first();
+            if ($hasil?->isAlFinalized()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Penilaian telah divalidasi dan disetujui, tidak bisa dibatalkan.',
+                    'message' => 'Hasil sudah dikunci oleh sekretariat, penilaian tidak bisa dibatalkan.',
                 ], 422);
             }
 
-            // ✅ TAMBAHAN: Cek jika telah approved
-            if ($assignment->status_pekerjaan === 'approved') {
+            if (!in_array($assignment->status_pekerjaan, ['submitted', 'approved'], true)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Penilaian telah disetujui, tidak bisa dibatalkan.',
+                    'message' => 'Penilaian belum dikirim, tidak ada yang perlu dibatalkan.',
                 ], 422);
             }
 
@@ -567,6 +584,21 @@ class ALController extends Controller
                 'status_pekerjaan' => 'in_progress',
                 'submitted_at' => null,
             ]);
+
+            $pengajuan = $assignment->asesmen->pengajuan;
+            if ($pengajuan?->status === PengajuanAkreditasi::STATUS_AL_SELESAI) {
+                $pengajuan->update([
+                    'status' => PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+                    'tanggal_al_selesai' => null,
+                ]);
+                $pengajuan->statusLog()->create([
+                    'status_from' => PengajuanAkreditasi::STATUS_AL_SELESAI,
+                    'status_to'   => PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+                    'changed_by'  => Auth::id(),
+                    'keterangan'  => 'Pengisi membatalkan kirim penilaian AL',
+                    'changed_at'  => now(),
+                ]);
+            }
 
             DB::commit();
 
@@ -1051,5 +1083,242 @@ class ALController extends Controller
         $request->session()->put($sessionKey, true);
 
         return redirect($continueUrl);
+    }
+
+    public function showHasil($idAsesmen)
+    {
+        $user = Auth::user();
+        $assignment = $this->findAcceptedAlAssignment($idAsesmen, $user->id);
+
+        $asesmen = Asesmen::with([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+            'pengajuan',
+            'hasil',
+        ])->findOrFail($idAsesmen);
+
+        $canEdit = $this->canAsesorEditHasil($asesmen, $assignment);
+        $calcError = null;
+        $hasil = $asesmen->hasil;
+        $skorIsPreview = false;
+        $unfinished = $this->hasilService->hasUnfinishedAlAsesor($asesmen->id);
+
+        if ($hasil?->isAlFinalized()) {
+            $canEdit = false;
+        } else {
+            try {
+                $hasil = $this->hasilService->prepareDraftHasilAL($asesmen, $user->id, !$unfinished);
+            } catch (\Throwable $e) {
+                $calcError = $e->getMessage();
+                $hasil = $asesmen->hasil;
+            }
+        }
+
+        if (!$hasil) {
+            $hasil = new HasilAkreditasi([
+                'status' => 'draft_al',
+                'id_asesmen' => $asesmen->id,
+                'id_pengajuan' => $asesmen->id_pengajuan,
+            ]);
+        }
+
+        if ($hasil->exists) {
+            $hasil->loadMissing(['studyProgram', 'category', 'finalizedAlBy']);
+        }
+        $resume = $hasil->exists
+            ? $hasil->getDraftResumeAsesmenOrDefault()
+            : HasilAkreditasi::resumeAsesmenSkeleton();
+        $resumeSaved = $hasil->exists && $hasil->hasResumeAsesmen();
+        $detailSkorAL = $hasil->detail_skor_al ?? [];
+        $kriteriaList = $hasil->exists ? $hasil->getKriteriaOrderedList() : [];
+        $elemenList = $detailSkorAL['elemen'] ?? [];
+        $displaySkor = $hasil->skor_al;
+        $totalElemen = ElemenStandar::count();
+        $assessedElemen = PenilaianElemenAl::where('id_asesmen', $asesmen->id)
+            ->where('id_asesor', $user->id)
+            ->whereNotNull('skor')
+            ->whereNotNull('komentar')
+            ->count();
+        $isPenilaianComplete = $totalElemen > 0 && $assessedElemen >= $totalElemen;
+        $rentangSkor = $this->syaratRepo->getRentangSkor();
+        $skorMinimumUnggul = $this->syaratRepo->getSkorMinimumUnggul();
+        $kriteriaRequired = $this->syaratRepo->getKriteriaRequired();
+
+        if (!$hasil->isAlFinalized()) {
+            try {
+                $preview = $this->hasilService->calculateAL($asesmen, false, true);
+                $previewElemen = $preview['detail_elemen'] ?? [];
+                if (count($previewElemen) >= count($elemenList) || empty($elemenList)) {
+                    $skorIsPreview = $unfinished;
+                    $displaySkor = $preview['skor_total'];
+                    $kriteriaList = $this->kriteriaListFromCalc($preview);
+                    $elemenList = $previewElemen;
+                } else {
+                    $skorIsPreview = true;
+                }
+                $calcError = null;
+            } catch (\Throwable $e) {
+                if (empty($elemenList) && !$displaySkor) {
+                    $calcError = $calcError ?: $e->getMessage();
+                }
+            }
+        }
+
+        $validationSummary = null;
+        try {
+            if (!$hasil->relationLoaded('studyProgram') || !$hasil->studyProgram) {
+                $hasil->setRelation('studyProgram', $asesmen->studyProgram);
+            }
+            if (!$hasil->id_pengajuan) {
+                $hasil->id_pengajuan = $asesmen->id_pengajuan;
+            }
+            if (!$hasil->isAlFinalized() && $displaySkor) {
+                $hasil->skor_final = null;
+                $hasil->skor_al = $displaySkor;
+            }
+            if (!empty($elemenList)) {
+                $pelampauan = [];
+                foreach ($elemenList as $el) {
+                    $kode = $el['kode_kriteria'] ?? null;
+                    $skorElemen = (float) ($el['skor'] ?? 0);
+                    if ($kode && $skorElemen >= 4) {
+                        $pelampauan[$kode][] = $el['kode_elemen'] ?? ($el['nama_elemen'] ?? '');
+                    }
+                }
+                $hasil->pelampauan_standar_al = $pelampauan;
+            }
+            $validationSummary = $this->hasilService->getValidationSummary($hasil, 'al');
+        } catch (\Throwable $e) {
+            Log::warning('showHasil: validasi unggul tidak tersedia', [
+                'asesmen_id' => $asesmen->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return view('asesmen.al.berkas.hasil', compact(
+            'asesmen',
+            'assignment',
+            'hasil',
+            'resume',
+            'resumeSaved',
+            'kriteriaList',
+            'elemenList',
+            'canEdit',
+            'calcError',
+            'displaySkor',
+            'skorIsPreview',
+            'totalElemen',
+            'assessedElemen',
+            'isPenilaianComplete',
+            'rentangSkor',
+            'skorMinimumUnggul',
+            'kriteriaRequired',
+            'validationSummary'
+        ));
+    }
+
+    public function saveResume(Request $request, $idAsesmen)
+    {
+        $charLimit = HasilAkreditasi::resumeBabCharLimit();
+
+        $request->validate([
+            'bab'           => 'required|array|min:1|max:20',
+            'bab.*.title'   => 'required|string|max:120',
+            'bab.*.content' => [
+                'nullable',
+                'string',
+                new \App\Rules\MaxPlainTextLength($charLimit),
+            ],
+        ]);
+
+        $user = Auth::user();
+        $assignment = $this->findAcceptedAlAssignment($idAsesmen, $user->id);
+        $asesmen = Asesmen::with(['hasil', 'studyProgram'])->findOrFail($idAsesmen);
+        $hasil = $asesmen->hasil;
+
+        if (!$hasil) {
+            try {
+                $hasil = $this->hasilService->prepareDraftHasilAL($asesmen, $user->id, false);
+            } catch (\Throwable $e) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Data hasil belum siap: ' . $e->getMessage(),
+                ], 422);
+            }
+        }
+
+        if ($hasil->isAlFinalized() || !$this->canAsesorEditHasil($asesmen, $assignment)) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Draft resume sudah dikunci atau Anda tidak berwenang mengubahnya.',
+            ], 422);
+        }
+
+        $allowedTags = '<p><br><strong><em><u><ol><ul><li><h3><h4><blockquote>';
+        $bab = [];
+
+        foreach ($request->input('bab', []) as $item) {
+            $bab[] = [
+                'title' => trim($item['title'] ?? ''),
+                'content' => !empty($item['content'])
+                    ? strip_tags($item['content'], $allowedTags)
+                    : null,
+            ];
+        }
+
+        $hasil->saveResumeAsesmen(['bab' => $bab], $user->id);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Draft resume asesmen berhasil disimpan.',
+            'saved_at' => now()->locale('id')->translatedFormat('d M Y, H:i'),
+            'has_resume' => $hasil->fresh()->hasResumeAsesmen(),
+        ]);
+    }
+
+    private function findAcceptedAlAssignment(int $idAsesmen, int $userId): AsesmenUserRole
+    {
+        $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('id_user', $userId)
+            ->where('jenis_asesmen', 'al')
+            ->where('id_role', Role::ID_ROLE_ASESOR)
+            ->where('status_penawaran', 'accepted')
+            ->first();
+
+        abort_if(!$assignment, 403, 'Anda tidak memiliki penugasan asesor AL pada asesmen ini.');
+
+        return $assignment;
+    }
+
+    private function canAsesorEditHasil(Asesmen $asesmen, AsesmenUserRole $assignment): bool
+    {
+        if ($asesmen->hasil?->isAlFinalized()) {
+            return false;
+        }
+
+        $firstStartedByOther = AsesmenUserRole::where('id_asesmen', $asesmen->id)
+            ->where('jenis_asesmen', 'al')
+            ->where('id_role', Role::ID_ROLE_ASESOR)
+            ->where('id_user', '!=', $assignment->id_user)
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->exists();
+
+        return !$firstStartedByOther || $assignment->status_pekerjaan !== 'not_started';
+    }
+
+    private function kriteriaListFromCalc(array $calc): array
+    {
+        $kriteriaList = $calc['detail_kriteria'] ?? [];
+        $elemenList = $calc['detail_elemen'] ?? [];
+        $ordered = [];
+
+        foreach ($elemenList as $elemen) {
+            $kode = $elemen['kode_kriteria'] ?? null;
+            if ($kode && !isset($ordered[$kode]) && isset($kriteriaList[$kode])) {
+                $ordered[$kode] = $kriteriaList[$kode];
+            }
+        }
+
+        return $ordered;
     }
 }

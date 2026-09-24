@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Asesmen;
+use App\Models\AsesmenUserRole;
 use App\Models\BobotPenilaian;
 use App\Models\HasilAkreditasi;
 use App\Models\JenjangPenilaian;
@@ -12,6 +13,7 @@ use App\Models\PenilaianElemenAk;
 use App\Models\PenilaianElemenAkBanding;
 use App\Models\PenilaianElemenAl;
 use App\Models\PenilaianElemenAlBanding;
+use App\Models\Role;
 use App\Models\StatusAkreditasi;
 use App\Repositories\SyaratAkreditasiRepository;
 use Illuminate\Support\Collection;
@@ -69,20 +71,25 @@ class HasilAkreditasiService
     // CALCULATE AL
     // =========================================================
 
-    public function calculateAL(Asesmen $asesmen, $isBanding = false): array
+    public function calculateAL(Asesmen $asesmen, $isBanding = false, bool $includeDraft = false): array
     {
         if (!$asesmen->studyProgram->id_category) {
             throw new \Exception('Program studi belum memiliki kategori.');
         }
 
+        $statuses = ['approved', 'submitted'];
+        if ($includeDraft) {
+            $statuses[] = 'draft';
+        }
+
         if ($isBanding)
             $penilaians = PenilaianElemenAlBanding::where('id_asesmen', $asesmen->id)
-                ->whereIn('status', ['approved', 'submitted'])
+                ->whereIn('status', $statuses)
                 ->with(['elemenStandar.kriteria'])
                 ->get();
         else
             $penilaians = PenilaianElemenAl::where('id_asesmen', $asesmen->id)
-                ->whereIn('status', ['approved', 'submitted'])
+                ->whereIn('status', $statuses)
                 ->with(['elemenStandar.kriteria'])
                 ->get();
 
@@ -238,7 +245,7 @@ class HasilAkreditasiService
      * karena syarat perlu (pelampauan + LKPS) belum divalidasi.
      * Peringkat efektif baru ditetapkan saat finalizeHasilAL().
      */
-    public function saveHasilAL(Asesmen $asesmen, ?int $userId = null): HasilAkreditasi
+    public function saveHasilAL(Asesmen $asesmen, ?int $userId = null, bool $includeDraft = false): HasilAkreditasi
     {
         DB::beginTransaction();
         try {
@@ -248,7 +255,7 @@ class HasilAkreditasiService
                 throw new \Exception('AK harus difinalisasi terlebih dahulu.');
             }
 
-            $calc = $this->calculateAL($asesmen);
+            $calc = $this->calculateAL($asesmen, false, $includeDraft);
 
             $detailSkorAL = [
                 'kriteria' => $calc['detail_kriteria'],
@@ -298,6 +305,125 @@ class HasilAkreditasiService
             Log::error('saveHasilAL failed', ['asesmen_id' => $asesmen->id, 'error' => $e->getMessage()]);
             throw $e;
         }
+    }
+
+    /**
+     * Siapkan record hasil AL untuk asesor.
+     * Skor resmi hanya disimpan jika penilaian pengisi sudah submit (bukan draft).
+     */
+    public function prepareDraftHasilAL(Asesmen $asesmen, ?int $userId = null, bool $persistOfficialAl = true): HasilAkreditasi
+    {
+        $asesmen->loadMissing(['studyProgram', 'pengajuan']);
+
+        $hasil = HasilAkreditasi::firstOrCreate(
+            [
+                'id_pengajuan' => $asesmen->id_pengajuan,
+                'id_asesmen'   => $asesmen->id,
+            ],
+            [
+                'id_study_program' => $asesmen->id_study_program,
+                'id_category'      => $asesmen->studyProgram->id_category,
+                'status'           => 'draft_al',
+            ]
+        );
+
+        if ($hasil->isAlFinalized()) {
+            return $hasil->fresh();
+        }
+
+        if (!$hasil->skor_ak) {
+            try {
+                $this->saveHasilAK($asesmen, $userId);
+                $hasil->refresh();
+            } catch (\Throwable $e) {
+                Log::warning('prepareDraftHasilAL: skor AK dilewati', [
+                    'asesmen_id' => $asesmen->id,
+                    'error'      => $e->getMessage(),
+                ]);
+            }
+        }
+
+        if ($hasil->tanggal_finalisasi_al === null && $hasil->isAlFinalized()) {
+            $hasil->update([
+                'status' => $hasil->isAkFinalized() ? 'final_ak' : 'draft_al',
+            ]);
+            $hasil->refresh();
+        }
+
+        if ($hasil->skor_ak && !$hasil->isAkFinalized()) {
+            $this->finalizeHasilAK($hasil, $userId);
+            $hasil->refresh();
+        }
+
+        $shouldPersist = $persistOfficialAl && !$this->hasUnfinishedAlAsesor($asesmen->id);
+
+        if (!$shouldPersist) {
+            return $hasil->fresh();
+        }
+
+        if (!$hasil->isAkFinalized()) {
+            throw new \Exception('Skor AK belum tersedia. Penilaian AK harus selesai sebelum skor AL dapat dihitung.');
+        }
+
+        try {
+            return $this->saveHasilAL($asesmen, $userId, false);
+        } catch (\Throwable $e) {
+            Log::warning('prepareDraftHasilAL: skor resmi tidak ditimpa', [
+                'asesmen_id' => $asesmen->id,
+                'error'      => $e->getMessage(),
+            ]);
+
+            return $hasil->fresh();
+        }
+    }
+
+    public function getPengisiAlAsesor(int $idAsesmen): ?AsesmenUserRole
+    {
+        $pengisiIds = PenilaianElemenAl::where('id_asesmen', $idAsesmen)
+            ->whereNotNull('skor')
+            ->pluck('id_asesor')
+            ->unique();
+
+        $query = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al')
+            ->where('id_role', Role::ID_ROLE_ASESOR)
+            ->where('status_penawaran', 'accepted')
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->with('user');
+
+        if ($pengisiIds->isNotEmpty()) {
+            $query->whereIn('id_user', $pengisiIds);
+        }
+
+        return $query
+            ->orderByRaw("CASE status_pekerjaan WHEN 'in_progress' THEN 0 WHEN 'submitted' THEN 1 WHEN 'approved' THEN 2 ELSE 3 END")
+            ->orderBy('updated_at')
+            ->orderBy('id')
+            ->first();
+    }
+
+    /**
+     * True jika pengisi AL (first opener) masih in_progress atau masih punya draft.
+     * Asesor lain yang not_started tidak dihitung — AL hanya diisi satu orang.
+     */
+    public function hasUnfinishedAlAsesor(int $idAsesmen): bool
+    {
+        $pengisi = $this->getPengisiAlAsesor($idAsesmen);
+
+        if ($pengisi) {
+            if ($pengisi->status_pekerjaan === 'in_progress') {
+                return true;
+            }
+
+            return PenilaianElemenAl::where('id_asesmen', $idAsesmen)
+                ->where('id_asesor', $pengisi->id_user)
+                ->where('status', 'draft')
+                ->exists();
+        }
+
+        return PenilaianElemenAl::where('id_asesmen', $idAsesmen)
+            ->where('status', 'draft')
+            ->exists();
     }
 
     // =========================================================
@@ -394,6 +520,62 @@ class HasilAkreditasiService
             DB::rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * Sekretariat boleh buka finalisasi selama masa sanggah belum berakhir.
+     */
+    public function canUnfinalizeHasilAL(PengajuanAkreditasi $pengajuan, HasilAkreditasi $hasil): bool
+    {
+        if (!$hasil->isAlFinalized()) {
+            return false;
+        }
+
+        $allowed = [
+            PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG,
+            PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+            PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+        ];
+
+        if (!in_array($pengajuan->status, $allowed, true)) {
+            return false;
+        }
+
+        if (
+            $pengajuan->status === PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI
+            && $pengajuan->tanggal_masa_sanggah_selesai
+            && now()->gte($pengajuan->tanggal_masa_sanggah_selesai)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Buka kunci finalisasi AL agar sekretariat bisa mengoreksi draft.
+     */
+    public function unfinalizeHasilAL(HasilAkreditasi $hasil): HasilAkreditasi
+    {
+        if (!$hasil->isAlFinalized()) {
+            throw new \Exception('Hasil AL belum difinalisasi.');
+        }
+
+        $pengajuan = $hasil->pengajuan;
+        if (!$pengajuan || !$this->canUnfinalizeHasilAL($pengajuan, $hasil)) {
+            throw new \Exception('Masa sanggah sudah berakhir. Finalisasi tidak dapat dibuka.');
+        }
+
+        $hasil->update([
+            'status'                     => 'draft_al',
+            'tanggal_finalisasi_al'      => null,
+            'finalized_al_by'            => null,
+            'tanggal_finalisasi_hasil'   => null,
+            'finalized_hasil_by'         => null,
+            'peringkat_akreditasi_hasil' => null,
+        ]);
+
+        return $hasil->fresh();
     }
 
     public function saveHasilALBanding(Asesmen $asesmen, ?int $userId = null): HasilAkreditasi
