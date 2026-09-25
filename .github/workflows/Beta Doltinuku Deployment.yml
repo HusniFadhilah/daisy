@@ -23,8 +23,13 @@ jobs:
           lftp -u "${{ secrets.SFTP_DOLTINUKU_USERNAME }},${{ secrets.SFTP_DOLTINUKU_PASSWORD }}" \
             "sftp://${{ secrets.SFTP_DOLTINUKU_SERVER }}:22" <<'EOF'
           set sftp:auto-confirm yes
-          set net:max-retries 3
-          set net:timeout 20
+          set net:prefer-ipv4 yes
+          set net:max-retries 10
+          set net:persist-retries 5
+          set net:timeout 120
+          set net:reconnect-interval-base 10
+          set cmd:fail-exit yes
+          set sftp:connect-program "ssh -a -x -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oServerAliveInterval=30 -oServerAliveCountMax=10"
 
           mirror --reverse \
             --verbose \
