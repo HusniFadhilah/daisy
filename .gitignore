@@ -24,6 +24,7 @@
 /storage/pail
 /storage/debugbar
 /vendor
+DEPLOY_REVISION
 Homestead.json
 Homestead.yaml
 Thumbs.db

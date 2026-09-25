@@ -15,6 +15,9 @@ jobs:
       - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
 
+      - name: Write deploy revision
+        run: echo "${{ github.sha }}" > DEPLOY_REVISION
+
       - name: Upload
         run: |
           lftp -u "${{ secrets.SFTP_SP3STAB_USERNAME }},${{ secrets.SFTP_SP3STAB_PASSWORD }}" \
@@ -47,7 +50,9 @@ jobs:
             --exclude-glob storage/logs/** \
             --exclude-glob tests/** \
             --exclude-glob **/tests/** \
+            --exclude-glob DEPLOY_REVISION \
             ./ /var/www/sipenahana/daisy
 
+          put -O /var/www/sipenahana/daisy DEPLOY_REVISION
           bye
           EOF

@@ -1,6 +1,11 @@
 <?php
 
-return [
+$providers = [
     App\Providers\AppServiceProvider::class,
-    BeyondCode\ErdGenerator\ErdGeneratorServiceProvider::class,
 ];
+
+if (class_exists(\BeyondCode\ErdGenerator\ErdGeneratorServiceProvider::class)) {
+    $providers[] = \BeyondCode\ErdGenerator\ErdGeneratorServiceProvider::class;
+}
+
+return $providers;

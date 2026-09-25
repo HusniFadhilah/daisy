@@ -15,6 +15,9 @@ jobs:
       - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
 
+      - name: Write deploy revision
+        run: echo "${{ github.sha }}" > DEPLOY_REVISION
+
       - name: Upload
         run: |
           lftp -u "${{ secrets.SFTP_DOLTINUKU_USERNAME }},${{ secrets.SFTP_DOLTINUKU_PASSWORD }}" \
@@ -47,7 +50,9 @@ jobs:
             --exclude-glob storage/logs/** \
             --exclude-glob tests/** \
             --exclude-glob **/tests/** \
+            --exclude-glob DEPLOY_REVISION \
             ./ /home/doltinuku/daisy
 
+          put -O /home/doltinuku/daisy DEPLOY_REVISION
           bye
           EOF

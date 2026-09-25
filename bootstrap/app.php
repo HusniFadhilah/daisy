@@ -4,7 +4,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
-return Application::configure(basePath: dirname(__DIR__))
+require __DIR__.'/clear-stale-cache.php';
+
+$app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',
         commands: __DIR__ . '/../routes/console.php',
@@ -36,3 +38,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
+
+// Avoid "Unable to detect application namespace" when composer.json is briefly unreadable.
+try {
+    $namespaceProp = new ReflectionProperty($app, 'namespace');
+    $namespaceProp->setAccessible(true);
+    if ($namespaceProp->getValue($app) === null) {
+        $namespaceProp->setValue($app, 'App\\');
+    }
+} catch (ReflectionException) {
+    // Framework version without this property.
+}
+
+return $app;
