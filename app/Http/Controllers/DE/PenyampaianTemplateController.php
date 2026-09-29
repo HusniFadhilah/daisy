@@ -383,6 +383,11 @@ class PenyampaianTemplateController extends Controller
      */
     public function download($id, $jenis = 'borang_template')
     {
+        $allowedJenis = ['borang_template', 'template_formulir_pembayaran'];
+        if (! in_array($jenis, $allowedJenis, true)) {
+            abort(404, 'Jenis dokumen tidak valid.');
+        }
+
         $pengajuanDokumen = PengajuanDokumen::where('id_pengajuan', $id)
             ->where('jenis_dokumen', $jenis)
             ->where('is_latest', true)

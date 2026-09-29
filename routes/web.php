@@ -555,7 +555,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [PenyampaianTemplateController::class, 'show'])->name('.show');
             Route::post('/{id}/kirim-link', [PenyampaianTemplateController::class, 'kirimTemplateLink'])->name('.kirim-link');
             Route::post('/{id}/kirim-upload', [PenyampaianTemplateController::class, 'kirimTemplateUpload'])->name('.kirim-upload');
-            Route::get('/{id}/download', [PenyampaianTemplateController::class, 'download'])->name('.download');
+            Route::get('/{id}/download/{jenis}', [PenyampaianTemplateController::class, 'download'])->name('.download');
         });
         Route::prefix('validasi-pembayaran')->name('.validasi-pembayaran')->group(function () {
             Route::get('/', [ValidasiPembayaranController::class, 'index']);
